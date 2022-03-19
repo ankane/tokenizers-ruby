@@ -1,0 +1,14 @@
+[package]
+name = "tokenizers-ruby"
+version = "0.1.0"
+authors = ["Andrew Kane <andrew@ankane.org>"]
+edition = "2018"
+
+[lib]
+name = "tokenizers"
+crate-type = ["cdylib"]
+
+[dependencies]
+lazy_static = "1"
+rutie = "0.8.3"
+tokenizers = "0.11"

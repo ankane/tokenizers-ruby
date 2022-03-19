@@ -1,0 +1,16 @@
+/.bundle/
+/.yardoc
+/_yardoc/
+/coverage/
+/doc/
+/pkg/
+/spec/reports/
+/tmp/
+*.lock
+/target/
+*vocab.json
+*merges.txt
+/Makefile
+*.bundle
+*.so
+*.dll
