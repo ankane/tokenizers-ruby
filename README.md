@@ -1,4 +1,4 @@
-# Tokenizers
+# Tokenizers Ruby
 
 :slightly_smiling_face: Fast state-of-the-art [tokenizers](https://github.com/huggingface/tokenizers) for Ruby
 
