@@ -6,7 +6,7 @@
 /pkg/
 /spec/reports/
 /tmp/
-*.lock
+/Gemfile.lock
 /target/
 *vocab.json
 *merges.txt
