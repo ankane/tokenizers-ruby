@@ -10,5 +10,5 @@ crate-type = ["cdylib"]
 
 [dependencies]
 lazy_static = "1"
-rutie = "0.8.3"
+rutie = "0.8.4"
 tokenizers = "0.11"

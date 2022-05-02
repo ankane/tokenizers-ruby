@@ -1254,9 +1254,9 @@ dependencies = [
 
 [[package]]
 name = "rutie"
-version = "0.8.3"
+version = "0.8.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0d81d2a2dec78b6202e8058dea842a39a65135ce8915e66e40d3935f12e52346"
+checksum = "5d97db4cbb9739b48364c38cc9a6ebabdc07b42bd87b60ab448e1f29eaebb2ac"
 dependencies = [
  "lazy_static",
  "libc",
