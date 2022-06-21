@@ -1,0 +1,18 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug",
+      "preLaunchTask": {
+        "task": "compile:debug",
+        "type": "rake"
+      },
+      "program": "~/.asdf/installs/ruby/3.1.1/bin/ruby",
+      "args": ["-Ilib", "test/test_helper.rb"],
+      "cwd": "${workspaceFolder}",
+      "sourceLanguages": ["rust"]
+    }
+  ]
+}

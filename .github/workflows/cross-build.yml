@@ -1,0 +1,31 @@
+# Adjust this based on your release workflow
+on:
+  workflow_dispatch:
+
+jobs:
+  native_gem:
+    name: Compile native gems
+    runs-on: ubuntu-latest
+    strategy:
+      platform:
+        - x86_64-linux
+        - aarch64-linux
+        - arm-linux
+        - x86_64-darwin
+        - arm64-darwin
+        - x64-mingw32
+        - x64-mingw-ucrt
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.1'
+          bundler-cache: true
+
+      - uses: oxidize-rb/cross-gem@v1
+        with:
+          platform: ${{ matrix.platform }}
+          env: | 
+            RUBY_CC_VERSION=3.1.0:3.0.0:2.7.0
+            RB_SYS_CARGO_PROFILE=release

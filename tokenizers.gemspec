@@ -12,7 +12,10 @@ Gem::Specification.new do |spec|
 
   spec.files         = Dir["*.{md,txt}", "{ext,lib,src}/**/*", "Cargo.*"]
   spec.require_path  = "lib"
-  spec.extensions    = ["ext/tokenizers/extconf.rb"]
+  spec.extensions    = ["extconf.rb"]
 
   spec.required_ruby_version = ">= 2.7"
+
+  spec.add_dependency "rb_sys", "~> 0.9.5"
+  spec.add_dependency "rake-compiler", "~> 1.2.0"
 end

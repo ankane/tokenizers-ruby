@@ -5,7 +5,7 @@ authors = ["Andrew Kane <andrew@ankane.org>"]
 edition = "2018"
 
 [lib]
-name = "tokenizers"
+name = "tokenizers_ext"
 crate-type = ["cdylib"]
 
 [dependencies]
