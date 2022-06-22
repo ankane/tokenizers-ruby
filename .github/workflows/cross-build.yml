@@ -20,12 +20,12 @@ jobs:
 
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.1'
+          ruby-version: "3.1"
           bundler-cache: true
 
       - uses: oxidize-rb/cross-gem@v1
         with:
           platform: ${{ matrix.platform }}
-          env: | 
+          env: |
             RUBY_CC_VERSION=3.1.0:3.0.0:2.7.0
             RB_SYS_CARGO_PROFILE=release
