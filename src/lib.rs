@@ -244,7 +244,7 @@ methods!(
 
 #[allow(non_snake_case)]
 #[no_mangle]
-pub extern "C" fn Init_ext() {
+pub extern "C" fn Init_tokenizers_ext() {
     let mut m = Module::new("Tokenizers");
 
     m.define(|klass| {

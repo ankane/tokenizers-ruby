@@ -1,18 +1,40 @@
 require "bundler/gem_tasks"
 require "rake/testtask"
+require "rake/extensiontask"
 
-task default: :test
+CROSS_PLATFORMS = [
+ "x86_64-linux",
+ "aarch64-linux",
+ "arm-linux",
+ "x86_64-darwin",
+ "arm64-darwin",
+ "x64-mingw32",
+ "x64-mingw-ucrt",
+].uniq
+
+GEMSPEC = Bundler.load_gemspec("tokenizers.gemspec")
+
+Rake::ExtensionTask.new("tokenizers_ext", GEMSPEC) do |ext|
+  ext.ext_dir = "."
+  ext.lib_dir = "lib/tokenizers"
+  ext.cross_platform = CROSS_PLATFORMS
+end
+
+namespace :env do
+  task :debug do
+    ENV["RUST_BACKTRACE"] = "1"
+    ENV["RB_SYS_CARGO_PROFILE"] = "dev"
+  end
+
+  task :release do
+    ENV["RB_SYS_CARGO_PROFILE"] = "release"
+  end
+end
+
 Rake::TestTask.new do |t|
   t.libs << "test"
   t.pattern = "test/**/*_test.rb"
 end
-
-task :remove_ext do
-  path = "lib/tokenizers/ext.bundle"
-  File.unlink(path) if File.exist?(path)
-end
-
-Rake::Task["build"].enhance [:remove_ext]
 
 def download_file(url)
   require "open-uri"
@@ -32,3 +54,11 @@ namespace :download do
     download_file("https://s3.amazonaws.com/models.huggingface.co/bert/roberta-base-merges.txt")
   end
 end
+
+desc "Compile in debug mode"
+task "compile:debug" => ["env:debug", "compile"]
+
+desc "Compile in release mode"
+task "compile:release" => ["env:release", "compile"]
+
+task default: ["compile", "test"]

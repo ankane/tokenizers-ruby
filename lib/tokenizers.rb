@@ -1,5 +1,12 @@
 # extlib
-require "tokenizers/ext"
+
+# Attempts to load the cross compiled gem first, falling back the native.
+begin
+  RUBY_VERSION =~ /(\d+\.\d+)/
+  require "#{$1}/tokenizers/tokenizers_ext"
+rescue LoadError
+  require "tokenizers/tokenizers_ext"
+end
 
 # modules
 require "tokenizers/char_bpe_tokenizer"
