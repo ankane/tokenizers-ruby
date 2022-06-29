@@ -12,7 +12,7 @@ Add this line to your application’s Gemfile:
 gem "tokenizers"
 ```
 
-Note: Rust is currently required for installation.
+Note: Rust and pkg-config are currently required for installation, and it can take 5-10 minutes to compile the extension.
 
 ## Getting Started
 
