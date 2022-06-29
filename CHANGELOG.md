@@ -1,4 +1,4 @@
-## 0.1.1 (unreleased)
+## 0.1.1 (2022-06-29)
 
 - Fixed error with installation
 
