@@ -61,7 +61,7 @@ To get started with development:
 git clone https://github.com/ankane/tokenizers-ruby.git
 cd tokenizers-ruby
 bundle install
-bundle exec ruby ext/tokenizers/extconf.rb && make
+bundle exec ruby ext/tokenizers/extconf.rb && make && make install
 bundle exec rake download:files
 bundle exec rake test
 ```
