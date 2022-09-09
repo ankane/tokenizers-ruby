@@ -1,4 +1,4 @@
-## 0.1.2 (unreleased)
+## 0.1.2 (2022-09-08)
 
 - Fixed error with installation on Linux
 
