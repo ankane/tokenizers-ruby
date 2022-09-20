@@ -1,3 +1,7 @@
+## 0.1.3 (unreleased)
+
+- Updated Tokenizers to 0.13.0
+
 ## 0.1.2 (2022-09-08)
 
 - Fixed error with installation on Linux
