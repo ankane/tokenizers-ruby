@@ -1470,9 +1470,9 @@ checksum = "cda74da7e1a664f795bb1f8a87ec406fb89a02522cf6e50620d016add6dbbf5c"
 
 [[package]]
 name = "tokenizers"
-version = "0.13.0"
+version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "72e10b4dcec4f6239730ce03b3c790f6d9ce1559bb5b263b9455436cdbea5b22"
+checksum = "3d7b08ede6742d7a59d58c71da8a6fa21bedc433dca2e855e439274d08df1170"
 dependencies = [
  "aho-corasick",
  "cached-path",
