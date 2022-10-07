@@ -1,4 +1,4 @@
-## 0.1.3 (unreleased)
+## 0.1.3 (2022-10-06)
 
 - Updated Tokenizers to 0.13.1
 
