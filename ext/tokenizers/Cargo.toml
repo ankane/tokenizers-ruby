@@ -1,5 +1,5 @@
 [package]
-name = "ext"
+name = "tokenizers"
 version = "0.1.0"
 authors = ["Andrew Kane <andrew@ankane.org>"]
 edition = "2018"
