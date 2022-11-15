@@ -12,9 +12,13 @@ Gem::Specification.new do |spec|
 
   spec.files         = Dir["*.{md,txt}", "{ext,lib}/**/*"]
   spec.require_path  = "lib"
-  spec.extensions    = ["ext/tokenizers/extconf.rb"]
+
+  if RUBY_VERSION.to_f >= 3.2
+    spec.extensions    = ["ext/tokenizers/Cargo.toml"]
+  else
+    spec.extensions    = ["ext/tokenizers/extconf.rb"]
+    spec.add_dependency "rb_sys"
+  end
 
   spec.required_ruby_version = ">= 2.7"
-
-  spec.add_dependency "rb_sys"
 end
