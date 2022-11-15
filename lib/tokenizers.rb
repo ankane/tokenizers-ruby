@@ -1,5 +1,5 @@
 # extlib
-require "tokenizers/ext"
+require_relative "tokenizers.#{RbConfig::CONFIG["DLEXT"]}"
 
 # modules
 require "tokenizers/char_bpe_tokenizer"

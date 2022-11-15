@@ -1,12 +1,11 @@
 [package]
-name = "tokenizers-ruby"
+name = "tokenizers"
 version = "0.1.0"
 authors = ["Andrew Kane <andrew@ankane.org>"]
 edition = "2018"
 publish = false
 
 [lib]
-name = "tokenizers"
 crate-type = ["cdylib"]
 
 [dependencies]
