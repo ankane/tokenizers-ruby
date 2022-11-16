@@ -1,3 +1,7 @@
+## 0.2.0 (unreleased)
+
+- Switched to `rb_sys` gem for building
+
 ## 0.1.3 (2022-10-06)
 
 - Updated Tokenizers to 0.13.1

@@ -1470,6 +1470,15 @@ checksum = "cda74da7e1a664f795bb1f8a87ec406fb89a02522cf6e50620d016add6dbbf5c"
 
 [[package]]
 name = "tokenizers"
+version = "0.1.0"
+dependencies = [
+ "lazy_static",
+ "rutie",
+ "tokenizers 0.13.1",
+]
+
+[[package]]
+name = "tokenizers"
 version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3d7b08ede6742d7a59d58c71da8a6fa21bedc433dca2e855e439274d08df1170"
@@ -1501,15 +1510,6 @@ dependencies = [
  "unicode-normalization-alignments",
  "unicode-segmentation",
  "unicode_categories",
-]
-
-[[package]]
-name = "tokenizers-ruby"
-version = "0.1.0"
-dependencies = [
- "lazy_static",
- "rutie",
- "tokenizers",
 ]
 
 [[package]]
