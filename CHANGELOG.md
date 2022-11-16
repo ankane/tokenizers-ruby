@@ -1,6 +1,7 @@
 ## 0.2.0 (unreleased)
 
 - Switched to `rb_sys` gem for building
+- Updated Rust edition to 2021
 
 ## 0.1.3 (2022-10-06)
 
