@@ -1474,14 +1474,14 @@ version = "0.1.0"
 dependencies = [
  "lazy_static",
  "rutie",
- "tokenizers 0.13.1",
+ "tokenizers 0.13.2",
 ]
 
 [[package]]
 name = "tokenizers"
-version = "0.13.1"
+version = "0.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3d7b08ede6742d7a59d58c71da8a6fa21bedc433dca2e855e439274d08df1170"
+checksum = "f4ff2dd291eac98dcea13e8cf7a0b28c373a90dc9210ccdab0fa9e69ee0cac69"
 dependencies = [
  "aho-corasick",
  "cached-path",
