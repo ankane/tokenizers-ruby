@@ -21,6 +21,4 @@ Gem::Specification.new do |spec|
   end
 
   spec.required_ruby_version = ">= 2.7"
-
-  spec.add_dependency "rb_sys"
 end
