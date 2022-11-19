@@ -40,14 +40,14 @@ impl Tokenizer {
             .borrow()
             .encode(text, false)
             .map(Encoding)
-            .map_err(|e| Error::new(error(), e.to_string()))
+            .map_err(convert_error)
     }
 
     pub fn decode(&self, ids: Vec<u32>) -> Result<String, Error> {
         self.0
             .borrow()
             .decode(ids, true)
-            .map_err(|e| Error::new(error(), e.to_string()))
+            .map_err(convert_error)
     }
 
     pub fn set_decoder(&self, decoder: &BPEDecoder) {
@@ -80,7 +80,7 @@ impl BPE {
             .end_of_word_suffix("</w>".into())
             .build()
             .map(BPE)
-            .map_err(|e| Error::new(error(), e.to_string()))
+            .map_err(convert_error)
     }
 }
 
@@ -119,7 +119,11 @@ fn from_pretrained(
 
     tokenizer::Tokenizer::from_pretrained(identifier, Some(params))
         .map(|v| Tokenizer(RefCell::new(v)))
-        .map_err(|e| Error::new(error(), e.to_string()))
+        .map_err(convert_error)
+}
+
+fn convert_error(e: Box<dyn std::error::Error + Send + Sync>) -> Error {
+    Error::new(error(), e.to_string())
 }
 
 fn module() -> RModule {
