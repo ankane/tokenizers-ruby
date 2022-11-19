@@ -6,8 +6,6 @@ use tokenizers::models::bpe;
 use tokenizers::pre_tokenizers::bert;
 use tokenizers::{decoders, normalizers, tokenizer, AddedToken};
 
-pub const VERSION: &str = env!("CARGO_PKG_VERSION");
-
 #[magnus::wrap(class = "Tokenizers::Tokenizer")]
 pub struct Tokenizer(RefCell<tokenizer::Tokenizer>);
 
@@ -112,7 +110,7 @@ fn from_pretrained(
     let params = tokenizers::FromPretrainedParameters {
         revision,
         auth_token,
-        user_agent: [("bindings", "Ruby"), ("version", VERSION)]
+        user_agent: [("bindings", "Ruby".to_string()), ("version", module().const_get::<_, String>("VERSION").unwrap())]
             .iter()
             .map(|(k, v)| (k.to_string(), v.to_string()))
             .collect(),
