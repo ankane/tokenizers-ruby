@@ -44,10 +44,7 @@ impl Tokenizer {
     }
 
     pub fn decode(&self, ids: Vec<u32>) -> Result<String, Error> {
-        self.0
-            .borrow()
-            .decode(ids, true)
-            .map_err(convert_error)
+        self.0.borrow().decode(ids, true).map_err(convert_error)
     }
 
     pub fn set_decoder(&self, decoder: &BPEDecoder) {
