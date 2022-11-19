@@ -1,290 +1,144 @@
-#[macro_use]
-extern crate rutie;
-
-use rutie::{AnyException, AnyObject, Array, Integer, Module, Object, RString, VerifiedObject, VM};
-use tokenizers::decoders::bpe::BPEDecoder;
-use tokenizers::models::bpe::BPE;
-use tokenizers::normalizers::BertNormalizer;
-use tokenizers::pre_tokenizers::bert::BertPreTokenizer;
-use tokenizers::tokenizer::Tokenizer;
-use tokenizers::{decoders, AddedToken, Encoding};
+use magnus::{define_module, function, method, prelude::*, Error};
+use std::cell::RefCell;
+use tokenizers::models::bpe;
+use tokenizers::pre_tokenizers::bert;
+use tokenizers::{decoders, normalizers, tokenizer, AddedToken};
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
-wrappable_struct!(Tokenizer, TokenizerWrapper, TOKENIZER_WRAPPER);
-wrappable_struct!(BPE, BPEWrapper, BPE_WRAPPER);
-wrappable_struct!(Encoding, EncodingWrapper, ENCODING_WRAPPER);
-wrappable_struct!(BPEDecoder, BPEDecoderWrapper, BPE_DECODER_WRAPPER);
-wrappable_struct!(BertPreTokenizer, BertPreTokenizerWrapper, BERT_PRE_TOKENIZER_WRAPPER);
-wrappable_struct!(BertNormalizer, BertNormalizerWrapper, BERT_NORMALIZER_WRAPPER);
+#[magnus::wrap(class = "Tokenizers::Tokenizer")]
+pub struct Tokenizer(RefCell<tokenizer::Tokenizer>);
 
-module!(rbTokenizers);
+#[magnus::wrap(class = "Tokenizers::Encoding")]
+pub struct Encoding(tokenizers::Encoding);
 
-class!(rbBPE);
-class!(rbTokenizer);
-class!(rbEncoding);
-class!(rbBPEDecoder);
-class!(rbBertPreTokenizer);
-class!(rbBertNormalizer);
+#[magnus::wrap(class = "Tokenizers::BPE")]
+pub struct BPE(bpe::BPE);
 
-fn unwrap_object<T>(res: Result<T, AnyException>) -> T {
-    res.map_err(VM::raise_ex).unwrap()
-}
+#[magnus::wrap(class = "Tokenizers::BPEDecoder")]
+pub struct BPEDecoder(decoders::bpe::BPEDecoder);
 
-fn unwrap_optional<T>(res: Result<AnyObject, AnyException>) -> Option<T>
-where
-    T: VerifiedObject,
-{
-    let x = unwrap_object(res);
-    if x.is_nil() {
-        None
-    } else {
-        Some(unwrap_object(x.try_convert_to::<T>()))
+#[magnus::wrap(class = "Tokenizers::BertPreTokenizer")]
+pub struct BertPreTokenizer(bert::BertPreTokenizer);
+
+#[magnus::wrap(class = "Tokenizers::BertNormalizer")]
+pub struct BertNormalizer(normalizers::BertNormalizer);
+
+impl Tokenizer {
+    pub fn new(model: &BPE) -> Self {
+        Self(RefCell::new(tokenizers::Tokenizer::new(model.0.clone())))
+    }
+
+    pub fn add_special_tokens(&self, tokens: Vec<String>) {
+        let tokens: Vec<AddedToken> = tokens.iter().map(|t| AddedToken::from(t, true)).collect();
+        self.0.borrow_mut().add_special_tokens(&tokens);
+        // TODO return self
+    }
+
+    pub fn encode(&self, text: String) -> Result<Encoding, Error> {
+        self.0.borrow().encode(text, false).map(Encoding).map_err(|e| Error::runtime_error(e.to_string()))
+    }
+
+    pub fn decode(&self, ids: Vec<u32>) -> Result<String, Error> {
+        self.0.borrow().decode(ids, true).map_err(|e| Error::runtime_error(e.to_string()))
+    }
+
+    pub fn set_decoder(&self, decoder: &BPEDecoder) {
+        self.0.borrow_mut().with_decoder(decoder.0.clone());
+    }
+
+    pub fn set_pre_tokenizer(&self, pre_tokenizer: &BertPreTokenizer) {
+        self.0.borrow_mut().with_pre_tokenizer(pre_tokenizer.0);
+    }
+
+    pub fn set_normalizer(&self, normalizer: &BertNormalizer) {
+        self.0.borrow_mut().with_normalizer(normalizer.0);
     }
 }
 
-fn handle_error<T>(res: Result<T, Box<dyn std::error::Error + Send + Sync>>) -> T {
-    match res {
-        Ok(x) => x,
-        Err(e) => {
-            VM::raise(
-                Module::from_existing("Tokenizers").get_nested_class("Error"),
-                &e.to_string(),
-            );
-            unreachable!()
-        }
+impl Encoding {
+    pub fn ids(&self) -> Vec<u32> {
+        self.0.get_ids().into()
+    }
+
+    pub fn tokens(&self) -> Vec<String> {
+        self.0.get_tokens().into()
     }
 }
 
-methods!(
-    rbTokenizers,
-    _rtself,
-
-    fn tokenizers_from_pretrained(identifier: RString, revision: RString, auth_token: AnyObject) -> AnyObject {
-        let identifier = unwrap_object(identifier);
-        let revision = unwrap_object(revision);
-        let auth_token: Option<RString> = unwrap_optional(auth_token);
-
-        let params = tokenizers::FromPretrainedParameters {
-            revision: revision.to_string(),
-            auth_token: auth_token.map(|x| x.to_string()),
-            user_agent: [("bindings", "Ruby"), ("version", VERSION)]
-                .iter()
-                .map(|(k, v)| (k.to_string(), v.to_string()))
-                .collect(),
-        };
-
-        let tokenizer = handle_error(Tokenizer::from_pretrained(identifier.to_string(), Some(params)));
-        Module::from_existing("Tokenizers")
-            .get_nested_class("Tokenizer")
-            .wrap_data(tokenizer, &*TOKENIZER_WRAPPER)
-    }
-);
-
-methods!(
-    rbBPE,
-    _rtself,
-
-    fn bpe_new(vocab: RString, merges: RString) -> AnyObject {
-        let vocab = unwrap_object(vocab);
-        let merges = unwrap_object(merges);
-
-        let bpe = handle_error(BPE::from_file(&vocab.to_string(), &merges.to_string())
+impl BPE {
+    pub fn new(vocab: String, merges: String) -> Result<Self, Error> {
+        bpe::BPE::from_file(&vocab, &merges)
             .unk_token("<unk>".into())
             .end_of_word_suffix("</w>".into())
-            .build());
-
-        Module::from_existing("Tokenizers")
-            .get_nested_class("BPE")
-            .wrap_data(bpe, &*BPE_WRAPPER)
+            .build()
+            .map(BPE)
+            .map_err(|e| Error::runtime_error(e.to_string()))
     }
-);
+}
 
-methods!(
-    rbTokenizer,
-    _rtself,
-
-    fn tokenizer_new(model: AnyObject) -> AnyObject {
-        let model = unwrap_object(model);
-
-        // TODO support any model
-        let model = model.get_data(&*BPE_WRAPPER).clone();
-
-        let mut tokenizer = Tokenizer::new(model);
-
-        Module::from_existing("Tokenizers")
-            .get_nested_class("Tokenizer")
-            .wrap_data(tokenizer, &*TOKENIZER_WRAPPER)
+impl BPEDecoder {
+    pub fn new() -> Self {
+        BPEDecoder(decoders::bpe::BPEDecoder::default())
     }
-);
+}
 
-methods!(
-    rbTokenizer,
-    rtself,
-
-    fn tokenizer_add_special_tokens(tokens: Array) -> rbTokenizer {
-        let tokenizer = rtself.get_data_mut(&*TOKENIZER_WRAPPER);
-        let tokens = unwrap_object(tokens);
-
-        let mut vec = Vec::new();
-        for token in tokens.into_iter() {
-            vec.push(AddedToken::from(unwrap_object(token.try_convert_to::<RString>()).to_string(), true));
-        }
-        tokenizer.add_special_tokens(&vec);
-        rtself
+impl BertPreTokenizer {
+    pub fn new() -> Self {
+        BertPreTokenizer(bert::BertPreTokenizer)
     }
+}
 
-    fn tokenizer_encode(text: RString) -> AnyObject {
-        let tokenizer = rtself.get_data(&*TOKENIZER_WRAPPER);
-        let text = unwrap_object(text);
-
-        let encoding = handle_error(tokenizer.encode(text.to_string(), false));
-        Module::from_existing("Tokenizers")
-            .get_nested_class("Encoding")
-            .wrap_data(encoding, &*ENCODING_WRAPPER)
+impl BertNormalizer {
+    pub fn new() -> Self {
+        BertNormalizer(normalizers::BertNormalizer::default())
     }
+}
 
-    fn tokenizer_decode(ids: Array) -> RString {
-        let tokenizer = rtself.get_data(&*TOKENIZER_WRAPPER);
-        let ids = unwrap_object(ids);
+fn from_pretrained(identifier: String, revision: String, auth_token: Option<String>) -> Result<Tokenizer, Error> {
+    let params = tokenizers::FromPretrainedParameters {
+        revision,
+        auth_token,
+        user_agent: [("bindings", "Ruby"), ("version", VERSION)]
+            .iter()
+            .map(|(k, v)| (k.to_string(), v.to_string()))
+            .collect(),
+    };
 
-        let mut vec = Vec::new();
-        for item in ids.into_iter() {
-            vec.push(unwrap_object(item.try_convert_to::<Integer>()).into());
-        }
-        let s = handle_error(tokenizer.decode(vec, true));
-        RString::new_utf8(&s)
-    }
+    tokenizer::Tokenizer::from_pretrained(identifier, Some(params))
+        .map(|v| Tokenizer(RefCell::new(v)))
+        .map_err(|e| Error::runtime_error(e.to_string()))
+}
 
-    fn tokenizer_decoder_set(decoder: AnyObject) -> AnyObject {
-        let tokenizer = rtself.get_data_mut(&*TOKENIZER_WRAPPER);
-        let decoder = unwrap_object(decoder);
+#[magnus::init]
+fn init() -> Result<(), Error> {
+    let module = define_module("Tokenizers")?;
+    module.define_singleton_method("_from_pretrained", function!(from_pretrained, 3))?;
 
-        tokenizer.with_decoder(decoder.get_data(&*BPE_DECODER_WRAPPER).clone());
-        decoder
-    }
+    let class = module.define_class("BPE", Default::default())?;
+    class.define_singleton_method("new", function!(BPE::new, 2))?;
 
-    fn tokenizer_pre_tokenizer_set(pre_tokenizer: AnyObject) -> AnyObject {
-        let tokenizer = rtself.get_data_mut(&*TOKENIZER_WRAPPER);
-        let pre_tokenizer = unwrap_object(pre_tokenizer);
+    let class = module.define_class("Tokenizer", Default::default())?;
+    class.define_singleton_method("new", function!(Tokenizer::new, 1))?;
+    class.define_method("add_special_tokens", method!(Tokenizer::add_special_tokens, 1))?;
+    class.define_method("encode", method!(Tokenizer::encode, 1))?;
+    class.define_method("decode", method!(Tokenizer::decode, 1))?;
+    class.define_method("decoder=", method!(Tokenizer::set_decoder, 1))?;
+    class.define_method("pre_tokenizer=", method!(Tokenizer::set_pre_tokenizer, 1))?;
+    class.define_method("normalizer=", method!(Tokenizer::set_normalizer, 1))?;
 
-        tokenizer.with_pre_tokenizer(*pre_tokenizer.get_data(&*BERT_PRE_TOKENIZER_WRAPPER));
-        pre_tokenizer
-    }
+    let class = module.define_class("Encoding", Default::default())?;
+    class.define_method("ids", method!(Encoding::ids, 0))?;
+    class.define_method("tokens", method!(Encoding::tokens, 0))?;
 
-    fn tokenizer_normalizer_set(normalizer: AnyObject) -> AnyObject {
-        let tokenizer = rtself.get_data_mut(&*TOKENIZER_WRAPPER);
-        let normalizer = unwrap_object(normalizer);
+    let class = module.define_class("BPEDecoder", Default::default())?;
+    class.define_singleton_method("new", function!(BPEDecoder::new, 0))?;
 
-        tokenizer.with_normalizer(*normalizer.get_data(&*BERT_NORMALIZER_WRAPPER));
-        normalizer
-    }
-);
+    let class = module.define_class("BertPreTokenizer", Default::default())?;
+    class.define_singleton_method("new", function!(BertPreTokenizer::new, 0))?;
 
-methods!(
-    rbEncoding,
-    rtself,
+    let class = module.define_class("BertNormalizer", Default::default())?;
+    class.define_singleton_method("new", function!(BertNormalizer::new, 0))?;
 
-    fn encoding_ids() -> Array {
-        let encoding = rtself.get_data(&*ENCODING_WRAPPER);
-
-        let mut array = Array::new();
-        for x in encoding.get_ids() {
-            array.push(Integer::from(*x));
-        }
-        array
-    }
-
-    fn encoding_tokens() -> Array {
-        let encoding = rtself.get_data(&*ENCODING_WRAPPER);
-
-        let mut array = Array::new();
-        for x in encoding.get_tokens() {
-            array.push(RString::new_utf8(x));
-        }
-        array
-    }
-);
-
-methods!(
-    rbBPEDecoder,
-    _rtself,
-
-    fn bpe_decoder_new() -> AnyObject {
-        let decoder = decoders::bpe::BPEDecoder::default();
-        Module::from_existing("Tokenizers")
-            .get_nested_class("BPEDecoder")
-            .wrap_data(decoder, &*BPE_DECODER_WRAPPER)
-    }
-);
-
-methods!(
-    rbBertPreTokenizer,
-    _rtself,
-
-    fn bert_pre_tokenizer_new() -> AnyObject {
-        let pre_tokenizer = BertPreTokenizer;
-        Module::from_existing("Tokenizers")
-            .get_nested_class("BertPreTokenizer")
-            .wrap_data(pre_tokenizer, &*BERT_PRE_TOKENIZER_WRAPPER)
-    }
-);
-
-methods!(
-    rbBertNormalizer,
-    _rtself,
-
-    fn bert_normalizer_new() -> AnyObject {
-        let normalizer = BertNormalizer::default();
-        Module::from_existing("Tokenizers")
-            .get_nested_class("BertNormalizer")
-            .wrap_data(normalizer, &*BERT_NORMALIZER_WRAPPER)
-    }
-);
-
-#[allow(non_snake_case)]
-#[no_mangle]
-pub extern "C" fn Init_tokenizers() {
-    let mut m = Module::new("Tokenizers");
-
-    m.define(|klass| {
-        klass.def_self("_from_pretrained", tokenizers_from_pretrained);
-        klass.define_nested_class("BPE", None);
-        klass.define_nested_class("Tokenizer", None);
-        klass.define_nested_class("Encoding", None);
-        klass.define_nested_class("BPEDecoder", None);
-        klass.define_nested_class("BertPreTokenizer", None);
-        klass.define_nested_class("BertNormalizer", None);
-    });
-
-    m.get_nested_class("BPE").define(|klass| {
-        klass.def_self("new", bpe_new);
-    });
-
-    m.get_nested_class("Tokenizer").define(|klass| {
-        klass.def_self("new", tokenizer_new);
-        klass.def("add_special_tokens", tokenizer_add_special_tokens);
-        klass.def("encode", tokenizer_encode);
-        klass.def("decode", tokenizer_decode);
-        klass.def("decoder=", tokenizer_decoder_set);
-        klass.def("pre_tokenizer=", tokenizer_pre_tokenizer_set);
-        klass.def("normalizer=", tokenizer_normalizer_set);
-    });
-
-    m.get_nested_class("Encoding").define(|klass| {
-        klass.def("ids", encoding_ids);
-        klass.def("tokens", encoding_tokens);
-    });
-
-    m.get_nested_class("BPEDecoder").define(|klass| {
-        klass.def_self("new", bpe_decoder_new);
-    });
-
-    m.get_nested_class("BertPreTokenizer").define(|klass| {
-        klass.def_self("new", bert_pre_tokenizer_new);
-    });
-
-    m.get_nested_class("BertNormalizer").define(|klass| {
-        klass.def_self("new", bert_normalizer_new);
-    });
+    Ok(())
 }
