@@ -1,4 +1,4 @@
-use magnus::{define_module, function, method, prelude::*, Error};
+use magnus::{define_module, exception, function, memoize, method, prelude::*, Error, ExceptionClass, RModule};
 use std::cell::RefCell;
 use tokenizers::models::bpe;
 use tokenizers::pre_tokenizers::bert;
@@ -36,11 +36,11 @@ impl Tokenizer {
     }
 
     pub fn encode(&self, text: String) -> Result<Encoding, Error> {
-        self.0.borrow().encode(text, false).map(Encoding).map_err(|e| Error::runtime_error(e.to_string()))
+        self.0.borrow().encode(text, false).map(Encoding).map_err(|e| Error::new(error(), e.to_string()))
     }
 
     pub fn decode(&self, ids: Vec<u32>) -> Result<String, Error> {
-        self.0.borrow().decode(ids, true).map_err(|e| Error::runtime_error(e.to_string()))
+        self.0.borrow().decode(ids, true).map_err(|e| Error::new(error(), e.to_string()))
     }
 
     pub fn set_decoder(&self, decoder: &BPEDecoder) {
@@ -73,7 +73,7 @@ impl BPE {
             .end_of_word_suffix("</w>".into())
             .build()
             .map(BPE)
-            .map_err(|e| Error::runtime_error(e.to_string()))
+            .map_err(|e| Error::new(error(), e.to_string()))
     }
 }
 
@@ -107,12 +107,20 @@ fn from_pretrained(identifier: String, revision: String, auth_token: Option<Stri
 
     tokenizer::Tokenizer::from_pretrained(identifier, Some(params))
         .map(|v| Tokenizer(RefCell::new(v)))
-        .map_err(|e| Error::runtime_error(e.to_string()))
+        .map_err(|e| Error::new(error(), e.to_string()))
+}
+
+fn module() -> RModule {
+    *memoize!(RModule: define_module("Tokenizers").unwrap())
+}
+
+fn error() -> ExceptionClass {
+    *memoize!(ExceptionClass: module().define_error("Error", exception::standard_error()).unwrap())
 }
 
 #[magnus::init]
 fn init() -> Result<(), Error> {
-    let module = define_module("Tokenizers")?;
+    let module = module();
     module.define_singleton_method("_from_pretrained", function!(from_pretrained, 3))?;
 
     let class = module.define_class("BPE", Default::default())?;
