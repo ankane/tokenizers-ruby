@@ -107,7 +107,7 @@ fn from_pretrained(
     revision: String,
     auth_token: Option<String>,
 ) -> Result<Tokenizer, Error> {
-    let version: String = module().const_get("VERSION").unwrap();
+    let version = module().const_get("VERSION").unwrap();
     let params = tokenizers::FromPretrainedParameters {
         revision,
         auth_token,
