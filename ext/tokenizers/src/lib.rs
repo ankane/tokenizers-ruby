@@ -107,10 +107,11 @@ fn from_pretrained(
     revision: String,
     auth_token: Option<String>,
 ) -> Result<Tokenizer, Error> {
+    let version: String = module().const_get("VERSION").unwrap();
     let params = tokenizers::FromPretrainedParameters {
         revision,
         auth_token,
-        user_agent: [("bindings", "Ruby".to_string()), ("version", module().const_get::<_, String>("VERSION").unwrap())]
+        user_agent: [("bindings", "Ruby".to_string()), ("version", version)]
             .iter()
             .map(|(k, v)| (k.to_string(), v.to_string()))
             .collect(),
