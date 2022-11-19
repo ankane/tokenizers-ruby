@@ -1,4 +1,6 @@
-use magnus::{define_module, exception, function, memoize, method, prelude::*, Error, ExceptionClass, RModule};
+use magnus::{
+    define_module, exception, function, memoize, method, prelude::*, Error, ExceptionClass, RModule,
+};
 use std::cell::RefCell;
 use tokenizers::models::bpe;
 use tokenizers::pre_tokenizers::bert;
@@ -36,11 +38,18 @@ impl Tokenizer {
     }
 
     pub fn encode(&self, text: String) -> Result<Encoding, Error> {
-        self.0.borrow().encode(text, false).map(Encoding).map_err(|e| Error::new(error(), e.to_string()))
+        self.0
+            .borrow()
+            .encode(text, false)
+            .map(Encoding)
+            .map_err(|e| Error::new(error(), e.to_string()))
     }
 
     pub fn decode(&self, ids: Vec<u32>) -> Result<String, Error> {
-        self.0.borrow().decode(ids, true).map_err(|e| Error::new(error(), e.to_string()))
+        self.0
+            .borrow()
+            .decode(ids, true)
+            .map_err(|e| Error::new(error(), e.to_string()))
     }
 
     pub fn set_decoder(&self, decoder: &BPEDecoder) {
@@ -95,7 +104,11 @@ impl BertNormalizer {
     }
 }
 
-fn from_pretrained(identifier: String, revision: String, auth_token: Option<String>) -> Result<Tokenizer, Error> {
+fn from_pretrained(
+    identifier: String,
+    revision: String,
+    auth_token: Option<String>,
+) -> Result<Tokenizer, Error> {
     let params = tokenizers::FromPretrainedParameters {
         revision,
         auth_token,
@@ -128,7 +141,10 @@ fn init() -> Result<(), Error> {
 
     let class = module.define_class("Tokenizer", Default::default())?;
     class.define_singleton_method("new", function!(Tokenizer::new, 1))?;
-    class.define_method("add_special_tokens", method!(Tokenizer::add_special_tokens, 1))?;
+    class.define_method(
+        "add_special_tokens",
+        method!(Tokenizer::add_special_tokens, 1),
+    )?;
     class.define_method("encode", method!(Tokenizer::encode, 1))?;
     class.define_method("decode", method!(Tokenizer::decode, 1))?;
     class.define_method("decoder=", method!(Tokenizer::set_decoder, 1))?;
