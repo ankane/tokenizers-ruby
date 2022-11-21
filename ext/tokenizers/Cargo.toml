@@ -11,3 +11,6 @@ crate-type = ["cdylib"]
 [dependencies]
 magnus = "0.4"
 tokenizers = "0.13.2"
+
+[profile.release]
+strip = true
