@@ -1,0 +1,5 @@
+[workspace]
+members = ["ext/tokenizers"]
+
+[profile.release]
+strip = true
