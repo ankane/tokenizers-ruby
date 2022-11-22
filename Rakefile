@@ -8,13 +8,12 @@ Rake::TestTask.new do |t|
   t.pattern = "test/**/*_test.rb"
 end
 
-Rake::ExtensionTask.new("ext") do |ext|
-  ext.ext_dir = "."
+Rake::ExtensionTask.new("tokenizers") do |ext|
   ext.lib_dir = "lib/tokenizers"
 end
 
 task :remove_ext do
-  path = "lib/tokenizers/ext.bundle"
+  path = "lib/tokenizers/tokenizers.bundle"
   File.unlink(path) if File.exist?(path)
 end
 

@@ -1,5 +1,5 @@
 # ext
-require "tokenizers/ext"
+require "tokenizers/tokenizers"
 
 # modules
 require "tokenizers/char_bpe_tokenizer"
