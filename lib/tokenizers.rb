@@ -1,4 +1,4 @@
-# extlib
+# ext
 require "tokenizers/tokenizers"
 
 # modules
