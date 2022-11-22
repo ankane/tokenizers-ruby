@@ -8,7 +8,7 @@ Rake::TestTask.new do |t|
   t.pattern = "test/**/*_test.rb"
 end
 
-Rake::ExtensionTask.new("tokenizers") do |ext|
+Rake::ExtensionTask.new("ext") do |ext|
   ext.ext_dir = "."
   ext.lib_dir = "lib/tokenizers"
 end
