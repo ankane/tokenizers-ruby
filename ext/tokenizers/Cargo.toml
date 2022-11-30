@@ -10,4 +10,8 @@ crate-type = ["cdylib"]
 
 [dependencies]
 magnus = "0.4"
-tokenizers = "0.13.2"
+
+[dependencies.tokenizers]
+version = "0.13.2"
+default-features = false
+features = ["progressbar", "http", "onig", "esaxx_fast"]
