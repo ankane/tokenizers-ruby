@@ -1,0 +1,31 @@
+name: release
+on: workflow_dispatch
+jobs:
+  release:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: x86_64-linux
+            target: x86_64-unknown-linux-gnu
+          # requires openssl
+          # - platform: aarch64-linux
+          #   target: aarch64-unknown-linux-gnu
+          - platform: x86_64-darwin
+            target: x86_64-apple-darwin
+          - platform: arm64-darwin
+            target: aarch64-apple-darwin
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: |
+          cargo install --git https://github.com/ankane/cargo-3pl
+          cargo 3pl --target ${{ matrix.target }} --require-files > LICENSE-THIRD-PARTY.txt
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.1
+      - uses: oxidize-rb/cross-gem-action@v7
+        with:
+          platform: ${{ matrix.platform }}
+          version: latest
+          ruby-versions: "3.1,3.0,2.7"

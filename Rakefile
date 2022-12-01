@@ -8,8 +8,22 @@ Rake::TestTask.new do |t|
   t.pattern = "test/**/*_test.rb"
 end
 
-Rake::ExtensionTask.new("tokenizers") do |ext|
+platforms = [
+  "x86_64-linux",
+  "aarch64-linux",
+  "x86_64-darwin",
+  "arm64-darwin"
+]
+
+gemspec = Bundler.load_gemspec("tokenizers.gemspec")
+Rake::ExtensionTask.new("tokenizers", gemspec) do |ext|
   ext.lib_dir = "lib/tokenizers"
+  ext.cross_compile = true
+  ext.cross_platform = platforms
+  ext.cross_compiling do |spec|
+    spec.dependencies.reject! { |dep| dep.name == "rb_sys" }
+    spec.files.reject! { |file| File.fnmatch?("ext/*", file, File::FNM_EXTGLOB) }
+  end
 end
 
 task :remove_ext do

@@ -1,5 +1,9 @@
 # ext
-require "tokenizers/tokenizers"
+begin
+  require "tokenizers/#{RUBY_VERSION.to_f}/tokenizers"
+rescue LoadError
+  require "tokenizers/tokenizers"
+end
 
 # modules
 require "tokenizers/char_bpe_tokenizer"
