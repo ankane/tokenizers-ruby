@@ -1,6 +1,6 @@
 ## 0.2.0 (unreleased)
 
-- Switched to `rb_sys` gem for building
+- Switched to `rb_sys` gem for building extension
 - Updated Tokenizers to 0.13.2
 - Updated Rust edition to 2021
 
