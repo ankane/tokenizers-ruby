@@ -1,4 +1,4 @@
-## 0.2.0 (unreleased)
+## 0.2.0 (2022-12-11)
 
 - Added precompiled gems for Linux x86-64 and Mac
 - Switched to `rb_sys` gem for building extension

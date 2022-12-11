@@ -1457,7 +1457,7 @@ checksum = "cda74da7e1a664f795bb1f8a87ec406fb89a02522cf6e50620d016add6dbbf5c"
 
 [[package]]
 name = "tokenizers"
-version = "0.1.3"
+version = "0.2.0"
 dependencies = [
  "magnus",
  "tokenizers 0.13.2",
