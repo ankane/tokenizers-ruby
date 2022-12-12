@@ -12,7 +12,9 @@ platforms = [
   "x86_64-linux",
   "aarch64-linux",
   "x86_64-darwin",
-  "arm64-darwin"
+  "arm64-darwin",
+  "x64-mingw-ucrt",
+  "x64-mingw32"
 ]
 
 gemspec = Bundler.load_gemspec("tokenizers.gemspec")
