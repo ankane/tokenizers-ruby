@@ -1097,18 +1097,18 @@ dependencies = [
 
 [[package]]
 name = "rb-sys"
-version = "0.9.46"
+version = "0.9.47"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b9f1cfd225389bd9333d93d393d0feeeacd191d97f9b1c881528ac1233c67f0f"
+checksum = "7d86d0f559ce8a03ea40fa2eddd30136de378d34134a820285520bcb63fcb5f9"
 dependencies = [
  "rb-sys-build",
 ]
 
 [[package]]
 name = "rb-sys-build"
-version = "0.9.46"
+version = "0.9.47"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fad39a523a00dc5d4f6dcec077568d985807aa5bd03204a0ddf7c1f36544289c"
+checksum = "be692af0106d39db0425a871a3408a3ab21599ce94269ce4a1704221de03cae6"
 dependencies = [
  "bindgen",
  "regex",
@@ -1118,7 +1118,7 @@ dependencies = [
 [[package]]
 name = "rb-sys-env"
 version = "0.1.1"
-source = "git+https://github.com/oxidize-rb/rb-sys#f84304720fd4a60df93669e4790c14dd227f1e2e"
+source = "git+https://github.com/oxidize-rb/rb-sys#321345004a55277ead70780eaf2f5493cc501aeb"
 
 [[package]]
 name = "redox_syscall"
