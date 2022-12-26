@@ -1,3 +1,7 @@
+## 0.2.1 (unreleased)
+
+- Added support for Ruby 3.2
+
 ## 0.2.0 (2022-12-11)
 
 - Added precompiled gems for Linux x86-64 and Mac

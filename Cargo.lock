@@ -782,9 +782,9 @@ checksum = "58093314a45e00c77d5c508f76e77c3396afbbc0d01506e7fae47b018bac2b1d"
 
 [[package]]
 name = "magnus"
-version = "0.4.2"
+version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a5f7b798b39aaa0781f3c34f5c8d510d0990b43f8ff6fbd20709d1edfbac5201"
+checksum = "fc87660cd7daa49fddbfd524c836de54d5c927d520cd163f43700c5087c57d6c"
 dependencies = [
  "magnus-macros",
  "rb-sys",
@@ -793,8 +793,9 @@ dependencies = [
 
 [[package]]
 name = "magnus-macros"
-version = "0.2.0"
-source = "git+https://github.com/matsadler/magnus#0ccc4cb4b0f3e054ad71356fcae2f1f8ba4aa385"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "206cb23bfeea05180c97522ef6a3e52a4eb17b0ed2f30ee3ca9c4f994d2378ae"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1097,18 +1098,18 @@ dependencies = [
 
 [[package]]
 name = "rb-sys"
-version = "0.9.47"
+version = "0.9.53"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7d86d0f559ce8a03ea40fa2eddd30136de378d34134a820285520bcb63fcb5f9"
+checksum = "aa291f69bcc44f8e96597a3f39e9933fde6977b825415cfaa670ac49b8ab7c99"
 dependencies = [
  "rb-sys-build",
 ]
 
 [[package]]
 name = "rb-sys-build"
-version = "0.9.47"
+version = "0.9.53"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "be692af0106d39db0425a871a3408a3ab21599ce94269ce4a1704221de03cae6"
+checksum = "d998fd6ef588471d6d7cca24c4da88eda5e6757b6885c55760e856ecdb254c3d"
 dependencies = [
  "bindgen",
  "regex",
