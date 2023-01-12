@@ -1,6 +1,7 @@
 [package]
 name = "tokenizers"
 version = "0.2.0"
+license = "Apache-2.0"
 authors = ["Andrew Kane <andrew@ankane.org>"]
 edition = "2021"
 publish = false
