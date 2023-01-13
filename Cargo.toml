@@ -7,4 +7,3 @@ strip = true
 [patch.crates-io]
 number_prefix = { git = "https://github.com/ankane/rust-number-prefix", branch = "license-file" }
 rb-sys-env = { git = "https://github.com/oxidize-rb/rb-sys" }
-tokenizers = { git = "https://github.com/huggingface/tokenizers" }

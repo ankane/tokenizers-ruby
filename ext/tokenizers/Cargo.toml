@@ -10,9 +10,9 @@ publish = false
 crate-type = ["cdylib"]
 
 [dependencies]
-magnus = "0.4"
+magnus = { git = "https://github.com/matsadler/magnus" }
 
 [dependencies.tokenizers]
-version = "0.13.2"
+git = "https://github.com/huggingface/tokenizers"
 default-features = false
 features = ["progressbar", "http", "onig", "esaxx_fast"]
