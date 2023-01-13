@@ -13,6 +13,7 @@ crate-type = ["cdylib"]
 magnus = { git = "https://github.com/matsadler/magnus" }
 
 [dependencies.tokenizers]
-version = "0.13.2"
+git = "https://github.com/ankane/tokenizers"
+branch = "rustls"
 default-features = false
 features = ["progressbar", "http", "onig", "esaxx_fast"]
