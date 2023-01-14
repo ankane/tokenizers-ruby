@@ -24,8 +24,8 @@ Encode
 
 ```ruby
 encoded = tokenizer.encode("I can feel the magic, can you?")
-encoded.ids
 encoded.tokens
+encoded.ids
 ```
 
 Decode
