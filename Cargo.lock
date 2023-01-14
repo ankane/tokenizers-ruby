@@ -957,7 +957,8 @@ checksum = "17b02fc0ff9a9e4b35b3342880f48e896ebf69f2967921fe8646bf5b7125956a"
 [[package]]
 name = "number_prefix"
 version = "0.4.0"
-source = "git+https://github.com/ankane/rust-number-prefix?branch=license-file#ce5a6a760b04c0f309e6d8fd7f72f5906c89723d"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "830b246a0e5f20af87141b25c173cd1b609bd7779a4617d6ec582abaf90870f3"
 
 [[package]]
 name = "once_cell"
@@ -1207,7 +1208,8 @@ dependencies = [
 [[package]]
 name = "rb-sys-env"
 version = "0.1.1"
-source = "git+https://github.com/oxidize-rb/rb-sys#31a29ba1ba640677ea0c45ddb0485fc201e72334"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "74c38752410925faeb82c400c06ba2fd9ee6aa8f719dd33994c9e53f5242d25f"
 
 [[package]]
 name = "redox_syscall"
