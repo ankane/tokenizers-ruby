@@ -1,5 +1,6 @@
 use magnus::Module;
 use std::cell::RefCell;
+use std::path::PathBuf;
 use tk::tokenizer::Tokenizer;
 use tk::AddedToken;
 
@@ -38,6 +39,14 @@ impl RbTokenizer {
         };
 
         Tokenizer::from_pretrained(identifier, Some(params))
+            .map(|v| RbTokenizer {
+                tokenizer: RefCell::new(v),
+            })
+            .map_err(RbError::from)
+    }
+
+    pub fn from_file(path: PathBuf) -> RbResult<Self> {
+        Tokenizer::from_file(path)
             .map(|v| RbTokenizer {
                 tokenizer: RefCell::new(v),
             })

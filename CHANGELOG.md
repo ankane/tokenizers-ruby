@@ -1,3 +1,7 @@
+## 0.2.2 (unreleased)
+
+- Added `from_file` method
+
 ## 0.2.1 (2022-01-12)
 
 - Added support for Ruby 3.2
