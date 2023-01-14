@@ -11,11 +11,9 @@ crate-type = ["cdylib"]
 
 [dependencies]
 magnus = "0.4"
+native-tls = { version = "0.2", features = ["vendored"] }
 
 [dependencies.tokenizers]
 git = "https://github.com/huggingface/tokenizers"
 default-features = false
 features = ["progressbar", "http", "onig", "esaxx_fast"]
-
-[target.'cfg(target_os = "linux")'.dependencies]
-openssl = { version = "0.10", features = ["vendored"] }

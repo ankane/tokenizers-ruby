@@ -1592,7 +1592,7 @@ name = "tokenizers"
 version = "0.2.1"
 dependencies = [
  "magnus",
- "openssl",
+ "native-tls",
  "tokenizers 0.13.2",
 ]
 
