@@ -37,7 +37,7 @@ jobs:
         with:
           platform: ${{ matrix.platform }}
           version: latest
-          ruby-versions: "3.2"
+          ruby-versions: "3.2,3.1"
           setup: |
             bundle install
             ${{ matrix.setup }}
