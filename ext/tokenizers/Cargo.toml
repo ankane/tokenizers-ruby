@@ -13,7 +13,9 @@ crate-type = ["cdylib"]
 magnus = "0.4"
 
 [dependencies.tokenizers]
-git = "https://github.com/ankane/tokenizers"
-branch = "rustls"
+git = "https://github.com/huggingface/tokenizers"
 default-features = false
 features = ["progressbar", "http", "onig", "esaxx_fast"]
+
+[target.'cfg(target_os = "linux")'.dependencies]
+openssl = { version = "0.10", features = ["vendored"] }
