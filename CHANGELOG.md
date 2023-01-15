@@ -1,5 +1,6 @@
 ## 0.2.2 (unreleased)
 
+- Added precompiled gem for Linux ARM
 - Added `from_file` method
 
 ## 0.2.1 (2022-01-12)

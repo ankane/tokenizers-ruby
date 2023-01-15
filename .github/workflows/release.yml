@@ -8,9 +8,9 @@ jobs:
         include:
           - platform: x86_64-linux
             target: x86_64-unknown-linux-gnu
-          # - platform: aarch64-linux
-          #   target: aarch64-unknown-linux-gnu
-          #   setup: sudo ln -s /usr/bin/aarch64-linux-gnu-strip /usr/local/bin/strip
+          - platform: aarch64-linux
+            target: aarch64-unknown-linux-gnu
+            setup: sudo ln -s /usr/bin/aarch64-linux-gnu-strip /usr/local/bin/strip
           - platform: x86_64-darwin
             target: x86_64-apple-darwin
             setup: sudo ln -s /opt/osxcross/target/bin/x86_64-apple-darwin-strip /usr/local/bin/strip
