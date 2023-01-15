@@ -2,6 +2,7 @@
 
 - Added precompiled gem for Linux ARM
 - Added `from_file` method
+- Fixed error with precompiled gem on Linux x86-64
 
 ## 0.2.1 (2022-01-12)
 
