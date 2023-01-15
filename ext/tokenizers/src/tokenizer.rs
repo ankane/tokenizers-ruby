@@ -1,4 +1,3 @@
-use magnus::Module;
 use std::cell::RefCell;
 use std::path::PathBuf;
 use tk::tokenizer::Tokenizer;
@@ -9,7 +8,7 @@ use super::encoding::RbEncoding;
 use super::models::RbBPE;
 use super::normalizers::RbBertNormalizer;
 use super::pre_tokenizers::RbBertPreTokenizer;
-use super::{module, RbError, RbResult};
+use super::{RbError, RbResult};
 
 #[magnus::wrap(class = "Tokenizers::Tokenizer")]
 pub struct RbTokenizer {
@@ -21,28 +20,6 @@ impl RbTokenizer {
         Self {
             tokenizer: RefCell::new(Tokenizer::new(model.model.clone())),
         }
-    }
-
-    pub fn from_pretrained(
-        identifier: String,
-        revision: String,
-        auth_token: Option<String>,
-    ) -> RbResult<Self> {
-        let version = module().const_get("VERSION").unwrap();
-        let params = tk::FromPretrainedParameters {
-            revision,
-            auth_token,
-            user_agent: [("bindings", "Ruby".to_string()), ("version", version)]
-                .iter()
-                .map(|(k, v)| (k.to_string(), v.to_string()))
-                .collect(),
-        };
-
-        Tokenizer::from_pretrained(identifier, Some(params))
-            .map(|v| RbTokenizer {
-                tokenizer: RefCell::new(v),
-            })
-            .map_err(RbError::from)
     }
 
     pub fn from_file(path: PathBuf) -> RbResult<Self> {

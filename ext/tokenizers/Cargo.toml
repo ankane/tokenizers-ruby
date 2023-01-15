@@ -13,6 +13,7 @@ crate-type = ["cdylib"]
 magnus = "0.4"
 
 [dependencies.tokenizers]
+version = "0.13.2" # also update in from_pretrained.rb
 git = "https://github.com/huggingface/tokenizers"
 default-features = false
-features = ["progressbar", "http", "onig", "esaxx_fast"]
+features = ["progressbar", "onig", "esaxx_fast"]

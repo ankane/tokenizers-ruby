@@ -27,10 +27,6 @@ fn module() -> RModule {
 #[magnus::init]
 fn init() -> RbResult<()> {
     let module = module();
-    module.define_singleton_method(
-        "_from_pretrained",
-        function!(RbTokenizer::from_pretrained, 3),
-    )?;
     module.define_singleton_method("from_file", function!(RbTokenizer::from_file, 1))?;
 
     let class = module.define_class("BPE", Default::default())?;

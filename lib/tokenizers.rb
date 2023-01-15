@@ -7,12 +7,11 @@ end
 
 # modules
 require "tokenizers/char_bpe_tokenizer"
+require "tokenizers/from_pretrained"
 require "tokenizers/version"
 
 module Tokenizers
   class Error < StandardError; end
 
-  def self.from_pretrained(identifier, revision: "main", auth_token: nil)
-    _from_pretrained(identifier, revision, auth_token)
-  end
+  extend FromPretrained
 end
