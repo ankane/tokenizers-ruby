@@ -36,10 +36,10 @@ impl RbTokenizer {
         // TODO return self
     }
 
-    pub fn encode(&self, text: String) -> RbResult<RbEncoding> {
+    pub fn encode(&self, sequence: String, add_special_tokens: bool) -> RbResult<RbEncoding> {
         self.tokenizer
             .borrow()
-            .encode(text, false)
+            .encode(sequence, add_special_tokens)
             .map(|v| RbEncoding { encoding: v })
             .map_err(RbError::from)
     }

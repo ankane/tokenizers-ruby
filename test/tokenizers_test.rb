@@ -39,6 +39,13 @@ class TokenizersTest < Minitest::Test
     assert_equal "Model \"bad\" on the Hub doesn't have a tokenizer", error.message
   end
 
+  def test_add_special_tokens
+     tokenizer = Tokenizers.from_pretrained("bert-base-cased")
+     encoded = tokenizer.encode("I can feel the magic, can you?", add_special_tokens: true)
+     expected = ["[CLS]", "I", "can", "feel", "the", "magic", ",", "can", "you", "?", "[SEP]"]
+     assert_equal expected, encoded.tokens
+  end
+
   def test_char_bpe_tokenizer
     vocab = "test/support/roberta-base-vocab.json"
     merges = "test/support/roberta-base-merges.txt"
