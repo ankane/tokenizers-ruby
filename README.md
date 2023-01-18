@@ -23,7 +23,7 @@ tokenizer = Tokenizers.from_pretrained("bert-base-cased")
 Encode
 
 ```ruby
-encoded = tokenizer.encode("I can feel the magic, can you?", add_special_tokens: true)
+encoded = tokenizer.encode("I can feel the magic, can you?")
 encoded.tokens
 encoded.ids
 ```
