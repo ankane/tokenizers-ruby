@@ -13,4 +13,8 @@ impl RbEncoding {
     pub fn tokens(&self) -> Vec<String> {
         self.encoding.get_tokens().into()
     }
+
+    pub fn word_ids(&self) -> Vec<Option<u32>> {
+        self.encoding.get_word_ids().into()
+    }
 }

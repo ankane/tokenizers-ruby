@@ -1,7 +1,7 @@
 require_relative "test_helper"
 
 class TokenizersTest < Minitest::Test
-  def test_from_pretrained
+  def test_from_pretrained_bert
     tokenizer = Tokenizers.from_pretrained("bert-base-cased")
 
     # encode
@@ -13,6 +13,23 @@ class TokenizersTest < Minitest::Test
 
     # decode
     assert_equal "I can feel the magic, can you?", tokenizer.decode(encoded.ids)
+  end
+
+  def test_from_pretrained_gpt2
+    tokenizer = Tokenizers.from_pretrained("gpt2")
+
+    # encode
+    encoded = tokenizer.encode("Mythological creatures like the mighty gryphon inspire awe!")
+    expected_ids = [41444, 2770, 8109, 588, 262, 18680, 308, 563, 746, 261, 18330, 25030, 0]
+    expected_tokens = ["Myth", "ological", "Ġcreatures", "Ġlike", "Ġthe", "Ġmighty", "Ġg", "ry", "ph", "on", "Ġinspire", "Ġawe", "!"]
+    expected_word_ids = [0, 0, 1, 2, 3, 4, 5, 5, 5, 5, 6, 7, 8]
+
+    assert_equal expected_ids, encoded.ids
+    assert_equal expected_tokens, encoded.tokens
+    assert_equal expected_word_ids, encoded.word_ids
+
+    # decode
+    assert_equal "Mythological creatures like the mighty gryphon inspire awe!", tokenizer.decode(encoded.ids)
   end
 
   def test_from_pretrained_bad_identifier
