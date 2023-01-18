@@ -1,6 +1,6 @@
 ## 0.2.3 (unreleased)
 
-- Added `word_ids` method
+- Added more methods to `Encoding`
 
 ## 0.2.2 (2022-01-15)
 

@@ -45,9 +45,15 @@ fn init() -> RbResult<()> {
     class.define_method("normalizer=", method!(RbTokenizer::set_normalizer, 1))?;
 
     let class = module.define_class("Encoding", Default::default())?;
+    class.define_method("n_sequences", method!(RbEncoding::n_sequences, 0))?;
     class.define_method("ids", method!(RbEncoding::ids, 0))?;
     class.define_method("tokens", method!(RbEncoding::tokens, 0))?;
     class.define_method("word_ids", method!(RbEncoding::word_ids, 0))?;
+    class.define_method("sequence_ids", method!(RbEncoding::sequence_ids, 0))?;
+    class.define_method("type_ids", method!(RbEncoding::type_ids, 0))?;
+    class.define_method("offsets", method!(RbEncoding::offsets, 0))?;
+    class.define_method("special_tokens_mask", method!(RbEncoding::special_tokens_mask, 0))?;
+    class.define_method("attention_mask", method!(RbEncoding::attention_mask, 0))?;
 
     let class = module.define_class("BPEDecoder", Default::default())?;
     class.define_singleton_method("new", function!(RbBPEDecoder::new, 0))?;
