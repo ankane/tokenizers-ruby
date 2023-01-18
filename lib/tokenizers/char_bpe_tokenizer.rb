@@ -8,8 +8,8 @@ module Tokenizers
       @tokenizer.decoder = BPEDecoder.new
     end
 
-    def encode(text)
-      @tokenizer.encode(text)
+    def encode(text, **options)
+      @tokenizer.encode(text, **options)
     end
 
     def decode(ids)

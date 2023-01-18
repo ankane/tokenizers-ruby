@@ -5,7 +5,7 @@ class TokenizersTest < Minitest::Test
     tokenizer = Tokenizers.from_pretrained("bert-base-cased")
 
     # encode
-    encoded = tokenizer.encode("I can feel the magic, can you?")
+    encoded = tokenizer.encode("I can feel the magic, can you?", add_special_tokens: false)
     expected_ids = [146, 1169, 1631, 1103, 3974, 117, 1169, 1128, 136]
     expected_tokens = ["I", "can", "feel", "the", "magic", ",", "can", "you", "?"]
     assert_equal expected_ids, encoded.ids
@@ -19,7 +19,7 @@ class TokenizersTest < Minitest::Test
     tokenizer = Tokenizers.from_pretrained("gpt2")
 
     # encode
-    encoded = tokenizer.encode("Mythological creatures like the mighty gryphon inspire awe!")
+    encoded = tokenizer.encode("Mythological creatures like the mighty gryphon inspire awe!", add_special_tokens: false)
     expected_ids = [41444, 2770, 8109, 588, 262, 18680, 308, 563, 746, 261, 18330, 25030, 0]
     expected_tokens = ["Myth", "ological", "Ġcreatures", "Ġlike", "Ġthe", "Ġmighty", "Ġg", "ry", "ph", "on", "Ġinspire", "Ġawe", "!"]
     expected_word_ids = [0, 0, 1, 2, 3, 4, 5, 5, 5, 5, 6, 7, 8]
@@ -52,7 +52,7 @@ class TokenizersTest < Minitest::Test
     tokenizer = Tokenizers::CharBPETokenizer.new(vocab, merges)
 
     # encode
-    encoded = tokenizer.encode("I can feel the magic, can you?")
+    encoded = tokenizer.encode("I can feel the magic, can you?", add_special_tokens: false)
     expected_ids = [3, 3245, 3, 33763, 3, 212, 3, 119, 18879, 3, 3, 3245, 3, 9839, 3, 3]
     expected_tokens = ["<unk>", "ca", "<unk>", "fee", "<unk>", "th", "<unk>", "m", "agi", "<unk>", "<unk>", "ca", "<unk>", "yo", "<unk>", "<unk>"]
     assert_equal expected_ids, encoded.ids
