@@ -1,3 +1,7 @@
+## 0.2.3 (unreleased)
+
+- Added `word_ids` method
+
 ## 0.2.2 (2022-01-15)
 
 - Added precompiled gem for Linux ARM
