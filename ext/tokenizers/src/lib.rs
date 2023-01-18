@@ -47,6 +47,7 @@ fn init() -> RbResult<()> {
     let class = module.define_class("Encoding", Default::default())?;
     class.define_method("ids", method!(RbEncoding::ids, 0))?;
     class.define_method("tokens", method!(RbEncoding::tokens, 0))?;
+    class.define_method("word_ids", method!(RbEncoding::word_ids, 0))?;
 
     let class = module.define_class("BPEDecoder", Default::default())?;
     class.define_singleton_method("new", function!(RbBPEDecoder::new, 0))?;
