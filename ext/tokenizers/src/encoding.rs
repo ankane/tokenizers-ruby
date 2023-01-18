@@ -1,8 +1,15 @@
 use tk::Encoding;
 
 #[magnus::wrap(class = "Tokenizers::Encoding")]
+#[repr(transparent)]
 pub struct RbEncoding {
     pub encoding: Encoding,
+}
+
+impl From<Encoding> for RbEncoding {
+    fn from(v: Encoding) -> Self {
+        Self { encoding: v }
+    }
 }
 
 impl RbEncoding {
@@ -40,5 +47,14 @@ impl RbEncoding {
 
     pub fn attention_mask(&self) -> Vec<u32> {
         self.encoding.get_attention_mask().to_vec()
+    }
+
+    pub fn overflowing(&self) -> Vec<Self> {
+        self.encoding
+            .get_overflowing()
+            .clone()
+            .into_iter()
+            .map(|e| e.into())
+            .collect()
     }
 }

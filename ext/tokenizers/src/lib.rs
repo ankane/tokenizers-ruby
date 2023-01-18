@@ -54,6 +54,7 @@ fn init() -> RbResult<()> {
     class.define_method("offsets", method!(RbEncoding::offsets, 0))?;
     class.define_method("special_tokens_mask", method!(RbEncoding::special_tokens_mask, 0))?;
     class.define_method("attention_mask", method!(RbEncoding::attention_mask, 0))?;
+    class.define_method("overflowing", method!(RbEncoding::overflowing, 0))?;
 
     let class = module.define_class("BPEDecoder", Default::default())?;
     class.define_singleton_method("new", function!(RbBPEDecoder::new, 0))?;
