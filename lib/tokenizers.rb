@@ -7,6 +7,7 @@ end
 
 # modules
 require "tokenizers/char_bpe_tokenizer"
+require "tokenizers/encoding"
 require "tokenizers/from_pretrained"
 require "tokenizers/tokenizer"
 require "tokenizers/version"

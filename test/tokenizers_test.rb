@@ -28,6 +28,13 @@ class TokenizersTest < Minitest::Test
     assert_equal expected_tokens, encoded.tokens
     assert_equal expected_word_ids, encoded.word_ids
 
+    assert_equal [6, 10], encoded.word_to_tokens(5)
+    assert_equal [38, 46], encoded.word_to_chars(5)
+    assert_equal [4, 12], encoded.token_to_chars(1)
+    assert_equal 0, encoded.token_to_word(1)
+    assert_equal 7, encoded.char_to_token(41)
+    assert_equal 10, encoded.char_to_token(48)
+
     # decode
     assert_equal "Mythological creatures like the mighty gryphon inspire awe!", tokenizer.decode(encoded.ids)
   end
@@ -60,5 +67,12 @@ class TokenizersTest < Minitest::Test
 
     # decode
     assert_equal "cafeethmagicayo", tokenizer.decode(encoded.ids)
+  end
+
+  def test_id_token_conversion
+    tokenizer = Tokenizers.from_pretrained("bert-base-cased")
+
+    assert_equal 1169, tokenizer.token_to_id("can")
+    assert_equal "magic", tokenizer.id_to_token(3974)
   end
 end
