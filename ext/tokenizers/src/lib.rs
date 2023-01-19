@@ -38,11 +38,17 @@ fn init() -> RbResult<()> {
         "add_special_tokens",
         method!(RbTokenizer::add_special_tokens, 1),
     )?;
+    class.define_method(
+        "add_tokens",
+        method!(RbTokenizer::add_tokens, 1),
+    )?;
     class.define_method("_encode", method!(RbTokenizer::encode, 2))?;
     class.define_method("decode", method!(RbTokenizer::decode, 1))?;
     class.define_method("decoder=", method!(RbTokenizer::set_decoder, 1))?;
     class.define_method("pre_tokenizer=", method!(RbTokenizer::set_pre_tokenizer, 1))?;
     class.define_method("normalizer=", method!(RbTokenizer::set_normalizer, 1))?;
+    class.define_method("token_to_id", method!(RbTokenizer::token_to_id, 1))?;
+    class.define_method("id_to_token", method!(RbTokenizer::id_to_token, 1))?;
 
     let class = module.define_class("Encoding", Default::default())?;
     class.define_method("n_sequences", method!(RbEncoding::n_sequences, 0))?;
@@ -58,6 +64,13 @@ fn init() -> RbResult<()> {
     )?;
     class.define_method("attention_mask", method!(RbEncoding::attention_mask, 0))?;
     class.define_method("overflowing", method!(RbEncoding::overflowing, 0))?;
+    class.define_method("_word_to_tokens", method!(RbEncoding::word_to_tokens, 2))?;
+    class.define_method("_word_to_chars", method!(RbEncoding::word_to_chars, 2))?;
+    class.define_method("token_to_sequence", method!(RbEncoding::token_to_sequence, 1))?;
+    class.define_method("token_to_chars", method!(RbEncoding::token_to_chars, 1))?;
+    class.define_method("token_to_word", method!(RbEncoding::token_to_word, 1))?;
+    class.define_method("_char_to_token", method!(RbEncoding::char_to_token, 2))?;
+    class.define_method("_char_to_word", method!(RbEncoding::char_to_word, 2))?;
 
     let class = module.define_class("BPEDecoder", Default::default())?;
     class.define_singleton_method("new", function!(RbBPEDecoder::new, 0))?;
