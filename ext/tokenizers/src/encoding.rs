@@ -59,40 +59,32 @@ impl RbEncoding {
     }
 
     pub fn word_to_tokens(&self, word_index: u32, sequence_index: usize) -> Option<(usize, usize)> {
-      self.encoding
-          .word_to_tokens(word_index, sequence_index)
+        self.encoding.word_to_tokens(word_index, sequence_index)
     }
 
     pub fn word_to_chars(&self, word_index: u32, sequence_index: usize) -> Option<(usize, usize)> {
-        self.encoding
-            .word_to_chars(word_index, sequence_index)
+        self.encoding.word_to_chars(word_index, sequence_index)
     }
 
     pub fn token_to_sequence(&self, token_index: usize) -> Option<usize> {
-        self.encoding
-            .token_to_sequence(token_index)
+        self.encoding.token_to_sequence(token_index)
     }
 
     pub fn token_to_chars(&self, token_index: usize) -> Option<(usize, usize)> {
-        let (_, offsets) = self.encoding
-                               .token_to_chars(token_index)?;
+        let (_, offsets) = self.encoding.token_to_chars(token_index)?;
         Some(offsets)
     }
 
     pub fn token_to_word(&self, token_index: usize) -> Option<u32> {
-        let (_, word_idx) = self.encoding
-                                .token_to_word(token_index)?;
+        let (_, word_idx) = self.encoding.token_to_word(token_index)?;
         Some(word_idx)
     }
 
     pub fn char_to_token(&self, char_pos: usize, sequence_index: usize) -> Option<usize> {
-        self.encoding
-            .char_to_token(char_pos, sequence_index)
+        self.encoding.char_to_token(char_pos, sequence_index)
     }
 
     pub fn char_to_word(&self, char_pos: usize, sequence_index: usize) -> Option<u32> {
-        self.encoding
-            .char_to_word(char_pos, sequence_index)
+        self.encoding.char_to_word(char_pos, sequence_index)
     }
-
 }

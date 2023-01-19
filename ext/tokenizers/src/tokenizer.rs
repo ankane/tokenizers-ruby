@@ -32,17 +32,13 @@ impl RbTokenizer {
 
     pub fn add_special_tokens(&self, tokens: Vec<String>) {
         let tokens: Vec<AddedToken> = tokens.iter().map(|t| AddedToken::from(t, true)).collect();
-        self.tokenizer
-            .borrow_mut()
-            .add_special_tokens(&tokens);
+        self.tokenizer.borrow_mut().add_special_tokens(&tokens);
         // TODO return self
     }
 
     pub fn add_tokens(&self, tokens: Vec<String>) {
         let tokens: Vec<AddedToken> = tokens.iter().map(|t| AddedToken::from(t, true)).collect();
-        self.tokenizer
-            .borrow_mut()
-            .add_tokens(&tokens);
+        self.tokenizer.borrow_mut().add_tokens(&tokens);
         // TODO return self
     }
 
@@ -80,15 +76,10 @@ impl RbTokenizer {
     }
 
     pub fn token_to_id(&self, token: String) -> Option<u32> {
-        self.tokenizer
-            .borrow()
-            .token_to_id(&token)
+        self.tokenizer.borrow().token_to_id(&token)
     }
 
-
     pub fn id_to_token(&self, id: u32) -> Option<String> {
-        self.tokenizer
-            .borrow()
-            .id_to_token(id)
+        self.tokenizer.borrow().id_to_token(id)
     }
 }

@@ -38,10 +38,7 @@ fn init() -> RbResult<()> {
         "add_special_tokens",
         method!(RbTokenizer::add_special_tokens, 1),
     )?;
-    class.define_method(
-        "add_tokens",
-        method!(RbTokenizer::add_tokens, 1),
-    )?;
+    class.define_method("add_tokens", method!(RbTokenizer::add_tokens, 1))?;
     class.define_method("_encode", method!(RbTokenizer::encode, 2))?;
     class.define_method("decode", method!(RbTokenizer::decode, 1))?;
     class.define_method("decoder=", method!(RbTokenizer::set_decoder, 1))?;
@@ -66,7 +63,10 @@ fn init() -> RbResult<()> {
     class.define_method("overflowing", method!(RbEncoding::overflowing, 0))?;
     class.define_method("_word_to_tokens", method!(RbEncoding::word_to_tokens, 2))?;
     class.define_method("_word_to_chars", method!(RbEncoding::word_to_chars, 2))?;
-    class.define_method("token_to_sequence", method!(RbEncoding::token_to_sequence, 1))?;
+    class.define_method(
+        "token_to_sequence",
+        method!(RbEncoding::token_to_sequence, 1),
+    )?;
     class.define_method("token_to_chars", method!(RbEncoding::token_to_chars, 1))?;
     class.define_method("token_to_word", method!(RbEncoding::token_to_word, 1))?;
     class.define_method("_char_to_token", method!(RbEncoding::char_to_token, 2))?;
