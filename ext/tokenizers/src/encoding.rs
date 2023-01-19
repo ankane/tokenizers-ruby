@@ -1,4 +1,4 @@
-use tk::Encoding;
+use tk::{Encoding, Offsets};
 
 #[magnus::wrap(class = "Tokenizers::Encoding")]
 #[repr(transparent)]
@@ -62,7 +62,7 @@ impl RbEncoding {
         self.encoding.word_to_tokens(word_index, sequence_index)
     }
 
-    pub fn word_to_chars(&self, word_index: u32, sequence_index: usize) -> Option<(usize, usize)> {
+    pub fn word_to_chars(&self, word_index: u32, sequence_index: usize) -> Option<Offsets> {
         self.encoding.word_to_chars(word_index, sequence_index)
     }
 
@@ -70,7 +70,7 @@ impl RbEncoding {
         self.encoding.token_to_sequence(token_index)
     }
 
-    pub fn token_to_chars(&self, token_index: usize) -> Option<(usize, usize)> {
+    pub fn token_to_chars(&self, token_index: usize) -> Option<Offsets> {
         let (_, offsets) = self.encoding.token_to_chars(token_index)?;
         Some(offsets)
     }
