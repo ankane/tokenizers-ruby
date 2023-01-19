@@ -1,16 +1,16 @@
 # ext
 begin
-  require "tokenizers/#{RUBY_VERSION.to_f}/tokenizers"
+  require_relative "tokenizers/#{RUBY_VERSION.to_f}/tokenizers"
 rescue LoadError
-  require "tokenizers/tokenizers"
+  require_relative "tokenizers/tokenizers"
 end
 
 # modules
-require "tokenizers/char_bpe_tokenizer"
-require "tokenizers/encoding"
-require "tokenizers/from_pretrained"
-require "tokenizers/tokenizer"
-require "tokenizers/version"
+require_relative "tokenizers/char_bpe_tokenizer"
+require_relative "tokenizers/encoding"
+require_relative "tokenizers/from_pretrained"
+require_relative "tokenizers/tokenizer"
+require_relative "tokenizers/version"
 
 module Tokenizers
   class Error < StandardError; end
