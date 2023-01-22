@@ -1,4 +1,4 @@
-## 0.2.3 (unreleased)
+## 0.2.3 (2022-01-22)
 
 - Added `add_special_tokens` option to `encode` method
 - Added warning about `encode` method including special tokens by default in 0.3.0
