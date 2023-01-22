@@ -17,8 +17,9 @@ jobs:
           - platform: arm64-darwin
             target: aarch64-apple-darwin
             setup: |
-              echo '#!/usr/bin/env bash\n/opt/osxcross/target/bin/aarch64-apple-darwin-strip $@\ncodesign -f -s - "${@: -1}"' | sudo tee /usr/local/bin/strip > /dev/null
+              echo -e '#!/usr/bin/env bash\n/opt/osxcross/target/bin/aarch64-apple-darwin-strip $@\ncodesign -f -s - "${@: -1}"' | sudo tee /usr/local/bin/strip > /dev/null
               sudo chmod +x /usr/local/bin/strip
+
           # - platform: x64-mingw-ucrt
           #   target: x86_64-pc-windows-gnu
           #   setup: sudo ln -s /usr/bin/x86_64-w64-mingw32-strip /usr/local/bin/strip
