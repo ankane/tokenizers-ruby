@@ -1,3 +1,8 @@
+## 0.3.0 (unreleased)
+
+- Added `pair` argument to `encode` method
+- Changed how offsets are calculated for strings with multibyte characters
+
 ## 0.2.3 (2022-01-22)
 
 - Added `add_special_tokens` option to `encode` method
