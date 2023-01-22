@@ -12,10 +12,12 @@ jobs:
             target: aarch64-unknown-linux-gnu
           - platform: x86_64-darwin
             target: x86_64-apple-darwin
+            # Rust uses external command to strip symbols and debuginfo on Mac
+            # Do not do for arm64 since it interferes with code signing
+            # and codesign binary is not present to re-sign
             setup: sudo ln -s /opt/osxcross/target/bin/x86_64-apple-darwin-strip /usr/local/bin/strip
           - platform: arm64-darwin
             target: aarch64-apple-darwin
-            setup: sudo ln -s /opt/osxcross/target/bin/aarch64-apple-darwin-strip /usr/local/bin/strip
           # - platform: x64-mingw-ucrt
           #   target: x86_64-pc-windows-gnu
           # - platform: x64-mingw32

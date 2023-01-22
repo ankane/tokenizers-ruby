@@ -3,6 +3,7 @@
 - Added `add_special_tokens` option to `encode` method
 - Added warning about `encode` method including special tokens by default in 0.3.0
 - Added more methods to `Encoding`
+- Fixed error with precompiled gem on Mac ARM
 
 ## 0.2.2 (2022-01-15)
 
