@@ -42,10 +42,16 @@ impl RbTokenizer {
         // TODO return self
     }
 
-    pub fn encode(&self, sequence: String, add_special_tokens: bool) -> RbResult<RbEncoding> {
+    pub fn encode(&self, sequence: String, pair: Option<String>, add_special_tokens: bool) -> RbResult<RbEncoding> {
+        let input = match pair {
+            Some(pair) => {
+                tk::EncodeInput::Dual(sequence.into(), pair.into())
+            }
+            None => tk::EncodeInput::Single(sequence.into()),
+        };
         self.tokenizer
             .borrow()
-            .encode(sequence, add_special_tokens)
+            .encode_char_offsets(input, add_special_tokens)
             .map(|v| RbEncoding { encoding: v })
             .map_err(RbError::from)
     }
