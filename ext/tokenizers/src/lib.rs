@@ -39,7 +39,7 @@ fn init() -> RbResult<()> {
         method!(RbTokenizer::add_special_tokens, 1),
     )?;
     class.define_method("add_tokens", method!(RbTokenizer::add_tokens, 1))?;
-    class.define_method("_encode", method!(RbTokenizer::encode, 2))?;
+    class.define_method("_encode", method!(RbTokenizer::encode, 3))?;
     class.define_method("decode", method!(RbTokenizer::decode, 1))?;
     class.define_method("decoder=", method!(RbTokenizer::set_decoder, 1))?;
     class.define_method("pre_tokenizer=", method!(RbTokenizer::set_pre_tokenizer, 1))?;

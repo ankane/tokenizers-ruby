@@ -75,4 +75,24 @@ class TokenizersTest < Minitest::Test
     assert_equal 1169, tokenizer.token_to_id("can")
     assert_equal "magic", tokenizer.id_to_token(3974)
   end
+
+  def test_multibyte_offsets
+     tokenizer = Tokenizers.from_pretrained("gpt2")
+     encoded = tokenizer.encode("I wanted to convert 10000 ¥ to $.", add_special_tokens: true)
+     expected_tokens = ["I", "Ġwanted", "Ġto", "Ġconvert", "Ġ10000", "ĠÂ¥", "Ġto", "Ġ$", "."]
+     expected_offsets = [[0, 1], [1, 8], [8, 11], [11, 19], [19, 25], [25, 27], [27, 30], [30, 32], [32, 33]]
+
+     assert_equal expected_tokens, encoded.tokens
+     assert_equal expected_offsets, encoded.offsets
+  end
+
+  def test_pair_encoding
+    tokenizer = Tokenizers.from_pretrained("bert-base-cased")
+    question = "Am I allowed to pass two text arguments?"
+    answer = "Yes I am!"
+    encoded = tokenizer.encode(question, answer, add_special_tokens: true)
+
+    expected_tokens = ["[CLS]", "Am", "I", "allowed", "to", "pass", "two", "text", "arguments", "?", "[SEP]", "Yes", "I", "am", "!", "[SEP]"]
+    assert_equal expected_tokens, encoded.tokens
+  end
 end
