@@ -78,16 +78,18 @@ fn init() -> RbResult<()> {
     let class = module.define_class("BPEDecoder", Default::default())?;
     class.define_singleton_method("new", function!(RbBPEDecoder::new, 0))?;
 
-    let class = module.define_class("BertPreTokenizer", Default::default())?;
-    class.define_singleton_method("new", function!(RbBertPreTokenizer::new, 0))?;
-
     let class = module.define_class("BertNormalizer", Default::default())?;
     class.define_singleton_method("new", function!(RbBertNormalizer::new, 0))?;
 
     let class = module.define_class("BpeTrainer", Default::default())?;
     class.define_singleton_method("_new", function!(RbBpeTrainer::new, 1))?;
 
-    let class = module.define_class("Whitespace", Default::default())?;
+    let pre_tokenizer = module.define_class("PreTokenizer", Default::default())?;
+
+    let class = module.define_class("BertPreTokenizer", pre_tokenizer)?;
+    class.define_singleton_method("new", function!(RbBertPreTokenizer::new, 0))?;
+
+    let class = module.define_class("Whitespace", pre_tokenizer)?;
     class.define_singleton_method("new", function!(RbWhitespace::new, 0))?;
 
     Ok(())

@@ -1,5 +1,8 @@
 use tk::pre_tokenizers::bert::BertPreTokenizer;
 
+#[magnus::wrap(class = "Tokenizers::PreTokenizer")]
+pub struct RbPreTokenizer {}
+
 #[magnus::wrap(class = "Tokenizers::Whitespace")]
 pub struct RbWhitespace {}
 
