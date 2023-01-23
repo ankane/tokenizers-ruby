@@ -6,6 +6,7 @@ mod error;
 mod models;
 mod normalizers;
 mod pre_tokenizers;
+mod processors;
 mod tokenizer;
 mod trainers;
 
@@ -97,6 +98,8 @@ fn init() -> RbResult<()> {
 
     let class = module.define_class("Whitespace", pre_tokenizer)?;
     class.define_singleton_method("new", function!(RbWhitespace::new, 0))?;
+
+    let _class = module.define_class("PostProcessor", Default::default())?;
 
     Ok(())
 }
