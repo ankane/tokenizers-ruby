@@ -55,6 +55,7 @@ where
 pub struct RbBpeTrainer {}
 
 impl RbBpeTrainer {
+    // TODO error on unknown kwargs
     pub fn new(kwargs: RHash) -> RbResult<RbTrainer> {
         let mut builder = tk::models::bpe::BpeTrainer::builder();
 
