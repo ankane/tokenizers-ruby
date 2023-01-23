@@ -3,6 +3,9 @@ use tk::models::bpe::{BpeBuilder, Merges, Vocab, BPE};
 
 use super::{RbError, RbResult};
 
+#[magnus::wrap(class = "Tokenizers::Model")]
+pub struct RbModel {}
+
 #[magnus::wrap(class = "Tokenizers::BPE")]
 pub struct RbBPE {
     pub model: BPE,

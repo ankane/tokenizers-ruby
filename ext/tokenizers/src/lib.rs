@@ -31,7 +31,9 @@ fn init() -> RbResult<()> {
     let module = module();
     module.define_singleton_method("from_file", function!(RbTokenizer::from_file, 1))?;
 
-    let class = module.define_class("BPE", Default::default())?;
+    let model = module.define_class("Model", Default::default())?;
+
+    let class = module.define_class("BPE", model)?;
     class.define_singleton_method("_new", function!(RbBPE::new, 3))?;
     class.define_singleton_method("_from_file", function!(RbBPE::from_file, 3))?;
 
@@ -75,10 +77,14 @@ fn init() -> RbResult<()> {
     class.define_method("_char_to_token", method!(RbEncoding::char_to_token, 2))?;
     class.define_method("_char_to_word", method!(RbEncoding::char_to_word, 2))?;
 
-    let class = module.define_class("BPEDecoder", Default::default())?;
+    let decoder = module.define_class("Decoder", Default::default())?;
+
+    let class = module.define_class("BPEDecoder", decoder)?;
     class.define_singleton_method("new", function!(RbBPEDecoder::new, 0))?;
 
-    let class = module.define_class("BertNormalizer", Default::default())?;
+    let normalizer = module.define_class("Normalizer", Default::default())?;
+
+    let class = module.define_class("BertNormalizer", normalizer)?;
     class.define_singleton_method("new", function!(RbBertNormalizer::new, 0))?;
 
     let class = module.define_class("BpeTrainer", Default::default())?;

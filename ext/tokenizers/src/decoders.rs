@@ -1,5 +1,8 @@
 use tk::decoders::bpe::BPEDecoder;
 
+#[magnus::wrap(class = "Tokenizers::Decoder")]
+pub struct RbDecoder {}
+
 #[magnus::wrap(class = "Tokenizers::BPEDecoder")]
 pub struct RbBPEDecoder {
     pub decoder: BPEDecoder,
