@@ -6,6 +6,7 @@ rescue LoadError
 end
 
 # modules
+require_relative "tokenizers/bpe"
 require_relative "tokenizers/char_bpe_tokenizer"
 require_relative "tokenizers/encoding"
 require_relative "tokenizers/from_pretrained"

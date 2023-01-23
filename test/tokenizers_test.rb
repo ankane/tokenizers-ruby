@@ -1,6 +1,37 @@
 require_relative "test_helper"
 
 class TokenizersTest < Minitest::Test
+  # https://huggingface.co/docs/tokenizers/quicktour
+  def test_quicktour
+    tokenizer = Tokenizers::Tokenizer.new(Tokenizers::BPE.new(unk_token: "[UNK]"))
+
+    skip
+
+    trainer = Tokenizers::BpeTrainer.new(special_tokens: ["[UNK]", "[CLS]", "[SEP]", "[PAD]", "[MASK]"])
+
+    tokenizer.pre_tokenizer = Tokenizers::Whitespace.new
+
+    files = ["test", "train", "valid"].map { |split| "data/wikitext-103-raw/wiki.#{split}.raw" }
+    tokenizer.train(files, trainer)
+
+    tokenizer.save("data/tokenizer-wiki.json")
+
+    tokenizer = Tokenizer.from_file("data/tokenizer-wiki.json")
+
+    output = tokenizer.encode("Hello, y'all! How are you 😁 ?")
+
+    assert_equal ["Hello", ",", "y", "'", "all", "!", "How", "are", "you", "[UNK]", "?"], output.tokens
+
+    assert_equal [27253, 16, 93, 11, 5097, 5, 7961, 5112, 6218, 0, 35], output.ids
+
+    assert_equal [26, 27], output.offsets[9]
+
+    sentence = "Hello, y'all! How are you 😁 ?"
+    assert_equal "😁", sentence[26...27]
+
+    assert_equal 2, tokenizer.token_to_id("[SEP]")
+  end
+
   def test_from_pretrained_bert
     tokenizer = Tokenizers.from_pretrained("bert-base-cased")
 
