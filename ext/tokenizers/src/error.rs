@@ -1,4 +1,4 @@
-use magnus::{exception, memoize, Error, ExceptionClass, Module};
+use magnus::{memoize, Error, ExceptionClass, Module};
 
 use super::module;
 
@@ -12,5 +12,5 @@ impl RbError {
 }
 
 fn error() -> ExceptionClass {
-    *memoize!(ExceptionClass: module().define_error("Error", exception::standard_error()).unwrap())
+    *memoize!(ExceptionClass: module().const_get("Error").unwrap())
 }
