@@ -30,7 +30,7 @@ fn init() -> RbResult<()> {
     module.define_singleton_method("from_file", function!(RbTokenizer::from_file, 1))?;
 
     let class = module.define_class("BPE", Default::default())?;
-    class.define_singleton_method("new", function!(RbBPE::new, 2))?;
+    class.define_singleton_method("_from_file", function!(RbBPE::from_file, 3))?;
 
     let class = module.define_class("Tokenizer", Default::default())?;
     class.define_singleton_method("new", function!(RbTokenizer::new, 1))?;
