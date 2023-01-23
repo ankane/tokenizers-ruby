@@ -18,7 +18,7 @@ class TokenizersTest < Minitest::Test
 
     tokenizer.save("/tmp/tokenizer-wiki.json")
 
-    tokenizer = Tokenizers.from_file("/tmp/tokenizer-wiki.json")
+    tokenizer = Tokenizers::Tokenizer.from_file("/tmp/tokenizer-wiki.json")
 
     output = tokenizer.encode("Hello, y'all! How are you 😁 ?")
 

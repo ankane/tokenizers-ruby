@@ -32,6 +32,7 @@ impl PreTokenizer for RbPreTokenizer {
 pub struct RbWhitespace {}
 
 impl RbWhitespace {
+    // TODO return Whitespace class
     pub fn new() -> RbPreTokenizer {
         Whitespace::default().into()
     }
@@ -41,6 +42,7 @@ impl RbWhitespace {
 pub struct RbBertPreTokenizer {}
 
 impl RbBertPreTokenizer {
+    // TODO return BertPreTokenizer class
     pub fn new() -> RbPreTokenizer {
         BertPreTokenizer.into()
     }

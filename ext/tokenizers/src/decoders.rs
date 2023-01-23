@@ -19,11 +19,10 @@ impl Decoder for RbDecoder {
 }
 
 #[magnus::wrap(class = "Tokenizers::BPEDecoder")]
-pub struct RbBPEDecoder {
-    pub decoder: BPEDecoder,
-}
+pub struct RbBPEDecoder {}
 
 impl RbBPEDecoder {
+    // TODO return BPEDecoder class
     pub fn new() -> RbDecoder {
         BPEDecoder::default().into()
     }

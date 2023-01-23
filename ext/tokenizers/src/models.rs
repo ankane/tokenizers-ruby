@@ -66,6 +66,7 @@ pub struct RbBPE {}
 
 impl RbBPE {
     // TODO error on unknown kwargs
+    // TODO return BPE class
     fn with_builder(mut builder: BpeBuilder, kwargs: RHash) -> RbResult<RbModel> {
         if let Some(value) = kwargs.get(Symbol::new("unk_token")) {
             builder = builder.unk_token(value.try_convert()?);

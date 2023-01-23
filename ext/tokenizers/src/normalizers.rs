@@ -22,6 +22,7 @@ impl Normalizer for RbNormalizer {
 pub struct RbBertNormalizer {}
 
 impl RbBertNormalizer {
+    // TODO return BertNormalizer class
     pub fn new() -> RbNormalizer {
         BertNormalizer::default().into()
     }
