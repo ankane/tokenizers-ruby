@@ -30,7 +30,6 @@ fn module() -> RModule {
 #[magnus::init]
 fn init() -> RbResult<()> {
     let module = module();
-    module.define_singleton_method("from_file", function!(RbTokenizer::from_file, 1))?;
 
     let model = module.define_class("Model", Default::default())?;
 
@@ -40,6 +39,7 @@ fn init() -> RbResult<()> {
 
     let class = module.define_class("Tokenizer", Default::default())?;
     class.define_singleton_method("new", function!(RbTokenizer::from_model, 1))?;
+    class.define_singleton_method("from_file", function!(RbTokenizer::from_file, 1))?;
     class.define_method(
         "add_special_tokens",
         method!(RbTokenizer::add_special_tokens, 1),

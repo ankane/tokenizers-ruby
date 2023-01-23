@@ -17,5 +17,11 @@ require_relative "tokenizers/version"
 module Tokenizers
   class Error < StandardError; end
 
-  extend FromPretrained
+  def self.from_pretrained(...)
+    Tokenizer.from_pretrained(...)
+  end
+
+  def self.from_file(...)
+    Tokenizer.from_file(...)
+  end
 end
