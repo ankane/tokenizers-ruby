@@ -14,7 +14,7 @@ use encoding::RbEncoding;
 use error::RbError;
 use models::RbBPE;
 use normalizers::RbBertNormalizer;
-use pre_tokenizers::RbBertPreTokenizer;
+use pre_tokenizers::{RbBertPreTokenizer, RbWhitespace};
 use tokenizer::RbTokenizer;
 use trainers::RbBpeTrainer;
 
@@ -86,6 +86,9 @@ fn init() -> RbResult<()> {
 
     let class = module.define_class("BpeTrainer", Default::default())?;
     class.define_singleton_method("_new", function!(RbBpeTrainer::new, 1))?;
+
+    let class = module.define_class("Whitespace", Default::default())?;
+    class.define_singleton_method("new", function!(RbWhitespace::new, 0))?;
 
     Ok(())
 }

@@ -4,7 +4,7 @@ use magnus::RHash;
 pub struct RbBpeTrainer {}
 
 impl RbBpeTrainer {
-    pub fn new(kwargs: RHash) -> Self {
+    pub fn new(_kwargs: RHash) -> Self {
         Self {}
     }
 }
