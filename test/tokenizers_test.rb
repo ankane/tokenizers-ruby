@@ -5,9 +5,9 @@ class TokenizersTest < Minitest::Test
   def test_quicktour
     tokenizer = Tokenizers::Tokenizer.new(Tokenizers::BPE.new(unk_token: "[UNK]"))
 
-    skip
-
     trainer = Tokenizers::BpeTrainer.new(special_tokens: ["[UNK]", "[CLS]", "[SEP]", "[PAD]", "[MASK]"])
+
+    skip
 
     tokenizer.pre_tokenizer = Tokenizers::Whitespace.new
 

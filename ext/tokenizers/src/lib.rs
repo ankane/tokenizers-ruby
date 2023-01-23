@@ -7,6 +7,7 @@ mod models;
 mod normalizers;
 mod pre_tokenizers;
 mod tokenizer;
+mod trainers;
 
 use decoders::RbBPEDecoder;
 use encoding::RbEncoding;
@@ -15,6 +16,7 @@ use models::RbBPE;
 use normalizers::RbBertNormalizer;
 use pre_tokenizers::RbBertPreTokenizer;
 use tokenizer::RbTokenizer;
+use trainers::RbBpeTrainer;
 
 use magnus::{define_module, function, memoize, method, prelude::*, Error, RModule};
 
@@ -81,6 +83,9 @@ fn init() -> RbResult<()> {
 
     let class = module.define_class("BertNormalizer", Default::default())?;
     class.define_singleton_method("new", function!(RbBertNormalizer::new, 0))?;
+
+    let class = module.define_class("BpeTrainer", Default::default())?;
+    class.define_singleton_method("_new", function!(RbBpeTrainer::new, 1))?;
 
     Ok(())
 }
