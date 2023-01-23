@@ -3,20 +3,22 @@ require_relative "test_helper"
 class TokenizersTest < Minitest::Test
   # https://huggingface.co/docs/tokenizers/quicktour
   def test_quicktour
+    data_path = ENV["DATA_PATH"]
+
+    skip unless data_path
+
     tokenizer = Tokenizers::Tokenizer.new(Tokenizers::BPE.new(unk_token: "[UNK]"))
 
     trainer = Tokenizers::BpeTrainer.new(special_tokens: ["[UNK]", "[CLS]", "[SEP]", "[PAD]", "[MASK]"])
 
-    skip
-
     tokenizer.pre_tokenizer = Tokenizers::Whitespace.new
 
-    files = ["test", "train", "valid"].map { |split| "data/wikitext-103-raw/wiki.#{split}.raw" }
+    files = ["test", "train", "valid"].map { |split| "#{data_path}/wikitext-103-raw/wiki.#{split}.raw" }
     tokenizer.train(files, trainer)
 
-    tokenizer.save("data/tokenizer-wiki.json")
+    tokenizer.save("/tmp/tokenizer-wiki.json")
 
-    tokenizer = Tokenizer.from_file("data/tokenizer-wiki.json")
+    tokenizer = Tokenizers.from_file("/tmp/tokenizer-wiki.json")
 
     output = tokenizer.encode("Hello, y'all! How are you 😁 ?")
 

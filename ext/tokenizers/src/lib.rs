@@ -39,11 +39,13 @@ fn init() -> RbResult<()> {
     class.define_singleton_method("_from_file", function!(RbBPE::from_file, 3))?;
 
     let class = module.define_class("Tokenizer", Default::default())?;
-    class.define_singleton_method("new", function!(RbTokenizer::new, 1))?;
+    class.define_singleton_method("new", function!(RbTokenizer::from_model, 1))?;
     class.define_method(
         "add_special_tokens",
         method!(RbTokenizer::add_special_tokens, 1),
     )?;
+    class.define_method("train", method!(RbTokenizer::train, 2))?;
+    class.define_method("save", method!(RbTokenizer::save, 1))?;
     class.define_method("add_tokens", method!(RbTokenizer::add_tokens, 1))?;
     class.define_method("_encode", method!(RbTokenizer::encode, 3))?;
     class.define_method("decode", method!(RbTokenizer::decode, 1))?;
