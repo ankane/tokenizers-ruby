@@ -84,13 +84,13 @@ class TokenizersTest < Minitest::Test
   end
 
   def test_multibyte_offsets
-     tokenizer = Tokenizers.from_pretrained("gpt2")
-     encoded = tokenizer.encode("I wanted to convert 10000 ¥ to $.")
-     expected_tokens = ["I", "Ġwanted", "Ġto", "Ġconvert", "Ġ10000", "ĠÂ¥", "Ġto", "Ġ$", "."]
-     expected_offsets = [[0, 1], [1, 8], [8, 11], [11, 19], [19, 25], [25, 27], [27, 30], [30, 32], [32, 33]]
+    tokenizer = Tokenizers.from_pretrained("gpt2")
+    encoded = tokenizer.encode("I wanted to convert 10000 ¥ to $.")
+    expected_tokens = ["I", "Ġwanted", "Ġto", "Ġconvert", "Ġ10000", "ĠÂ¥", "Ġto", "Ġ$", "."]
+    expected_offsets = [[0, 1], [1, 8], [8, 11], [11, 19], [19, 25], [25, 27], [27, 30], [30, 32], [32, 33]]
 
-     assert_equal expected_tokens, encoded.tokens
-     assert_equal expected_offsets, encoded.offsets
+    assert_equal expected_tokens, encoded.tokens
+    assert_equal expected_offsets, encoded.offsets
   end
 
   def test_pair_encoding
