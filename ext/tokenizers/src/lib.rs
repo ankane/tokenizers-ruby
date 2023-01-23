@@ -88,7 +88,9 @@ fn init() -> RbResult<()> {
     let class = module.define_class("BertNormalizer", normalizer)?;
     class.define_singleton_method("new", function!(RbBertNormalizer::new, 0))?;
 
-    let class = module.define_class("BpeTrainer", Default::default())?;
+    let trainer = module.define_class("Trainer", Default::default())?;
+
+    let class = module.define_class("BpeTrainer", trainer)?;
     class.define_singleton_method("_new", function!(RbBpeTrainer::new, 1))?;
 
     let pre_tokenizer = module.define_class("PreTokenizer", Default::default())?;
