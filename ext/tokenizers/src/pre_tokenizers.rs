@@ -1,5 +1,7 @@
 use std::sync::{Arc, RwLock};
 
+use magnus::typed_data::DataTypeBuilder;
+use magnus::{memoize, Class, DataType, DataTypeFunctions, Module, RClass, TypedData};
 use serde::ser::SerializeStruct;
 use serde::{Deserialize, Serialize, Serializer};
 
@@ -8,8 +10,9 @@ use tk::pre_tokenizers::whitespace::Whitespace;
 use tk::pre_tokenizers::PreTokenizerWrapper;
 use tk::{PreTokenizedString, PreTokenizer};
 
-#[magnus::wrap(class = "Tokenizers::PreTokenizer")]
-#[derive(Clone, Serialize, Deserialize)]
+use super::module;
+
+#[derive(DataTypeFunctions, Clone, Serialize, Deserialize)]
 pub struct RbPreTokenizer {
     #[serde(flatten)]
     pub(crate) pretok: RbPreTokenizerTypeWrapper,
@@ -28,21 +31,17 @@ impl PreTokenizer for RbPreTokenizer {
     }
 }
 
-#[magnus::wrap(class = "Tokenizers::Whitespace")]
 pub struct RbWhitespace {}
 
 impl RbWhitespace {
-    // TODO return Whitespace class
     pub fn new() -> RbPreTokenizer {
         Whitespace::default().into()
     }
 }
 
-#[magnus::wrap(class = "Tokenizers::BertPreTokenizer")]
 pub struct RbBertPreTokenizer {}
 
 impl RbBertPreTokenizer {
-    // TODO return BertPreTokenizer class
     pub fn new() -> RbPreTokenizer {
         BertPreTokenizer.into()
     }
@@ -136,6 +135,41 @@ impl PreTokenizer for RbPreTokenizerWrapper {
         match self {
             RbPreTokenizerWrapper::Wrapped(inner) => inner.pre_tokenize(pretok),
             // RbPreTokenizerWrapper::Custom(inner) => inner.pre_tokenize(pretok),
+        }
+    }
+}
+
+unsafe impl TypedData for RbPreTokenizer {
+    fn class() -> RClass {
+        *memoize!(RClass: {
+          let class: RClass = module().const_get("PreTokenizer").unwrap();
+          class.undef_alloc_func();
+          class
+        })
+    }
+
+    fn data_type() -> &'static DataType {
+        memoize!(DataType: DataTypeBuilder::<RbPreTokenizer>::new("Tokenizers::PreTokenizer").build())
+    }
+
+    fn class_for(value: &Self) -> RClass {
+        match &value.pretok {
+            RbPreTokenizerTypeWrapper::Sequence(_seq) => Self::class(),
+            RbPreTokenizerTypeWrapper::Single(inner) => match &*inner.read().unwrap() {
+                RbPreTokenizerWrapper::Wrapped(wrapped) => match &wrapped {
+                    PreTokenizerWrapper::Whitespace(_) => *memoize!(RClass: {
+                        let class: RClass = module().const_get("Whitespace").unwrap();
+                        class.undef_alloc_func();
+                        class
+                    }),
+                    PreTokenizerWrapper::BertPreTokenizer(_) => *memoize!(RClass: {
+                        let class: RClass = module().const_get("BertPreTokenizer").unwrap();
+                        class.undef_alloc_func();
+                        class
+                    }),
+                    _ => Self::class(),
+                },
+            },
         }
     }
 }

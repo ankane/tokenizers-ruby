@@ -10,7 +10,7 @@ publish = false
 crate-type = ["cdylib"]
 
 [dependencies]
-magnus = "0.4"
+magnus = { git = "https://github.com/matsadler/magnus" }
 serde = { version = "1.0", features = ["rc", "derive"] }
 
 [dependencies.tokenizers]

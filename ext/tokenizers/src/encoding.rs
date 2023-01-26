@@ -1,3 +1,4 @@
+use magnus::RArray;
 use tk::{Encoding, Offsets};
 
 #[magnus::wrap(class = "Tokenizers::Encoding")]
@@ -49,12 +50,12 @@ impl RbEncoding {
         self.encoding.get_attention_mask().to_vec()
     }
 
-    pub fn overflowing(&self) -> Vec<Self> {
+    pub fn overflowing(&self) -> RArray {
         self.encoding
             .get_overflowing()
             .clone()
             .into_iter()
-            .map(|e| e.into())
+            .map(|e| Into::<RbEncoding>::into(e))
             .collect()
     }
 
