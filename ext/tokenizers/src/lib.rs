@@ -68,7 +68,7 @@ fn init() -> RbResult<()> {
         method!(RbEncoding::special_tokens_mask, 0),
     )?;
     class.define_method("attention_mask", method!(RbEncoding::attention_mask, 0))?;
-    class.define_method("overflowing", method!(RbEncoding::overflowing, 0))?;
+    // class.define_method("overflowing", method!(RbEncoding::overflowing, 0))?;
     class.define_method("_word_to_tokens", method!(RbEncoding::word_to_tokens, 2))?;
     class.define_method("_word_to_chars", method!(RbEncoding::word_to_chars, 2))?;
     class.define_method(

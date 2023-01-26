@@ -49,14 +49,14 @@ impl RbEncoding {
         self.encoding.get_attention_mask().to_vec()
     }
 
-    pub fn overflowing(&self) -> Vec<Self> {
-        self.encoding
-            .get_overflowing()
-            .clone()
-            .into_iter()
-            .map(|e| e.into())
-            .collect()
-    }
+    // pub fn overflowing(&self) -> Vec<Self> {
+    //     self.encoding
+    //         .get_overflowing()
+    //         .clone()
+    //         .into_iter()
+    //         .map(|e| e.into())
+    //         .collect()
+    // }
 
     pub fn word_to_tokens(&self, word_index: u32, sequence_index: usize) -> Option<(usize, usize)> {
         self.encoding.word_to_tokens(word_index, sequence_index)
