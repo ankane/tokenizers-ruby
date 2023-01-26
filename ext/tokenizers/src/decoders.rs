@@ -1,12 +1,15 @@
 use std::sync::{Arc, RwLock};
 
+use magnus::typed_data::DataTypeBuilder;
+use magnus::{memoize, Class, DataType, DataTypeFunctions, Module, RClass, TypedData};
 use serde::{Deserialize, Serialize};
 use tk::decoders::bpe::BPEDecoder;
 use tk::decoders::DecoderWrapper;
 use tk::Decoder;
 
-#[magnus::wrap(class = "Tokenizers::Decoder")]
-#[derive(Clone, Deserialize, Serialize)]
+use super::module;
+
+#[derive(DataTypeFunctions, Clone, Deserialize, Serialize)]
 pub struct RbDecoder {
     #[serde(flatten)]
     pub(crate) decoder: RbDecoderWrapper,
@@ -18,7 +21,6 @@ impl Decoder for RbDecoder {
     }
 }
 
-#[magnus::wrap(class = "Tokenizers::BPEDecoder")]
 pub struct RbBPEDecoder {}
 
 impl RbBPEDecoder {
@@ -60,6 +62,33 @@ impl Decoder for RbDecoderWrapper {
         match self {
             RbDecoderWrapper::Wrapped(inner) => inner.read().unwrap().decode_chain(tokens),
             // RbDecoderWrapper::Custom(inner) => inner.read().unwrap().decode_chain(tokens),
+        }
+    }
+}
+
+unsafe impl TypedData for RbDecoder {
+    fn class() -> RClass {
+        *memoize!(RClass: {
+          let class: RClass = module().const_get("Decoder").unwrap();
+          class.undef_alloc_func();
+          class
+        })
+    }
+
+    fn data_type() -> &'static DataType {
+        memoize!(DataType: DataTypeBuilder::<RbDecoder>::new("Tokenizers::Decoder").build())
+    }
+
+    fn class_for(value: &Self) -> RClass {
+        match &value.decoder {
+            RbDecoderWrapper::Wrapped(inner) => match *inner.read().unwrap() {
+                DecoderWrapper::BPE(_) => *memoize!(RClass: {
+                    let class: RClass = module().const_get("BPEDecoder").unwrap();
+                    class.undef_alloc_func();
+                    class
+                }),
+                _ => Self::class(),
+            },
         }
     }
 }
