@@ -2,15 +2,17 @@ use std::sync::{Arc, RwLock};
 
 use crate::models::RbModel;
 use crate::tokenizer::RbAddedToken;
-use magnus::{RArray, RHash, Symbol};
+use magnus::typed_data::DataTypeBuilder;
+use magnus::{
+    memoize, Class, DataType, DataTypeFunctions, Module, RArray, RClass, RHash, Symbol, TypedData,
+};
 use serde::{Deserialize, Serialize};
 use tk::models::TrainerWrapper;
 use tk::Trainer;
 
-use crate::RbResult;
+use super::{module, RbResult};
 
-#[magnus::wrap(class = "Tokenizers::Trainer")]
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(DataTypeFunctions, Clone, Deserialize, Serialize)]
 pub struct RbTrainer {
     #[serde(flatten)]
     pub trainer: Arc<RwLock<TrainerWrapper>>,
@@ -51,12 +53,10 @@ where
     }
 }
 
-#[magnus::wrap(class = "Tokenizers::BpeTrainer")]
 pub struct RbBpeTrainer {}
 
 impl RbBpeTrainer {
     // TODO error on unknown kwargs
-    // TODO return BpeTrainer class
     pub fn new(kwargs: RHash) -> RbResult<RbTrainer> {
         let mut builder = tk::models::bpe::BpeTrainer::builder();
 
@@ -77,5 +77,30 @@ impl RbBpeTrainer {
         }
 
         Ok(builder.build().into())
+    }
+}
+
+unsafe impl TypedData for RbTrainer {
+    fn class() -> RClass {
+        *memoize!(RClass: {
+          let class: RClass = module().const_get("Trainer").unwrap();
+          class.undef_alloc_func();
+          class
+        })
+    }
+
+    fn data_type() -> &'static DataType {
+        memoize!(DataType: DataTypeBuilder::<RbTrainer>::new("Tokenizers::Trainer").build())
+    }
+
+    fn class_for(value: &Self) -> RClass {
+        match *value.trainer.read().unwrap() {
+            TrainerWrapper::BpeTrainer(_) => *memoize!(RClass: {
+                let class: RClass = module().const_get("BpeTrainer").unwrap();
+                class.undef_alloc_func();
+                class
+            }),
+            _ => Self::class(),
+        }
     }
 }
