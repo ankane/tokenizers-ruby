@@ -3,16 +3,18 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, RwLock};
 
 use crate::trainers::RbTrainer;
-use magnus::{RHash, Symbol};
+use magnus::typed_data::DataTypeBuilder;
+use magnus::{
+    memoize, Class, DataType, DataTypeFunctions, Module, RClass, RHash, Symbol, TypedData,
+};
 use serde::{Deserialize, Serialize};
 use tk::models::bpe::{BpeBuilder, Merges, Vocab, BPE};
 use tk::models::ModelWrapper;
 use tk::{Model, Token};
 
-use super::{RbError, RbResult};
+use super::{module, RbError, RbResult};
 
-#[magnus::wrap(class = "Tokenizers::Model")]
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(DataTypeFunctions, Clone, Serialize, Deserialize)]
 pub struct RbModel {
     #[serde(flatten)]
     pub model: Arc<RwLock<ModelWrapper>>,
@@ -61,12 +63,10 @@ where
     }
 }
 
-#[magnus::wrap(class = "Tokenizers::BPE")]
 pub struct RbBPE {}
 
 impl RbBPE {
     // TODO error on unknown kwargs
-    // TODO return BPE class
     fn with_builder(mut builder: BpeBuilder, kwargs: RHash) -> RbResult<RbModel> {
         if let Some(value) = kwargs.get(Symbol::new("unk_token")) {
             builder = builder.unk_token(value.try_convert()?);
@@ -91,5 +91,30 @@ impl RbBPE {
         let (vocab, merges) = BPE::read_file(&vocab, &merges).map_err(RbError::from)?;
 
         RbBPE::new(Some(vocab), Some(merges), kwargs)
+    }
+}
+
+unsafe impl TypedData for RbModel {
+    fn class() -> RClass {
+        *memoize!(RClass: {
+          let class: RClass = module().const_get("Model").unwrap();
+          class.undef_alloc_func();
+          class
+        })
+    }
+
+    fn data_type() -> &'static DataType {
+        memoize!(DataType: DataTypeBuilder::<RbModel>::new("Tokenizers::Model").build())
+    }
+
+    fn class_for(value: &Self) -> RClass {
+        match *value.model.read().unwrap() {
+            ModelWrapper::BPE(_) => *memoize!(RClass: {
+                let class: RClass = module().const_get("BPE").unwrap();
+                class.undef_alloc_func();
+                class
+            }),
+            _ => Self::class(),
+        }
     }
 }
