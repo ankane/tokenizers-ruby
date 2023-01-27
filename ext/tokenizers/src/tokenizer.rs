@@ -1,7 +1,8 @@
 use std::cell::RefCell;
 use std::path::PathBuf;
 
-use tk::tokenizer::{Model, TokenizerImpl};
+use magnus::{RArray, RHash, Symbol};
+use tk::tokenizer::{Model, PaddingParams, TokenizerImpl};
 use tk::AddedToken;
 
 use super::decoders::RbDecoder;
@@ -129,6 +130,35 @@ impl RbTokenizer {
             .map_err(RbError::from)
     }
 
+    pub fn encode_batch(
+        &self,
+        input: RArray,
+        is_pretokenized: bool,
+        add_special_tokens: bool,
+    ) -> RbResult<RArray> {
+        let input: Vec<tk::EncodeInput> = input
+            .each()
+            .map(|o| {
+                let input: tk::EncodeInput = if is_pretokenized {
+                    todo!()
+                } else {
+                    o?.try_convert::<String>()?.into()
+                };
+                Ok(input)
+            })
+            .collect::<RbResult<Vec<tk::EncodeInput>>>()?;
+        self.tokenizer
+            .borrow()
+            .encode_batch_char_offsets(input, add_special_tokens)
+            .map(|encodings| {
+                encodings
+                    .into_iter()
+                    .map(|e| Into::<RbEncoding>::into(e))
+                    .collect()
+            })
+            .map_err(RbError::from)
+    }
+
     pub fn decode(&self, ids: Vec<u32>) -> RbResult<String> {
         self.tokenizer
             .borrow()
@@ -146,6 +176,12 @@ impl RbTokenizer {
             .with_pre_tokenizer(pretok.clone());
     }
 
+    pub fn set_post_processor(&self, processor: &RbPostProcessor) {
+        self.tokenizer
+            .borrow_mut()
+            .with_post_processor(processor.clone());
+    }
+
     pub fn set_normalizer(&self, normalizer: &RbNormalizer) {
         self.tokenizer
             .borrow_mut()
@@ -158,5 +194,27 @@ impl RbTokenizer {
 
     pub fn id_to_token(&self, id: u32) -> Option<String> {
         self.tokenizer.borrow().id_to_token(id)
+    }
+
+    // TODO support more kwargs
+    // TODO error on unknown kwargs
+    pub fn enable_padding(&self, kwargs: RHash) -> RbResult<()> {
+        let mut params = PaddingParams::default();
+
+        if let Some(value) = kwargs.get(Symbol::new("pad_id")) {
+            params.pad_id = value.try_convert()?;
+        }
+
+        if let Some(value) = kwargs.get(Symbol::new("pad_type_id")) {
+            params.pad_type_id = value.try_convert()?;
+        }
+
+        if let Some(value) = kwargs.get(Symbol::new("pad_token")) {
+            params.pad_token = value.try_convert()?;
+        }
+
+        self.tokenizer.borrow_mut().with_padding(Some(params));
+
+        Ok(())
     }
 }

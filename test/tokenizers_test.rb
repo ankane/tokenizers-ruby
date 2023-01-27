@@ -32,6 +32,37 @@ class TokenizersTest < Minitest::Test
     assert_equal "😁", sentence[26...27]
 
     assert_equal 2, tokenizer.token_to_id("[SEP]")
+
+    tokenizer.post_processor = Tokenizers::TemplateProcessing.new(
+      single: "[CLS] $A [SEP]",
+      pair: "[CLS] $A [SEP] $B:1 [SEP]:1",
+      special_tokens: [
+        ["[CLS]", tokenizer.token_to_id("[CLS]")],
+        ["[SEP]", tokenizer.token_to_id("[SEP]")]
+      ]
+    )
+
+    output = tokenizer.encode("Hello, y'all! How are you 😁 ?")
+    assert_equal ["[CLS]", "Hello", ",", "y", "'", "all", "!", "How", "are", "you", "[UNK]", "?", "[SEP]"], output.tokens
+
+    output = tokenizer.encode("Hello, y'all!", "How are you 😁 ?")
+    assert_equal ["[CLS]", "Hello", ",", "y", "'", "all", "!", "[SEP]", "How", "are", "you", "[UNK]", "?", "[SEP]"], output.tokens
+
+    assert_equal [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1], output.type_ids
+
+    output = tokenizer.encode_batch(["Hello, y'all!", "How are you 😁 ?"])
+
+    # output =
+    #   tokenizer.encode_batch(
+    #     [["Hello, y'all!", "How are you 😁 ?"], ["Hello to you too!", "I'm fine, thank you!"]]
+    #   )
+
+    tokenizer.enable_padding(pad_id: 3, pad_token: "[PAD]")
+
+    output = tokenizer.encode_batch(["Hello, y'all!", "How are you 😁 ?"])
+    assert_equal ["[CLS]", "How", "are", "you", "[UNK]", "?", "[SEP]", "[PAD]"], output[1].tokens
+
+    assert_equal [1, 1, 1, 1, 1, 1, 1, 0], output[1].attention_mask
   end
 
   def test_from_pretrained_bert

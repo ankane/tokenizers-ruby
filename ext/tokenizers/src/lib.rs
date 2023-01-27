@@ -16,6 +16,7 @@ use error::RbError;
 use models::RbBPE;
 use normalizers::RbBertNormalizer;
 use pre_tokenizers::{RbBertPreTokenizer, RbWhitespace};
+use processors::RbTemplateProcessing;
 use tokenizer::RbTokenizer;
 use trainers::RbBpeTrainer;
 
@@ -48,12 +49,18 @@ fn init() -> RbResult<()> {
     class.define_method("save", method!(RbTokenizer::save, 1))?;
     class.define_method("add_tokens", method!(RbTokenizer::add_tokens, 1))?;
     class.define_method("_encode", method!(RbTokenizer::encode, 3))?;
+    class.define_method("_encode_batch", method!(RbTokenizer::encode_batch, 3))?;
     class.define_method("decode", method!(RbTokenizer::decode, 1))?;
     class.define_method("decoder=", method!(RbTokenizer::set_decoder, 1))?;
     class.define_method("pre_tokenizer=", method!(RbTokenizer::set_pre_tokenizer, 1))?;
+    class.define_method(
+        "post_processor=",
+        method!(RbTokenizer::set_post_processor, 1),
+    )?;
     class.define_method("normalizer=", method!(RbTokenizer::set_normalizer, 1))?;
     class.define_method("token_to_id", method!(RbTokenizer::token_to_id, 1))?;
     class.define_method("id_to_token", method!(RbTokenizer::id_to_token, 1))?;
+    class.define_method("_enable_padding", method!(RbTokenizer::enable_padding, 1))?;
 
     let class = module.define_class("Encoding", Default::default())?;
     class.define_method("n_sequences", method!(RbEncoding::n_sequences, 0))?;
@@ -103,7 +110,10 @@ fn init() -> RbResult<()> {
     let class = module.define_class("Whitespace", pre_tokenizer)?;
     class.define_singleton_method("new", function!(RbWhitespace::new, 0))?;
 
-    let _post_processor = module.define_class("PostProcessor", Default::default())?;
+    let post_processor = module.define_class("PostProcessor", Default::default())?;
+
+    let class = module.define_class("TemplateProcessing", post_processor)?;
+    class.define_singleton_method("_new", function!(RbTemplateProcessing::new, 3))?;
 
     Ok(())
 }
