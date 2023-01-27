@@ -1,6 +1,7 @@
 ## 0.3.0 (unreleased)
 
 - Added support for training tokenizers
+- Added `encode_batch` method to `Encoding`
 - Added `pair` argument to `encode` method
 - Changed `encode` method to include special tokens by default
 - Changed how offsets are calculated for strings with multibyte characters
