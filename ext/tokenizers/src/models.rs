@@ -5,7 +5,8 @@ use std::sync::{Arc, RwLock};
 use crate::trainers::RbTrainer;
 use magnus::typed_data::DataTypeBuilder;
 use magnus::{
-    memoize, Class, DataType, DataTypeFunctions, Module, RClass, RHash, Symbol, TypedData,
+    exception, memoize, Class, DataType, DataTypeFunctions, Error, Module, RClass, RHash, Symbol,
+    TypedData, Value,
 };
 use serde::{Deserialize, Serialize};
 use tk::models::bpe::{BpeBuilder, Merges, Vocab, BPE};
@@ -66,14 +67,20 @@ where
 pub struct RbBPE {}
 
 impl RbBPE {
-    // TODO error on unknown kwargs
     fn with_builder(mut builder: BpeBuilder, kwargs: RHash) -> RbResult<RbModel> {
-        if let Some(value) = kwargs.get(Symbol::new("unk_token")) {
+        let value: Value = kwargs.delete(Symbol::new("unk_token"))?;
+        if !value.is_nil() {
             builder = builder.unk_token(value.try_convert()?);
         }
 
-        if let Some(value) = kwargs.get(Symbol::new("end_of_word_suffix")) {
+        let value: Value = kwargs.delete(Symbol::new("end_of_word_suffix"))?;
+        if !value.is_nil() {
             builder = builder.end_of_word_suffix(value.try_convert()?);
+        }
+
+        if !kwargs.is_empty() {
+            // TODO improve message
+            return Err(Error::new(exception::arg_error(), "unknown keyword"));
         }
 
         builder.build().map(|v| v.into()).map_err(RbError::from)
