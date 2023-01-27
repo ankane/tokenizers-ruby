@@ -4,7 +4,8 @@ use crate::models::RbModel;
 use crate::tokenizer::RbAddedToken;
 use magnus::typed_data::DataTypeBuilder;
 use magnus::{
-    memoize, Class, DataType, DataTypeFunctions, Module, RArray, RClass, RHash, Symbol, TypedData,
+    exception, memoize, Class, DataType, DataTypeFunctions, Error, Module, RArray, RClass, RHash,
+    Symbol, TypedData, Value,
 };
 use serde::{Deserialize, Serialize};
 use tk::models::TrainerWrapper;
@@ -56,11 +57,11 @@ where
 pub struct RbBpeTrainer {}
 
 impl RbBpeTrainer {
-    // TODO error on unknown kwargs
     pub fn new(kwargs: RHash) -> RbResult<RbTrainer> {
         let mut builder = tk::models::bpe::BpeTrainer::builder();
 
-        if let Some(value) = kwargs.get(Symbol::new("special_tokens")) {
+        let value: Value = kwargs.delete(Symbol::new("special_tokens"))?;
+        if !value.is_nil() {
             builder = builder.special_tokens(
                 value
                     .try_convert::<RArray>()?
@@ -74,6 +75,11 @@ impl RbBpeTrainer {
                     })
                     .collect::<RbResult<Vec<_>>>()?,
             );
+        }
+
+        if !kwargs.is_empty() {
+            // TODO improve message
+            return Err(Error::new(exception::arg_error(), "unknown keyword"));
         }
 
         Ok(builder.build().into())

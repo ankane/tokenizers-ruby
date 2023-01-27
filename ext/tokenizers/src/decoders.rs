@@ -24,7 +24,6 @@ impl Decoder for RbDecoder {
 pub struct RbBPEDecoder {}
 
 impl RbBPEDecoder {
-    // TODO return BPEDecoder class
     pub fn new() -> RbDecoder {
         BPEDecoder::default().into()
     }
