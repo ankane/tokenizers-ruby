@@ -1,13 +1,16 @@
 use std::sync::{Arc, RwLock};
 
 use magnus::typed_data::DataTypeBuilder;
-use magnus::{memoize, Class, DataType, DataTypeFunctions, Module, RClass, TypedData};
+use magnus::{
+    function, memoize, Class, DataType, DataTypeFunctions, Module, Object, RClass, RModule,
+    TypedData,
+};
 use serde::{Deserialize, Serialize};
 use tk::decoders::bpe::BPEDecoder;
 use tk::decoders::DecoderWrapper;
 use tk::Decoder;
 
-use super::module;
+use super::{module, RbResult};
 
 #[derive(DataTypeFunctions, Clone, Deserialize, Serialize)]
 pub struct RbDecoder {
@@ -90,4 +93,13 @@ unsafe impl TypedData for RbDecoder {
             },
         }
     }
+}
+
+pub fn decoders(module: &RModule) -> RbResult<()> {
+    let decoder = module.define_class("Decoder", Default::default())?;
+
+    let class = module.define_class("BPEDecoder", decoder)?;
+    class.define_singleton_method("new", function!(RbBPEDecoder::new, 0))?;
+
+    Ok(())
 }

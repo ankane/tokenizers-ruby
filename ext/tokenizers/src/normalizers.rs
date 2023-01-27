@@ -1,13 +1,16 @@
 use std::sync::{Arc, RwLock};
 
 use magnus::typed_data::DataTypeBuilder;
-use magnus::{memoize, Class, DataType, DataTypeFunctions, Module, RClass, TypedData};
+use magnus::{
+    function, memoize, Class, DataType, DataTypeFunctions, Module, Object, RClass, RModule,
+    TypedData,
+};
 use serde::ser::SerializeStruct;
 use serde::{Deserialize, Serialize, Serializer};
 use tk::normalizers::{BertNormalizer, NormalizerWrapper};
 use tk::{NormalizedString, Normalizer};
 
-use super::module;
+use super::{module, RbResult};
 
 #[derive(DataTypeFunctions, Clone, Serialize, Deserialize)]
 pub struct RbNormalizer {
@@ -149,4 +152,13 @@ unsafe impl TypedData for RbNormalizer {
             },
         }
     }
+}
+
+pub fn normalizers(module: &RModule) -> RbResult<()> {
+    let normalizer = module.define_class("Normalizer", Default::default())?;
+
+    let class = module.define_class("BertNormalizer", normalizer)?;
+    class.define_singleton_method("new", function!(RbBertNormalizer::new, 0))?;
+
+    Ok(())
 }

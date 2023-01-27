@@ -1,7 +1,10 @@
 use std::sync::{Arc, RwLock};
 
 use magnus::typed_data::DataTypeBuilder;
-use magnus::{memoize, Class, DataType, DataTypeFunctions, Module, RClass, TypedData};
+use magnus::{
+    function, memoize, Class, DataType, DataTypeFunctions, Module, Object, RClass, RModule,
+    TypedData,
+};
 use serde::ser::SerializeStruct;
 use serde::{Deserialize, Serialize, Serializer};
 
@@ -10,7 +13,7 @@ use tk::pre_tokenizers::whitespace::Whitespace;
 use tk::pre_tokenizers::PreTokenizerWrapper;
 use tk::{PreTokenizedString, PreTokenizer};
 
-use super::module;
+use super::{module, RbResult};
 
 #[derive(DataTypeFunctions, Clone, Serialize, Deserialize)]
 pub struct RbPreTokenizer {
@@ -172,4 +175,16 @@ unsafe impl TypedData for RbPreTokenizer {
             },
         }
     }
+}
+
+pub fn pre_tokenizers(module: &RModule) -> RbResult<()> {
+    let pre_tokenizer = module.define_class("PreTokenizer", Default::default())?;
+
+    let class = module.define_class("BertPreTokenizer", pre_tokenizer)?;
+    class.define_singleton_method("new", function!(RbBertPreTokenizer::new, 0))?;
+
+    let class = module.define_class("Whitespace", pre_tokenizer)?;
+    class.define_singleton_method("new", function!(RbWhitespace::new, 0))?;
+
+    Ok(())
 }

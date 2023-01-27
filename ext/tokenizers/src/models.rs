@@ -5,8 +5,8 @@ use std::sync::{Arc, RwLock};
 use crate::trainers::RbTrainer;
 use magnus::typed_data::DataTypeBuilder;
 use magnus::{
-    exception, memoize, Class, DataType, DataTypeFunctions, Error, Module, RClass, RHash, Symbol,
-    TypedData, Value,
+    exception, function, memoize, Class, DataType, DataTypeFunctions, Error, Module, Object,
+    RClass, RHash, RModule, Symbol, TypedData, Value,
 };
 use serde::{Deserialize, Serialize};
 use tk::models::bpe::{BpeBuilder, Merges, Vocab, BPE};
@@ -124,4 +124,14 @@ unsafe impl TypedData for RbModel {
             _ => todo!(),
         }
     }
+}
+
+pub fn models(module: &RModule) -> RbResult<()> {
+    let model = module.define_class("Model", Default::default())?;
+
+    let class = module.define_class("BPE", model)?;
+    class.define_singleton_method("_new", function!(RbBPE::new, 3))?;
+    class.define_singleton_method("_from_file", function!(RbBPE::from_file, 3))?;
+
+    Ok(())
 }

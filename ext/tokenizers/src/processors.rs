@@ -2,7 +2,8 @@ use std::sync::Arc;
 
 use magnus::typed_data::DataTypeBuilder;
 use magnus::{
-    memoize, Class, DataType, DataTypeFunctions, Module, RClass, TryConvert, TypedData, Value,
+    function, memoize, Class, DataType, DataTypeFunctions, Module, Object, RClass, RModule,
+    TryConvert, TypedData, Value,
 };
 use serde::{Deserialize, Serialize};
 use tk::processors::template::{SpecialToken, Template};
@@ -132,4 +133,13 @@ unsafe impl TypedData for RbPostProcessor {
             _ => todo!(),
         }
     }
+}
+
+pub fn processors(module: &RModule) -> RbResult<()> {
+    let post_processor = module.define_class("PostProcessor", Default::default())?;
+
+    let class = module.define_class("TemplateProcessing", post_processor)?;
+    class.define_singleton_method("_new", function!(RbTemplateProcessing::new, 3))?;
+
+    Ok(())
 }

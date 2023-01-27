@@ -10,15 +10,9 @@ mod processors;
 mod tokenizer;
 mod trainers;
 
-use decoders::RbBPEDecoder;
 use encoding::RbEncoding;
 use error::RbError;
-use models::RbBPE;
-use normalizers::RbBertNormalizer;
-use pre_tokenizers::{RbBertPreTokenizer, RbWhitespace};
-use processors::RbTemplateProcessing;
 use tokenizer::RbTokenizer;
-use trainers::RbBpeTrainer;
 
 use magnus::{define_module, function, memoize, method, prelude::*, Error, RModule};
 
@@ -31,12 +25,6 @@ fn module() -> RModule {
 #[magnus::init]
 fn init() -> RbResult<()> {
     let module = module();
-
-    let model = module.define_class("Model", Default::default())?;
-
-    let class = module.define_class("BPE", model)?;
-    class.define_singleton_method("_new", function!(RbBPE::new, 3))?;
-    class.define_singleton_method("_from_file", function!(RbBPE::from_file, 3))?;
 
     let class = module.define_class("Tokenizer", Default::default())?;
     class.define_singleton_method("new", function!(RbTokenizer::from_model, 1))?;
@@ -87,33 +75,12 @@ fn init() -> RbResult<()> {
     class.define_method("_char_to_token", method!(RbEncoding::char_to_token, 2))?;
     class.define_method("_char_to_word", method!(RbEncoding::char_to_word, 2))?;
 
-    let decoder = module.define_class("Decoder", Default::default())?;
-
-    let class = module.define_class("BPEDecoder", decoder)?;
-    class.define_singleton_method("new", function!(RbBPEDecoder::new, 0))?;
-
-    let normalizer = module.define_class("Normalizer", Default::default())?;
-
-    let class = module.define_class("BertNormalizer", normalizer)?;
-    class.define_singleton_method("new", function!(RbBertNormalizer::new, 0))?;
-
-    let trainer = module.define_class("Trainer", Default::default())?;
-
-    let class = module.define_class("BpeTrainer", trainer)?;
-    class.define_singleton_method("_new", function!(RbBpeTrainer::new, 1))?;
-
-    let pre_tokenizer = module.define_class("PreTokenizer", Default::default())?;
-
-    let class = module.define_class("BertPreTokenizer", pre_tokenizer)?;
-    class.define_singleton_method("new", function!(RbBertPreTokenizer::new, 0))?;
-
-    let class = module.define_class("Whitespace", pre_tokenizer)?;
-    class.define_singleton_method("new", function!(RbWhitespace::new, 0))?;
-
-    let post_processor = module.define_class("PostProcessor", Default::default())?;
-
-    let class = module.define_class("TemplateProcessing", post_processor)?;
-    class.define_singleton_method("_new", function!(RbTemplateProcessing::new, 3))?;
+    models::models(&module)?;
+    pre_tokenizers::pre_tokenizers(&module)?;
+    decoders::decoders(&module)?;
+    processors::processors(&module)?;
+    normalizers::normalizers(&module)?;
+    trainers::trainers(&module)?;
 
     Ok(())
 }

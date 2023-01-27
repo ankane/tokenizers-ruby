@@ -4,8 +4,8 @@ use crate::models::RbModel;
 use crate::tokenizer::RbAddedToken;
 use magnus::typed_data::DataTypeBuilder;
 use magnus::{
-    exception, memoize, Class, DataType, DataTypeFunctions, Error, Module, RArray, RClass, RHash,
-    Symbol, TypedData, Value,
+    exception, function, memoize, Class, DataType, DataTypeFunctions, Error, Module, Object,
+    RArray, RClass, RHash, RModule, Symbol, TypedData, Value,
 };
 use serde::{Deserialize, Serialize};
 use tk::models::TrainerWrapper;
@@ -109,4 +109,13 @@ unsafe impl TypedData for RbTrainer {
             _ => todo!(),
         }
     }
+}
+
+pub fn trainers(module: &RModule) -> RbResult<()> {
+    let trainer = module.define_class("Trainer", Default::default())?;
+
+    let class = module.define_class("BpeTrainer", trainer)?;
+    class.define_singleton_method("_new", function!(RbBpeTrainer::new, 1))?;
+
+    Ok(())
 }
