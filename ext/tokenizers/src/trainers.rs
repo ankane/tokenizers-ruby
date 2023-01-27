@@ -106,7 +106,7 @@ unsafe impl TypedData for RbTrainer {
                 class.undef_alloc_func();
                 class
             }),
-            _ => Self::class(),
+            _ => todo!(),
         }
     }
 }

@@ -123,8 +123,13 @@ unsafe impl TypedData for RbPostProcessor {
     }
 
     fn class_for(value: &Self) -> RClass {
-        match &value.processor {
-            _ => Self::class(),
+        match *value.processor {
+            PostProcessorWrapper::Template(_) => *memoize!(RClass: {
+                let class: RClass = module().const_get("TemplateProcessing").unwrap();
+                class.undef_alloc_func();
+                class
+            }),
+            _ => todo!(),
         }
     }
 }

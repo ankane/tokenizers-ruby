@@ -154,7 +154,7 @@ unsafe impl TypedData for RbPreTokenizer {
 
     fn class_for(value: &Self) -> RClass {
         match &value.pretok {
-            RbPreTokenizerTypeWrapper::Sequence(_seq) => Self::class(),
+            RbPreTokenizerTypeWrapper::Sequence(_seq) => todo!(),
             RbPreTokenizerTypeWrapper::Single(inner) => match &*inner.read().unwrap() {
                 RbPreTokenizerWrapper::Wrapped(wrapped) => match &wrapped {
                     PreTokenizerWrapper::Whitespace(_) => *memoize!(RClass: {
@@ -167,7 +167,7 @@ unsafe impl TypedData for RbPreTokenizer {
                         class.undef_alloc_func();
                         class
                     }),
-                    _ => Self::class(),
+                    _ => todo!(),
                 },
             },
         }

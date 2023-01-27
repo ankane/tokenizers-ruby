@@ -136,7 +136,7 @@ unsafe impl TypedData for RbNormalizer {
 
     fn class_for(value: &Self) -> RClass {
         match &value.normalizer {
-            RbNormalizerTypeWrapper::Sequence(_seq) => Self::class(),
+            RbNormalizerTypeWrapper::Sequence(_seq) => todo!(),
             RbNormalizerTypeWrapper::Single(inner) => match &*inner.read().unwrap() {
                 RbNormalizerWrapper::Wrapped(wrapped) => match &wrapped {
                     NormalizerWrapper::BertNormalizer(_) => *memoize!(RClass: {
@@ -144,7 +144,7 @@ unsafe impl TypedData for RbNormalizer {
                         class.undef_alloc_func();
                         class
                     }),
-                    _ => Self::class(),
+                    _ => todo!(),
                 },
             },
         }
