@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use std::path::PathBuf;
 
-use magnus::{exception, Error, RArray, RHash, Symbol, Value};
+use magnus::{exception, Error, RArray, RHash, Symbol, TryConvert, Value};
 use tk::tokenizer::{Model, PaddingParams, TokenizerImpl};
 use tk::AddedToken;
 
@@ -52,6 +52,54 @@ impl RbAddedToken {
         }
 
         token
+    }
+}
+
+struct TextInputSequence<'s>(tk::InputSequence<'s>);
+
+impl<'s> TryConvert for TextInputSequence<'s> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        Ok(Self(ob.try_convert::<String>()?.into()))
+    }
+}
+
+impl<'s> From<TextInputSequence<'s>> for tk::InputSequence<'s> {
+    fn from(s: TextInputSequence<'s>) -> Self {
+        s.0
+    }
+}
+
+struct PreTokenizedInputSequence<'s>(tk::InputSequence<'s>);
+
+impl<'s> TryConvert for PreTokenizedInputSequence<'s> {
+    fn try_convert(_ob: Value) -> RbResult<Self> {
+        todo!()
+    }
+}
+
+impl<'s> From<PreTokenizedInputSequence<'s>> for tk::InputSequence<'s> {
+    fn from(s: PreTokenizedInputSequence<'s>) -> Self {
+        s.0
+    }
+}
+
+struct TextEncodeInput<'s>(tk::EncodeInput<'s>);
+
+impl<'s> TryConvert for TextEncodeInput<'s> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        if let Ok(i) = ob.try_convert::<TextInputSequence>() {
+            return Ok(Self(i.into()));
+        }
+        if let Ok((i1, i2)) = ob.try_convert::<(TextInputSequence, TextInputSequence)>() {
+            return Ok(Self((i1, i2).into()));
+        }
+        todo!()
+    }
+}
+
+impl<'s> From<TextEncodeInput<'s>> for tk::tokenizer::EncodeInput<'s> {
+    fn from(i: TextEncodeInput<'s>) -> Self {
+        i.0
     }
 }
 
@@ -140,7 +188,7 @@ impl RbTokenizer {
                 let input: tk::EncodeInput = if is_pretokenized {
                     todo!()
                 } else {
-                    o?.try_convert::<String>()?.into()
+                    o?.try_convert::<TextEncodeInput>()?.into()
                 };
                 Ok(input)
             })

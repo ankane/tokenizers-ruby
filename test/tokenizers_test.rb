@@ -52,10 +52,10 @@ class TokenizersTest < Minitest::Test
 
     output = tokenizer.encode_batch(["Hello, y'all!", "How are you 😁 ?"])
 
-    # output =
-    #   tokenizer.encode_batch(
-    #     [["Hello, y'all!", "How are you 😁 ?"], ["Hello to you too!", "I'm fine, thank you!"]]
-    #   )
+    output =
+      tokenizer.encode_batch(
+        [["Hello, y'all!", "How are you 😁 ?"], ["Hello to you too!", "I'm fine, thank you!"]]
+      )
 
     tokenizer.enable_padding(pad_id: 3, pad_token: "[PAD]")
 
