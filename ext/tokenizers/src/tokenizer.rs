@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use std::path::PathBuf;
 
-use magnus::{RArray, RHash, Symbol};
+use magnus::{exception, Error, RArray, RHash, Symbol, Value};
 use tk::tokenizer::{Model, PaddingParams, TokenizerImpl};
 use tk::AddedToken;
 
@@ -197,20 +197,27 @@ impl RbTokenizer {
     }
 
     // TODO support more kwargs
-    // TODO error on unknown kwargs
     pub fn enable_padding(&self, kwargs: RHash) -> RbResult<()> {
         let mut params = PaddingParams::default();
 
-        if let Some(value) = kwargs.get(Symbol::new("pad_id")) {
+        let value: Value = kwargs.delete(Symbol::new("pad_id"))?;
+        if !value.is_nil() {
             params.pad_id = value.try_convert()?;
         }
 
-        if let Some(value) = kwargs.get(Symbol::new("pad_type_id")) {
+        let value: Value = kwargs.delete(Symbol::new("pad_type_id"))?;
+        if !value.is_nil() {
             params.pad_type_id = value.try_convert()?;
         }
 
-        if let Some(value) = kwargs.get(Symbol::new("pad_token")) {
+        let value: Value = kwargs.delete(Symbol::new("pad_token"))?;
+        if !value.is_nil() {
             params.pad_token = value.try_convert()?;
+        }
+
+        if !kwargs.is_empty() {
+            // TODO improve message
+            return Err(Error::new(exception::arg_error(), "unknown keyword"));
         }
 
         self.tokenizer.borrow_mut().with_padding(Some(params));
