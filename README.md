@@ -40,6 +40,10 @@ Load a tokenizer from files
 tokenizer = Tokenizers::CharBPETokenizer.new("vocab.json", "merges.txt")
 ```
 
+## Training [unreleased]
+
+Check out the [Quicktour](https://huggingface.co/docs/tokenizers/quicktour) and equivalent [Ruby code](https://github.com/ankane/tokenizers-ruby/blob/master/test/quicktour_test.rb#L8)
+
 ## History
 
 View the [changelog](https://github.com/ankane/tokenizers-ruby/blob/master/CHANGELOG.md)
