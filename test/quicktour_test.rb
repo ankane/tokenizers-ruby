@@ -1,12 +1,12 @@
 require_relative "test_helper"
 
 class QuicktourTest < Minitest::Test
+  def setup
+    skip unless data_path
+  end
+
   # https://huggingface.co/docs/tokenizers/quicktour
   def test_works
-    data_path = ENV["DATA_PATH"]
-
-    skip unless data_path
-
     tokenizer = Tokenizers::Tokenizer.new(Tokenizers::BPE.new(unk_token: "[UNK]"))
 
     trainer = Tokenizers::BpeTrainer.new(special_tokens: ["[UNK]", "[CLS]", "[SEP]", "[PAD]", "[MASK]"])
@@ -63,5 +63,11 @@ class QuicktourTest < Minitest::Test
     assert_equal ["[CLS]", "How", "are", "you", "[UNK]", "?", "[SEP]", "[PAD]"], output[1].tokens
 
     assert_equal [1, 1, 1, 1, 1, 1, 1, 0], output[1].attention_mask
+  end
+
+  private
+
+  def data_path
+    ENV["DATA_PATH"]
   end
 end
