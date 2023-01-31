@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use std::collections::HashMap;
 use std::path::PathBuf;
 
 use magnus::{exception, Error, RArray, RHash, Symbol, TryConvert, Value};
@@ -280,10 +281,17 @@ impl RbTokenizer {
             .map_err(RbError::from)
     }
 
-    pub fn decode(&self, ids: Vec<u32>) -> RbResult<String> {
+    pub fn decode(&self, ids: Vec<u32>, skip_special_tokens: bool) -> RbResult<String> {
         self.tokenizer
             .borrow()
-            .decode(ids, true)
+            .decode(ids, skip_special_tokens)
+            .map_err(RbError::from)
+    }
+
+    pub fn decode_batch(&self, sequences: Vec<Vec<u32>>, skip_special_tokens: bool) -> RbResult<Vec<String>> {
+        self.tokenizer
+            .borrow()
+            .decode_batch(sequences, skip_special_tokens)
             .map_err(RbError::from)
     }
 
@@ -344,5 +352,17 @@ impl RbTokenizer {
         self.tokenizer.borrow_mut().with_padding(Some(params));
 
         Ok(())
+    }
+
+    pub fn no_padding(&self) {
+        self.tokenizer.borrow_mut().with_padding(None);
+    }
+
+    pub fn vocab(&self, with_added_tokens: bool) -> HashMap<String, u32> {
+        self.tokenizer.borrow().get_vocab(with_added_tokens)
+    }
+
+    pub fn vocab_size(&self, with_added_tokens: bool) -> usize {
+        self.tokenizer.borrow().get_vocab_size(with_added_tokens)
     }
 }

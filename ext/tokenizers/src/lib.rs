@@ -38,7 +38,8 @@ fn init() -> RbResult<()> {
     class.define_method("add_tokens", method!(RbTokenizer::add_tokens, 1))?;
     class.define_method("_encode", method!(RbTokenizer::encode, 4))?;
     class.define_method("_encode_batch", method!(RbTokenizer::encode_batch, 3))?;
-    class.define_method("decode", method!(RbTokenizer::decode, 1))?;
+    class.define_method("_decode", method!(RbTokenizer::decode, 2))?;
+    class.define_method("_decode_batch", method!(RbTokenizer::decode_batch, 2))?;
     class.define_method("decoder=", method!(RbTokenizer::set_decoder, 1))?;
     class.define_method("pre_tokenizer=", method!(RbTokenizer::set_pre_tokenizer, 1))?;
     class.define_method(
@@ -49,6 +50,9 @@ fn init() -> RbResult<()> {
     class.define_method("token_to_id", method!(RbTokenizer::token_to_id, 1))?;
     class.define_method("id_to_token", method!(RbTokenizer::id_to_token, 1))?;
     class.define_method("_enable_padding", method!(RbTokenizer::enable_padding, 1))?;
+    class.define_method("no_padding", method!(RbTokenizer::no_padding, 0))?;
+    class.define_method("_vocab", method!(RbTokenizer::vocab, 1))?;
+    class.define_method("_vocab_size", method!(RbTokenizer::vocab_size, 1))?;
 
     let class = module.define_class("Encoding", Default::default())?;
     class.define_method("n_sequences", method!(RbEncoding::n_sequences, 0))?;

@@ -116,4 +116,52 @@ class TokenizerTest < Minitest::Test
 
     assert_equal encoded_wout_pretokenization.tokens, encoded_with_pretokenization.tokens
   end
+
+  def test_decode_with_special_tokens
+    tokenizer = Tokenizers.from_pretrained("bert-base-cased")
+
+    token_ids = [101, 146, 1169, 1631, 1103, 3974, 117, 1169, 1128, 136, 102]
+
+    assert_equal "[CLS] I can feel the magic, can you? [SEP]", tokenizer.decode(token_ids, skip_special_tokens: false)
+  end
+
+  def test_decode_batch
+    tokenizer = Tokenizers.from_pretrained("bert-base-cased")
+
+    string_1 = "I can feel the magic, can you?"
+    token_ids_1 = [101, 146, 1169, 1631, 1103, 3974, 117, 1169, 1128, 136, 102]
+
+    string_2 = "Am I allowed to pass two text arguments?"
+    token_ids_2 = [101, 7277, 146, 2148, 1106, 2789, 1160, 3087, 9989, 136, 102]
+
+    assert_equal [string_1, string_2], tokenizer.decode_batch([token_ids_1, token_ids_2])
+
+    assert_equal ["[CLS] #{string_1} [SEP]", "[CLS] #{string_2} [SEP]"], tokenizer.decode_batch([token_ids_1, token_ids_2], skip_special_tokens: false)
+  end
+
+  def test_vocab_size
+    tokenizer = Tokenizers.from_pretrained("bert-base-cased")
+
+    size_without_added_tokens = tokenizer.vocab_size(with_added_tokens: false)
+    assert_equal 28996, size_without_added_tokens
+
+    tokenizer.add_tokens(["mellifluous", "malodorous"])
+    size_with_added_tokens = tokenizer.vocab_size
+    assert_equal 28998, size_with_added_tokens
+  end
+
+  def test_vocab
+    tokenizer = Tokenizers.from_pretrained("bert-base-cased")
+
+    vocab_without_added_tokens = tokenizer.vocab(with_added_tokens: false)
+    assert_equal 28996, vocab_without_added_tokens.size
+    assert_equal 15011, vocab_without_added_tokens["upstream"]
+    assert_nil vocab_without_added_tokens["mellifluous"]
+
+    tokenizer.add_tokens(["mellifluous", "malodorous"])
+    vocab_with_added_tokens = tokenizer.vocab
+    assert_equal 28998, vocab_with_added_tokens.size
+    assert_equal 15011, vocab_with_added_tokens["upstream"]
+    assert_equal 28996, vocab_with_added_tokens["mellifluous"]
+  end
 end
