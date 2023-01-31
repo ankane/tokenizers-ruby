@@ -2,6 +2,14 @@ module Tokenizers
   class Tokenizer
     extend FromPretrained
 
+    def to_str(pretty: false)
+      _to_str(pretty)
+    end
+
+    def save(path, pretty: false)
+      _save(path, pretty)
+    end
+
     def encode(sequence, pair = nil, is_pretokenized: false, add_special_tokens: true)
       _encode(sequence, pair, is_pretokenized, add_special_tokens)
     end

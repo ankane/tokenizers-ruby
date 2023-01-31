@@ -1,5 +1,7 @@
 require_relative "test_helper"
 
+require "json"
+
 class TokenizerTest < Minitest::Test
   def test_from_pretrained_bert
     tokenizer = Tokenizers.from_pretrained("bert-base-cased")
@@ -179,5 +181,27 @@ class TokenizerTest < Minitest::Test
 
     tokenizer.no_padding
     assert_nil tokenizer.padding
+  end
+
+  def test_serialization
+    tokenizer = Tokenizers.from_pretrained("bert-base-cased")
+    assert_nil tokenizer.vocab["mellifluous"]
+
+    tokenizer.add_tokens(["mellifluous", "malodorous"])
+    preserialization_size_with_added_tokens = tokenizer.vocab_size
+    assert_equal 28996, tokenizer.vocab["mellifluous"]
+
+    as_pretty_str = tokenizer.to_str(pretty: true)
+    assert_equal 29163, as_pretty_str.count("\n")
+    pretty_path = "/tmp/pretty-tokenizer.json"
+    tokenizer.save(pretty_path, pretty: true)
+
+    # Compare file content
+    pretty_from_file = File.read(pretty_path)
+    assert_equal as_pretty_str, pretty_from_file
+
+    new_tokenizer = Tokenizers.from_file(pretty_path)
+    assert_equal preserialization_size_with_added_tokens, new_tokenizer.vocab_size
+    assert_equal 28996, new_tokenizer.vocab["mellifluous"]
   end
 end

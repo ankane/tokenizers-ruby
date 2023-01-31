@@ -192,6 +192,10 @@ impl RbTokenizer {
             .map_err(RbError::from)
     }
 
+    pub fn to_str(&self, pretty: bool) -> RbResult<String> {
+        self.tokenizer.borrow().to_string(pretty).map_err(RbError::from)
+    }
+
     pub fn add_special_tokens(&self, tokens: Vec<String>) -> usize {
         let tokens: Vec<AddedToken> = tokens.iter().map(|t| AddedToken::from(t, true)).collect();
         self.tokenizer.borrow_mut().add_special_tokens(&tokens)
@@ -209,10 +213,10 @@ impl RbTokenizer {
             .map_err(RbError::from)
     }
 
-    pub fn save(&self, path: String) -> RbResult<()> {
+    pub fn save(&self, path: String, pretty: bool) -> RbResult<()> {
         self.tokenizer
             .borrow()
-            .save(&path, false)
+            .save(&path, pretty)
             .map_err(RbError::from)
     }
 
