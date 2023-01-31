@@ -36,7 +36,7 @@ fn init() -> RbResult<()> {
     class.define_method("train", method!(RbTokenizer::train, 2))?;
     class.define_method("save", method!(RbTokenizer::save, 1))?;
     class.define_method("add_tokens", method!(RbTokenizer::add_tokens, 1))?;
-    class.define_method("_encode", method!(RbTokenizer::encode, 3))?;
+    class.define_method("_encode", method!(RbTokenizer::encode, 4))?;
     class.define_method("_encode_batch", method!(RbTokenizer::encode_batch, 3))?;
     class.define_method("decode", method!(RbTokenizer::decode, 1))?;
     class.define_method("decoder=", method!(RbTokenizer::set_decoder, 1))?;

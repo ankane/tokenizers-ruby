@@ -2,12 +2,12 @@ module Tokenizers
   class Tokenizer
     extend FromPretrained
 
-    def encode(sequence, pair = nil, add_special_tokens: true)
-      _encode(sequence, pair, add_special_tokens)
+    def encode(sequence, pair = nil, is_pretokenized: false, add_special_tokens: true)
+      _encode(sequence, pair, is_pretokenized, add_special_tokens)
     end
 
-    def encode_batch(input, add_special_tokens: true)
-      _encode_batch(input, false, add_special_tokens)
+    def encode_batch(input, is_pretokenized: false, add_special_tokens: true)
+      _encode_batch(input, is_pretokenized, add_special_tokens)
     end
 
     def enable_padding(**options)
