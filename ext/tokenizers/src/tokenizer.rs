@@ -120,7 +120,7 @@ impl<'s> TryConvert for TextEncodeInput<'s> {
         }
         Err(Error::new(
             exception::type_error(),
-            "TextEncodeInput must be Union[TextInputSequence, Tuple[InputSequence, InputSequence]]",
+            "TextEncodeInput must be a string or pair of strings",
         ))
     }
 }
@@ -152,8 +152,7 @@ impl<'s> TryConvert for PreTokenizedEncodeInput<'s> {
         }
         Err(Error::new(
             exception::type_error(),
-            "PreTokenizedEncodeInput must be Union[PreTokenizedInputSequence, \
-            Tuple[PreTokenizedInputSequence, PreTokenizedInputSequence]]",
+            "PreTokenizedEncodeInput must be an array of strings or pair of arrays",
         ))
     }
 }
