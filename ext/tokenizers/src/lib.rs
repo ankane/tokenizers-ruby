@@ -52,6 +52,9 @@ fn init() -> RbResult<()> {
     class.define_method("_enable_padding", method!(RbTokenizer::enable_padding, 1))?;
     class.define_method("padding", method!(RbTokenizer::padding, 0))?;
     class.define_method("no_padding", method!(RbTokenizer::no_padding, 0))?;
+    class.define_method("_enable_truncation", method!(RbTokenizer::enable_truncation, 2))?;
+    class.define_method("truncation", method!(RbTokenizer::truncation, 0))?;
+    class.define_method("no_truncation", method!(RbTokenizer::no_truncation, 0))?;
     class.define_method("_vocab", method!(RbTokenizer::vocab, 1))?;
     class.define_method("_vocab_size", method!(RbTokenizer::vocab_size, 1))?;
     class.define_method("_to_str", method!(RbTokenizer::to_str, 1))?;

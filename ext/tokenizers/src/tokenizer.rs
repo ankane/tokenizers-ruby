@@ -3,7 +3,10 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 
 use magnus::{exception, Error, RArray, RHash, Symbol, TryConvert, Value};
-use tk::tokenizer::{Model, PaddingDirection, PaddingParams, PaddingStrategy, TokenizerImpl};
+use tk::tokenizer::{
+    Model, PaddingDirection, PaddingParams, PaddingStrategy,
+    TruncationDirection, TruncationParams, TruncationStrategy, TokenizerImpl
+};
 use tk::AddedToken;
 
 use super::decoders::RbDecoder;
@@ -400,6 +403,64 @@ impl RbTokenizer {
             ret_hash.aset("pad_token", &*params.pad_token)?;
             ret_hash.aset("pad_to_multiple_of", params.pad_to_multiple_of)?;
 
+            ret_hash.aset("direction", params.direction.as_ref())?;
+
+            Ok(Some(ret_hash))
+        })
+    }
+
+    pub fn enable_truncation(&self, max_length: usize, kwargs: RHash) -> RbResult<()> {
+        let mut params = TruncationParams {
+            max_length,
+            ..Default::default()
+        };
+
+        let value: Value = kwargs.delete(Symbol::new("stride"))?;
+        if !value.is_nil() {
+            params.stride = value.try_convert()?;
+        }
+
+        let value: Value = kwargs.delete(Symbol::new("direction"))?;
+        if !value.is_nil() {
+            let dir_str: String = value.try_convert()?;
+            params.direction = match dir_str.as_str() {
+                "left" => TruncationDirection::Left,
+                "right" => TruncationDirection::Right,
+                _ => return Err(Error::new(exception::arg_error(), "The direction value must be 'left' or 'right'")),
+            }
+        }
+
+        let value: Value = kwargs.delete(Symbol::new("strategy"))?;
+        if !value.is_nil() {
+            let strategy_str: String = value.try_convert()?;
+            params.strategy = match strategy_str.as_str() {
+                "longest_first" => TruncationStrategy::LongestFirst,
+                "only_first" => TruncationStrategy::OnlyFirst,
+                "only_second" => TruncationStrategy::OnlySecond,
+                _ => return Err(Error::new(exception::arg_error(), "The strategy value must be 'longest_first', 'only_first', or 'only_second'")),
+            }
+        }
+
+        // For consistency with Python API we ignore any additional
+        // unrecognized keyword arguments
+
+        self.tokenizer.borrow_mut().with_truncation(Some(params));
+
+        Ok(())
+    }
+
+
+    pub fn no_truncation(&self) {
+        self.tokenizer.borrow_mut().with_truncation(None);
+    }
+
+    pub fn truncation(&self) -> RbResult<Option<RHash>> {
+        self.tokenizer.borrow().get_truncation().map_or(Ok(None), |params| {
+            let ret_hash = RHash::new();
+
+            ret_hash.aset("max_length", params.max_length)?;
+            ret_hash.aset("stride", params.stride)?;
+            ret_hash.aset("strategy", params.strategy.as_ref())?;
             ret_hash.aset("direction", params.direction.as_ref())?;
 
             Ok(Some(ret_hash))

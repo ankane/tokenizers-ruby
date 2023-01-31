@@ -183,6 +183,22 @@ class TokenizerTest < Minitest::Test
     assert_nil tokenizer.padding
   end
 
+  def test_truncation
+    tokenizer = Tokenizers.from_pretrained("bert-base-cased")
+    assert_nil tokenizer.truncation
+
+    tokenizer.enable_truncation(1024)
+    default_params_with_length = {"max_length"=>1024, "stride"=>0, "strategy"=>"longest_first", "direction"=>"right"}
+    assert_equal default_params_with_length, tokenizer.truncation
+
+    tokenizer.enable_truncation(2048, stride: 20, direction: "left", strategy: "only_first")
+    custom_params_with_length = {"max_length"=>2048, "stride"=>20, "strategy"=>"only_first", "direction"=>"left"}
+    assert_equal custom_params_with_length, tokenizer.truncation
+
+    tokenizer.no_truncation
+    assert_nil tokenizer.truncation
+  end
+
   def test_serialization
     tokenizer = Tokenizers.from_pretrained("bert-base-cased")
     assert_nil tokenizer.vocab["mellifluous"]

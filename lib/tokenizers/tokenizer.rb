@@ -30,6 +30,10 @@ module Tokenizers
       _enable_padding(options)
     end
 
+    def enable_truncation(max_length, **options)
+      _enable_truncation(max_length, options)
+    end
+
     def vocab(with_added_tokens: true)
       _vocab(with_added_tokens)
     end
