@@ -70,12 +70,14 @@ impl<'s> From<TextInputSequence<'s>> for tk::InputSequence<'s> {
 }
 
 struct RbArrayStr(Vec<String>);
+
 impl TryConvert for RbArrayStr {
     fn try_convert(ob: Value) -> RbResult<Self> {
         let seq = ob.try_convert::<Vec<String>>()?;
         Ok(Self(seq))
     }
 }
+
 impl From<RbArrayStr> for tk::InputSequence<'_> {
     fn from(s: RbArrayStr) -> Self {
         s.0.into()
@@ -111,10 +113,9 @@ impl<'s> TryConvert for TextEncodeInput<'s> {
         }
         if let Ok(arr) = ob.try_convert::<RArray>() {
             if arr.len() == 2 {
-                let i1 =  arr.entry::<TextInputSequence>(0).unwrap();
-                let i2 =  arr.entry::<TextInputSequence>(1).unwrap();
-
-                return Ok(Self((i1, i2).into()));
+                let first = arr.entry::<TextInputSequence>(0).unwrap();
+                let second = arr.entry::<TextInputSequence>(1).unwrap();
+                return Ok(Self((first, second).into()));
             }
         }
         Err(Error::new(
@@ -137,15 +138,16 @@ impl<'s> TryConvert for PreTokenizedEncodeInput<'s> {
         if let Ok(i) = ob.try_convert::<PreTokenizedInputSequence>() {
             return Ok(Self(i.into()));
         }
-        if let Ok((i1, i2)) = ob.try_convert::<(PreTokenizedInputSequence, PreTokenizedInputSequence)>() {
+        if let Ok((i1, i2)) =
+            ob.try_convert::<(PreTokenizedInputSequence, PreTokenizedInputSequence)>()
+        {
             return Ok(Self((i1, i2).into()));
         }
         if let Ok(arr) = ob.try_convert::<RArray>() {
             if arr.len() == 2 {
-                let i1 =  arr.entry::<PreTokenizedInputSequence>(0).unwrap();
-                let i2 =  arr.entry::<PreTokenizedInputSequence>(1).unwrap();
-
-                return Ok(Self((i1, i2).into()));
+                let first = arr.entry::<PreTokenizedInputSequence>(0).unwrap();
+                let second = arr.entry::<PreTokenizedInputSequence>(1).unwrap();
+                return Ok(Self((first, second).into()));
             }
         }
         Err(Error::new(
