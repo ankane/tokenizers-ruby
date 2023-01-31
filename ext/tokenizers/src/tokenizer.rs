@@ -212,7 +212,6 @@ impl RbTokenizer {
             .borrow()
             .save(&path, false)
             .map_err(RbError::from)
-            .into()
     }
 
     pub fn add_tokens(&self, tokens: Vec<String>) -> usize {
@@ -274,7 +273,7 @@ impl RbTokenizer {
             .map(|encodings| {
                 encodings
                     .into_iter()
-                    .map(|e| Into::<RbEncoding>::into(e))
+                    .map(Into::<RbEncoding>::into)
                     .collect()
             })
             .map_err(RbError::from)

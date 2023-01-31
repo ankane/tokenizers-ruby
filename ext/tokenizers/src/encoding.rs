@@ -55,7 +55,7 @@ impl RbEncoding {
             .get_overflowing()
             .clone()
             .into_iter()
-            .map(|e| Into::<RbEncoding>::into(e))
+            .map(Into::<RbEncoding>::into)
             .collect()
     }
 
