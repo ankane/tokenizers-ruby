@@ -441,8 +441,10 @@ impl RbTokenizer {
             }
         }
 
-        // For consistency with Python API we ignore any additional
-        // unrecognized keyword arguments
+        if !kwargs.is_empty() {
+            // TODO improve message
+            return Err(Error::new(exception::arg_error(), "unknown keyword"));
+        }
 
         self.tokenizer.borrow_mut().with_truncation(Some(params));
 
