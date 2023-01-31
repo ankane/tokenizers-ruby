@@ -72,8 +72,7 @@ impl<'s> From<TextInputSequence<'s>> for tk::InputSequence<'s> {
 struct RbArrayStr(Vec<String>);
 impl TryConvert for RbArrayStr {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        let array: RArray = ob.try_convert::<RArray>()?.into();
-        let seq = array.to_vec::<String>().unwrap();
+        let seq = ob.try_convert::<Vec<String>>()?;
         Ok(Self(seq))
     }
 }
