@@ -164,4 +164,20 @@ class TokenizerTest < Minitest::Test
     assert_equal 15011, vocab_with_added_tokens["upstream"]
     assert_equal 28996, vocab_with_added_tokens["mellifluous"]
   end
+
+  def test_padding
+    tokenizer = Tokenizers.from_pretrained("bert-base-cased")
+    assert_nil tokenizer.padding
+
+    tokenizer.enable_padding
+    default_padding = {"length"=>nil, "pad_id"=>0, "pad_type_id"=>0, "pad_token"=>"[PAD]", "pad_to_multiple_of"=>nil, "direction"=>"right"}
+    assert_equal default_padding, tokenizer.padding
+
+    tokenizer.enable_padding(length: 1024, direction: "left", pad_to_multiple_of: 256, pad_id: 29000, pad_type_id: 1, pad_token: "[SSS]")
+    configured_padding = {"length"=>1024, "pad_id"=>29000, "pad_type_id"=>1, "pad_token"=>"[SSS]", "pad_to_multiple_of"=>256, "direction"=>"left"}
+    assert_equal configured_padding, tokenizer.padding
+
+    tokenizer.no_padding
+    assert_nil tokenizer.padding
+  end
 end

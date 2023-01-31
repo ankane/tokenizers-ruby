@@ -50,6 +50,7 @@ fn init() -> RbResult<()> {
     class.define_method("token_to_id", method!(RbTokenizer::token_to_id, 1))?;
     class.define_method("id_to_token", method!(RbTokenizer::id_to_token, 1))?;
     class.define_method("_enable_padding", method!(RbTokenizer::enable_padding, 1))?;
+    class.define_method("padding", method!(RbTokenizer::padding, 0))?;
     class.define_method("no_padding", method!(RbTokenizer::no_padding, 0))?;
     class.define_method("_vocab", method!(RbTokenizer::vocab, 1))?;
     class.define_method("_vocab_size", method!(RbTokenizer::vocab_size, 1))?;

@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 
 use magnus::{exception, Error, RArray, RHash, Symbol, TryConvert, Value};
-use tk::tokenizer::{Model, PaddingParams, TokenizerImpl};
+use tk::tokenizer::{Model, PaddingDirection, PaddingParams, PaddingStrategy, TokenizerImpl};
 use tk::AddedToken;
 
 use super::decoders::RbDecoder;
@@ -329,6 +329,16 @@ impl RbTokenizer {
     pub fn enable_padding(&self, kwargs: RHash) -> RbResult<()> {
         let mut params = PaddingParams::default();
 
+        let value: Value = kwargs.delete(Symbol::new("direction"))?;
+        if !value.is_nil() {
+            let dir_str: String = value.try_convert()?;
+            params.direction = match dir_str.as_str() {
+                "left" => PaddingDirection::Left,
+                "right" => PaddingDirection::Right,
+                _ => return Err(Error::new(exception::arg_error(), "The direction value must be 'left' or 'right'")),
+            }
+        }
+
         let value: Value = kwargs.delete(Symbol::new("pad_id"))?;
         if !value.is_nil() {
             params.pad_id = value.try_convert()?;
@@ -344,6 +354,18 @@ impl RbTokenizer {
             params.pad_token = value.try_convert()?;
         }
 
+        let value: Value = kwargs.delete(Symbol::new("pad_to_multiple_of"))?;
+        if !value.is_nil() {
+            params.pad_to_multiple_of = value.try_convert()?;
+        }
+
+        let value: Value = kwargs.delete(Symbol::new("length"))?;
+        if value.is_nil() {
+            params.strategy = PaddingStrategy::BatchLongest;
+        } else {
+            params.strategy = PaddingStrategy::Fixed(value.try_convert()?);
+        }
+
         if !kwargs.is_empty() {
             // TODO improve message
             return Err(Error::new(exception::arg_error(), "unknown keyword"));
@@ -356,6 +378,28 @@ impl RbTokenizer {
 
     pub fn no_padding(&self) {
         self.tokenizer.borrow_mut().with_padding(None);
+    }
+
+    pub fn padding(&self) -> RbResult<Option<RHash>> {
+        self.tokenizer.borrow().get_padding().map_or(Ok(None), |params| {
+            let ret_hash = RHash::new();
+
+            ret_hash.aset(
+                "length",
+                match params.strategy {
+                    tk::PaddingStrategy::BatchLongest => None,
+                    tk::PaddingStrategy::Fixed(size) => Some(size),
+                },
+            )?;
+            ret_hash.aset("pad_id", params.pad_id)?;
+            ret_hash.aset("pad_type_id", params.pad_type_id)?;
+            ret_hash.aset("pad_token", &*params.pad_token)?;
+            ret_hash.aset("pad_to_multiple_of", params.pad_to_multiple_of)?;
+
+            ret_hash.aset("direction", params.direction.as_ref())?;
+
+            Ok(Some(ret_hash))
+        })
     }
 
     pub fn vocab(&self, with_added_tokens: bool) -> HashMap<String, u32> {
