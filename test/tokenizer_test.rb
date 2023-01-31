@@ -102,4 +102,18 @@ class TokenizerTest < Minitest::Test
     expected_tokens = ["[CLS]", "Am", "I", "allowed", "to", "pass", "two", "text", "arguments", "?", "[SEP]", "Yes", "I", "am", "!", "[SEP]"]
     assert_equal expected_tokens, encoded.tokens
   end
+
+  def test_pretokenized_encoding
+    tokenizer = Tokenizers.from_pretrained("bert-base-cased")
+    sequence = "A mellifluous sequence"
+    pair = "And its malodorous pair"
+
+    pretokenized_sequence = sequence.split(" ")
+    pretokenized_pair = pair.split(" ")
+
+    encoded_wout_pretokenization = tokenizer.encode(sequence, pair)
+    encoded_with_pretokenization = tokenizer.encode(pretokenized_sequence, pretokenized_pair, is_pretokenized: true)
+
+    assert_equal encoded_wout_pretokenization.tokens, encoded_with_pretokenization.tokens
+  end
 end

@@ -69,10 +69,27 @@ impl<'s> From<TextInputSequence<'s>> for tk::InputSequence<'s> {
     }
 }
 
+struct RbArrayStr(Vec<String>);
+impl TryConvert for RbArrayStr {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let array: RArray = ob.try_convert::<RArray>()?.into();
+        let seq = array.to_vec::<String>().unwrap();
+        Ok(Self(seq))
+    }
+}
+impl From<RbArrayStr> for tk::InputSequence<'_> {
+    fn from(s: RbArrayStr) -> Self {
+        s.0.into()
+    }
+}
+
 struct PreTokenizedInputSequence<'s>(tk::InputSequence<'s>);
 
 impl<'s> TryConvert for PreTokenizedInputSequence<'s> {
-    fn try_convert(_ob: Value) -> RbResult<Self> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        if let Ok(seq) = ob.try_convert::<RbArrayStr>() {
+            return Ok(Self(seq.into()));
+        }
         todo!()
     }
 }
@@ -93,12 +110,48 @@ impl<'s> TryConvert for TextEncodeInput<'s> {
         if let Ok((i1, i2)) = ob.try_convert::<(TextInputSequence, TextInputSequence)>() {
             return Ok(Self((i1, i2).into()));
         }
+        if let Ok(arr) = ob.try_convert::<RArray>() {
+            if arr.len() == 2 {
+                let i1 =  arr.entry::<TextInputSequence>(0).unwrap();
+                let i2 =  arr.entry::<TextInputSequence>(1).unwrap();
+
+                return Ok(Self((i1, i2).into()));
+            }
+        }
         todo!()
     }
 }
 
 impl<'s> From<TextEncodeInput<'s>> for tk::tokenizer::EncodeInput<'s> {
     fn from(i: TextEncodeInput<'s>) -> Self {
+        i.0
+    }
+}
+
+struct PreTokenizedEncodeInput<'s>(tk::EncodeInput<'s>);
+
+impl<'s> TryConvert for PreTokenizedEncodeInput<'s> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        if let Ok(i) = ob.try_convert::<PreTokenizedInputSequence>() {
+            return Ok(Self(i.into()));
+        }
+        if let Ok((i1, i2)) = ob.try_convert::<(PreTokenizedInputSequence, PreTokenizedInputSequence)>() {
+            return Ok(Self((i1, i2).into()));
+        }
+        if let Ok(arr) = ob.try_convert::<RArray>() {
+            if arr.len() == 2 {
+                let i1 =  arr.entry::<PreTokenizedInputSequence>(0).unwrap();
+                let i2 =  arr.entry::<PreTokenizedInputSequence>(1).unwrap();
+
+                return Ok(Self((i1, i2).into()));
+            }
+        }
+        todo!()
+    }
+}
+
+impl<'s> From<PreTokenizedEncodeInput<'s>> for tk::tokenizer::EncodeInput<'s> {
+    fn from(i: PreTokenizedEncodeInput<'s>) -> Self {
         i.0
     }
 }
@@ -161,14 +214,28 @@ impl RbTokenizer {
 
     pub fn encode(
         &self,
-        sequence: String,
-        pair: Option<String>,
+        sequence: Value,
+        pair: Option<Value>,
+        is_pretokenized: bool,
         add_special_tokens: bool,
     ) -> RbResult<RbEncoding> {
-        let input = match pair {
-            Some(pair) => tk::EncodeInput::Dual(sequence.into(), pair.into()),
-            None => tk::EncodeInput::Single(sequence.into()),
+        let sequence: tk::InputSequence = if is_pretokenized {
+            sequence.try_convert::<PreTokenizedInputSequence>()?.into()
+        } else {
+            sequence.try_convert::<TextInputSequence>()?.into()
         };
+        let input = match pair {
+            Some(pair) => {
+                let pair: tk::InputSequence = if is_pretokenized {
+                    pair.try_convert::<PreTokenizedInputSequence>()?.into()
+                } else {
+                    pair.try_convert::<TextInputSequence>()?.into()
+                };
+                tk::EncodeInput::Dual(sequence, pair)
+            }
+            None => tk::EncodeInput::Single(sequence),
+        };
+
         self.tokenizer
             .borrow()
             .encode_char_offsets(input, add_special_tokens)
@@ -186,7 +253,7 @@ impl RbTokenizer {
             .each()
             .map(|o| {
                 let input: tk::EncodeInput = if is_pretokenized {
-                    todo!()
+                    o?.try_convert::<PreTokenizedEncodeInput>()?.into()
                 } else {
                     o?.try_convert::<TextEncodeInput>()?.into()
                 };
