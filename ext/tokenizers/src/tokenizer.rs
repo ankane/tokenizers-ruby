@@ -1,8 +1,12 @@
 use std::cell::RefCell;
+use std::collections::HashMap;
 use std::path::PathBuf;
 
 use magnus::{exception, Error, RArray, RHash, Symbol, TryConvert, Value};
-use tk::tokenizer::{Model, PaddingParams, TokenizerImpl};
+use tk::tokenizer::{
+    Model, PaddingDirection, PaddingParams, PaddingStrategy,
+    TruncationDirection, TruncationParams, TruncationStrategy, TokenizerImpl
+};
 use tk::AddedToken;
 
 use super::decoders::RbDecoder;
@@ -191,6 +195,10 @@ impl RbTokenizer {
             .map_err(RbError::from)
     }
 
+    pub fn to_str(&self, pretty: bool) -> RbResult<String> {
+        self.tokenizer.borrow().to_string(pretty).map_err(RbError::from)
+    }
+
     pub fn add_special_tokens(&self, tokens: Vec<String>) -> usize {
         let tokens: Vec<AddedToken> = tokens.iter().map(|t| AddedToken::from(t, true)).collect();
         self.tokenizer.borrow_mut().add_special_tokens(&tokens)
@@ -208,10 +216,10 @@ impl RbTokenizer {
             .map_err(RbError::from)
     }
 
-    pub fn save(&self, path: String) -> RbResult<()> {
+    pub fn save(&self, path: String, pretty: bool) -> RbResult<()> {
         self.tokenizer
             .borrow()
-            .save(&path, false)
+            .save(&path, pretty)
             .map_err(RbError::from)
     }
 
@@ -280,10 +288,17 @@ impl RbTokenizer {
             .map_err(RbError::from)
     }
 
-    pub fn decode(&self, ids: Vec<u32>) -> RbResult<String> {
+    pub fn decode(&self, ids: Vec<u32>, skip_special_tokens: bool) -> RbResult<String> {
         self.tokenizer
             .borrow()
-            .decode(ids, true)
+            .decode(ids, skip_special_tokens)
+            .map_err(RbError::from)
+    }
+
+    pub fn decode_batch(&self, sequences: Vec<Vec<u32>>, skip_special_tokens: bool) -> RbResult<Vec<String>> {
+        self.tokenizer
+            .borrow()
+            .decode_batch(sequences, skip_special_tokens)
             .map_err(RbError::from)
     }
 
@@ -321,6 +336,16 @@ impl RbTokenizer {
     pub fn enable_padding(&self, kwargs: RHash) -> RbResult<()> {
         let mut params = PaddingParams::default();
 
+        let value: Value = kwargs.delete(Symbol::new("direction"))?;
+        if !value.is_nil() {
+            let dir_str: String = value.try_convert()?;
+            params.direction = match dir_str.as_str() {
+                "left" => PaddingDirection::Left,
+                "right" => PaddingDirection::Right,
+                _ => return Err(Error::new(exception::arg_error(), "The direction value must be 'left' or 'right'")),
+            }
+        }
+
         let value: Value = kwargs.delete(Symbol::new("pad_id"))?;
         if !value.is_nil() {
             params.pad_id = value.try_convert()?;
@@ -336,6 +361,18 @@ impl RbTokenizer {
             params.pad_token = value.try_convert()?;
         }
 
+        let value: Value = kwargs.delete(Symbol::new("pad_to_multiple_of"))?;
+        if !value.is_nil() {
+            params.pad_to_multiple_of = value.try_convert()?;
+        }
+
+        let value: Value = kwargs.delete(Symbol::new("length"))?;
+        if value.is_nil() {
+            params.strategy = PaddingStrategy::BatchLongest;
+        } else {
+            params.strategy = PaddingStrategy::Fixed(value.try_convert()?);
+        }
+
         if !kwargs.is_empty() {
             // TODO improve message
             return Err(Error::new(exception::arg_error(), "unknown keyword"));
@@ -344,5 +381,97 @@ impl RbTokenizer {
         self.tokenizer.borrow_mut().with_padding(Some(params));
 
         Ok(())
+    }
+
+    pub fn no_padding(&self) {
+        self.tokenizer.borrow_mut().with_padding(None);
+    }
+
+    pub fn padding(&self) -> RbResult<Option<RHash>> {
+        self.tokenizer.borrow().get_padding().map_or(Ok(None), |params| {
+            let ret_hash = RHash::new();
+
+            ret_hash.aset(
+                "length",
+                match params.strategy {
+                    tk::PaddingStrategy::BatchLongest => None,
+                    tk::PaddingStrategy::Fixed(size) => Some(size),
+                },
+            )?;
+            ret_hash.aset("pad_id", params.pad_id)?;
+            ret_hash.aset("pad_type_id", params.pad_type_id)?;
+            ret_hash.aset("pad_token", &*params.pad_token)?;
+            ret_hash.aset("pad_to_multiple_of", params.pad_to_multiple_of)?;
+
+            ret_hash.aset("direction", params.direction.as_ref())?;
+
+            Ok(Some(ret_hash))
+        })
+    }
+
+    pub fn enable_truncation(&self, max_length: usize, kwargs: RHash) -> RbResult<()> {
+        let mut params = TruncationParams {
+            max_length,
+            ..Default::default()
+        };
+
+        let value: Value = kwargs.delete(Symbol::new("stride"))?;
+        if !value.is_nil() {
+            params.stride = value.try_convert()?;
+        }
+
+        let value: Value = kwargs.delete(Symbol::new("direction"))?;
+        if !value.is_nil() {
+            let dir_str: String = value.try_convert()?;
+            params.direction = match dir_str.as_str() {
+                "left" => TruncationDirection::Left,
+                "right" => TruncationDirection::Right,
+                _ => return Err(Error::new(exception::arg_error(), "The direction value must be 'left' or 'right'")),
+            }
+        }
+
+        let value: Value = kwargs.delete(Symbol::new("strategy"))?;
+        if !value.is_nil() {
+            let strategy_str: String = value.try_convert()?;
+            params.strategy = match strategy_str.as_str() {
+                "longest_first" => TruncationStrategy::LongestFirst,
+                "only_first" => TruncationStrategy::OnlyFirst,
+                "only_second" => TruncationStrategy::OnlySecond,
+                _ => return Err(Error::new(exception::arg_error(), "The strategy value must be 'longest_first', 'only_first', or 'only_second'")),
+            }
+        }
+
+        // For consistency with Python API we ignore any additional
+        // unrecognized keyword arguments
+
+        self.tokenizer.borrow_mut().with_truncation(Some(params));
+
+        Ok(())
+    }
+
+
+    pub fn no_truncation(&self) {
+        self.tokenizer.borrow_mut().with_truncation(None);
+    }
+
+    pub fn truncation(&self) -> RbResult<Option<RHash>> {
+        self.tokenizer.borrow().get_truncation().map_or(Ok(None), |params| {
+            let ret_hash = RHash::new();
+
+            ret_hash.aset("max_length", params.max_length)?;
+            ret_hash.aset("stride", params.stride)?;
+            ret_hash.aset("strategy", params.strategy.as_ref())?;
+            ret_hash.aset("direction", params.direction.as_ref())?;
+
+            Ok(Some(ret_hash))
+        })
+    }
+
+    pub fn vocab(&self, with_added_tokens: bool) -> HashMap<String, u32> {
+        self.tokenizer.borrow().get_vocab(with_added_tokens)
+    }
+
+    pub fn vocab_size(&self, with_added_tokens: bool) -> usize {
+        self.tokenizer.borrow().get_vocab_size(with_added_tokens)
     }
 }

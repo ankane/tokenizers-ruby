@@ -1,5 +1,7 @@
 require_relative "test_helper"
 
+require "json"
+
 class TokenizerTest < Minitest::Test
   def test_from_pretrained_bert
     tokenizer = Tokenizers.from_pretrained("bert-base-cased")
@@ -115,5 +117,107 @@ class TokenizerTest < Minitest::Test
     encoded_with_pretokenization = tokenizer.encode(pretokenized_sequence, pretokenized_pair, is_pretokenized: true)
 
     assert_equal encoded_wout_pretokenization.tokens, encoded_with_pretokenization.tokens
+  end
+
+  def test_decode_with_special_tokens
+    tokenizer = Tokenizers.from_pretrained("bert-base-cased")
+
+    token_ids = [101, 146, 1169, 1631, 1103, 3974, 117, 1169, 1128, 136, 102]
+
+    assert_equal "[CLS] I can feel the magic, can you? [SEP]", tokenizer.decode(token_ids, skip_special_tokens: false)
+  end
+
+  def test_decode_batch
+    tokenizer = Tokenizers.from_pretrained("bert-base-cased")
+
+    string_1 = "I can feel the magic, can you?"
+    token_ids_1 = [101, 146, 1169, 1631, 1103, 3974, 117, 1169, 1128, 136, 102]
+
+    string_2 = "Am I allowed to pass two text arguments?"
+    token_ids_2 = [101, 7277, 146, 2148, 1106, 2789, 1160, 3087, 9989, 136, 102]
+
+    assert_equal [string_1, string_2], tokenizer.decode_batch([token_ids_1, token_ids_2])
+
+    assert_equal ["[CLS] #{string_1} [SEP]", "[CLS] #{string_2} [SEP]"], tokenizer.decode_batch([token_ids_1, token_ids_2], skip_special_tokens: false)
+  end
+
+  def test_vocab_size
+    tokenizer = Tokenizers.from_pretrained("bert-base-cased")
+
+    size_without_added_tokens = tokenizer.vocab_size(with_added_tokens: false)
+    assert_equal 28996, size_without_added_tokens
+
+    tokenizer.add_tokens(["mellifluous", "malodorous"])
+    size_with_added_tokens = tokenizer.vocab_size
+    assert_equal 28998, size_with_added_tokens
+  end
+
+  def test_vocab
+    tokenizer = Tokenizers.from_pretrained("bert-base-cased")
+
+    vocab_without_added_tokens = tokenizer.vocab(with_added_tokens: false)
+    assert_equal 28996, vocab_without_added_tokens.size
+    assert_equal 15011, vocab_without_added_tokens["upstream"]
+    assert_nil vocab_without_added_tokens["mellifluous"]
+
+    tokenizer.add_tokens(["mellifluous", "malodorous"])
+    vocab_with_added_tokens = tokenizer.vocab
+    assert_equal 28998, vocab_with_added_tokens.size
+    assert_equal 15011, vocab_with_added_tokens["upstream"]
+    assert_equal 28996, vocab_with_added_tokens["mellifluous"]
+  end
+
+  def test_padding
+    tokenizer = Tokenizers.from_pretrained("bert-base-cased")
+    assert_nil tokenizer.padding
+
+    tokenizer.enable_padding
+    default_padding = {"length"=>nil, "pad_id"=>0, "pad_type_id"=>0, "pad_token"=>"[PAD]", "pad_to_multiple_of"=>nil, "direction"=>"right"}
+    assert_equal default_padding, tokenizer.padding
+
+    tokenizer.enable_padding(length: 1024, direction: "left", pad_to_multiple_of: 256, pad_id: 29000, pad_type_id: 1, pad_token: "[SSS]")
+    configured_padding = {"length"=>1024, "pad_id"=>29000, "pad_type_id"=>1, "pad_token"=>"[SSS]", "pad_to_multiple_of"=>256, "direction"=>"left"}
+    assert_equal configured_padding, tokenizer.padding
+
+    tokenizer.no_padding
+    assert_nil tokenizer.padding
+  end
+
+  def test_truncation
+    tokenizer = Tokenizers.from_pretrained("bert-base-cased")
+    assert_nil tokenizer.truncation
+
+    tokenizer.enable_truncation(1024)
+    default_params_with_length = {"max_length"=>1024, "stride"=>0, "strategy"=>"longest_first", "direction"=>"right"}
+    assert_equal default_params_with_length, tokenizer.truncation
+
+    tokenizer.enable_truncation(2048, stride: 20, direction: "left", strategy: "only_first")
+    custom_params_with_length = {"max_length"=>2048, "stride"=>20, "strategy"=>"only_first", "direction"=>"left"}
+    assert_equal custom_params_with_length, tokenizer.truncation
+
+    tokenizer.no_truncation
+    assert_nil tokenizer.truncation
+  end
+
+  def test_serialization
+    tokenizer = Tokenizers.from_pretrained("bert-base-cased")
+    assert_nil tokenizer.vocab["mellifluous"]
+
+    tokenizer.add_tokens(["mellifluous", "malodorous"])
+    preserialization_size_with_added_tokens = tokenizer.vocab_size
+    assert_equal 28996, tokenizer.vocab["mellifluous"]
+
+    as_pretty_str = tokenizer.to_str(pretty: true)
+    assert_equal 29163, as_pretty_str.count("\n")
+    pretty_path = "/tmp/pretty-tokenizer.json"
+    tokenizer.save(pretty_path, pretty: true)
+
+    # Compare file content
+    pretty_from_file = File.read(pretty_path)
+    assert_equal as_pretty_str, pretty_from_file
+
+    new_tokenizer = Tokenizers.from_file(pretty_path)
+    assert_equal preserialization_size_with_added_tokens, new_tokenizer.vocab_size
+    assert_equal 28996, new_tokenizer.vocab["mellifluous"]
   end
 end
