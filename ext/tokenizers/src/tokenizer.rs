@@ -346,6 +346,11 @@ impl RbTokenizer {
             }
         }
 
+        let value: Value = kwargs.delete(Symbol::new("pad_to_multiple_of"))?;
+        if !value.is_nil() {
+            params.pad_to_multiple_of = value.try_convert()?;
+        }
+
         let value: Value = kwargs.delete(Symbol::new("pad_id"))?;
         if !value.is_nil() {
             params.pad_id = value.try_convert()?;
@@ -359,11 +364,6 @@ impl RbTokenizer {
         let value: Value = kwargs.delete(Symbol::new("pad_token"))?;
         if !value.is_nil() {
             params.pad_token = value.try_convert()?;
-        }
-
-        let value: Value = kwargs.delete(Symbol::new("pad_to_multiple_of"))?;
-        if !value.is_nil() {
-            params.pad_to_multiple_of = value.try_convert()?;
         }
 
         let value: Value = kwargs.delete(Symbol::new("length"))?;
@@ -398,11 +398,10 @@ impl RbTokenizer {
                     tk::PaddingStrategy::Fixed(size) => Some(size),
                 },
             )?;
-            ret_hash.aset("pad_id", params.pad_id)?;
-            ret_hash.aset("pad_type_id", params.pad_type_id)?;
-            ret_hash.aset("pad_token", &*params.pad_token)?;
             ret_hash.aset("pad_to_multiple_of", params.pad_to_multiple_of)?;
-
+            ret_hash.aset("pad_id", params.pad_id)?;
+            ret_hash.aset("pad_token", &*params.pad_token)?;
+            ret_hash.aset("pad_type_id", params.pad_type_id)?;
             ret_hash.aset("direction", params.direction.as_ref())?;
 
             Ok(Some(ret_hash))
@@ -420,16 +419,6 @@ impl RbTokenizer {
             params.stride = value.try_convert()?;
         }
 
-        let value: Value = kwargs.delete(Symbol::new("direction"))?;
-        if !value.is_nil() {
-            let dir_str: String = value.try_convert()?;
-            params.direction = match dir_str.as_str() {
-                "left" => TruncationDirection::Left,
-                "right" => TruncationDirection::Right,
-                _ => return Err(Error::new(exception::arg_error(), "The direction value must be 'left' or 'right'")),
-            }
-        }
-
         let value: Value = kwargs.delete(Symbol::new("strategy"))?;
         if !value.is_nil() {
             let strategy_str: String = value.try_convert()?;
@@ -438,6 +427,16 @@ impl RbTokenizer {
                 "only_first" => TruncationStrategy::OnlyFirst,
                 "only_second" => TruncationStrategy::OnlySecond,
                 _ => return Err(Error::new(exception::arg_error(), "The strategy value must be 'longest_first', 'only_first', or 'only_second'")),
+            }
+        }
+
+        let value: Value = kwargs.delete(Symbol::new("direction"))?;
+        if !value.is_nil() {
+            let dir_str: String = value.try_convert()?;
+            params.direction = match dir_str.as_str() {
+                "left" => TruncationDirection::Left,
+                "right" => TruncationDirection::Right,
+                _ => return Err(Error::new(exception::arg_error(), "The direction value must be 'left' or 'right'")),
             }
         }
 
@@ -450,7 +449,6 @@ impl RbTokenizer {
 
         Ok(())
     }
-
 
     pub fn no_truncation(&self) {
         self.tokenizer.borrow_mut().with_truncation(None);
