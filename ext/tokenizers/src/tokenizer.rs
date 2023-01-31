@@ -118,7 +118,10 @@ impl<'s> TryConvert for TextEncodeInput<'s> {
                 return Ok(Self((i1, i2).into()));
             }
         }
-        todo!()
+        Err(Error::new(
+            exception::type_error(),
+            "TextEncodeInput must be Union[TextInputSequence, Tuple[InputSequence, InputSequence]]",
+        ))
     }
 }
 
@@ -146,7 +149,11 @@ impl<'s> TryConvert for PreTokenizedEncodeInput<'s> {
                 return Ok(Self((i1, i2).into()));
             }
         }
-        todo!()
+        Err(Error::new(
+            exception::type_error(),
+            "PreTokenizedEncodeInput must be Union[PreTokenizedInputSequence, \
+            Tuple[PreTokenizedInputSequence, PreTokenizedInputSequence]]",
+        ))
     }
 }
 
