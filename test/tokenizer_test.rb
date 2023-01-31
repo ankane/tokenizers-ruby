@@ -207,7 +207,7 @@ class TokenizerTest < Minitest::Test
     preserialization_size_with_added_tokens = tokenizer.vocab_size
     assert_equal 28996, tokenizer.vocab["mellifluous"]
 
-    as_pretty_str = tokenizer.to_str(pretty: true)
+    as_pretty_str = tokenizer.to_s(pretty: true)
     assert_equal 29163, as_pretty_str.count("\n")
     pretty_path = "/tmp/pretty-tokenizer.json"
     tokenizer.save(pretty_path, pretty: true)

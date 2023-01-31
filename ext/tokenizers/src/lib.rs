@@ -57,7 +57,7 @@ fn init() -> RbResult<()> {
     class.define_method("no_truncation", method!(RbTokenizer::no_truncation, 0))?;
     class.define_method("_vocab", method!(RbTokenizer::vocab, 1))?;
     class.define_method("_vocab_size", method!(RbTokenizer::vocab_size, 1))?;
-    class.define_method("_to_str", method!(RbTokenizer::to_str, 1))?;
+    class.define_method("_to_s", method!(RbTokenizer::to_str, 1))?;
 
     let class = module.define_class("Encoding", Default::default())?;
     class.define_method("n_sequences", method!(RbEncoding::n_sequences, 0))?;
