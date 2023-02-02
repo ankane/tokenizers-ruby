@@ -55,6 +55,7 @@ fn init() -> RbResult<()> {
     class.define_method("_enable_truncation", method!(RbTokenizer::enable_truncation, 2))?;
     class.define_method("truncation", method!(RbTokenizer::truncation, 0))?;
     class.define_method("no_truncation", method!(RbTokenizer::no_truncation, 0))?;
+    class.define_method("num_special_tokens_to_add", method!(RbTokenizer::num_special_tokens_to_add, 1))?;
     class.define_method("_vocab", method!(RbTokenizer::vocab, 1))?;
     class.define_method("_vocab_size", method!(RbTokenizer::vocab_size, 1))?;
     class.define_method("_to_s", method!(RbTokenizer::to_str, 1))?;
