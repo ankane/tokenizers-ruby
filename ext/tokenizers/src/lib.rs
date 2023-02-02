@@ -9,6 +9,7 @@ mod pre_tokenizers;
 mod processors;
 mod tokenizer;
 mod trainers;
+mod utils;
 
 use encoding::RbEncoding;
 use error::RbError;

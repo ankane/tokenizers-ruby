@@ -2,14 +2,13 @@ use std::sync::{Arc, RwLock};
 
 use magnus::typed_data::DataTypeBuilder;
 use magnus::{
-    exception, function, memoize, Class, DataType, DataTypeFunctions, Error, Module, Object,
+    function, memoize, Class, DataType, DataTypeFunctions, Module, Object,
     RClass, RModule, TypedData,
 };
 
 use serde::ser::SerializeStruct;
 use serde::{Deserialize, Serialize, Serializer};
 
-use tk::normalizer::SplitDelimiterBehavior;
 use tk::pre_tokenizers::bert::BertPreTokenizer;
 use tk::pre_tokenizers::byte_level::ByteLevel;
 use tk::pre_tokenizers::delimiter::CharDelimiterSplit;
@@ -22,7 +21,8 @@ use tk::pre_tokenizers::whitespace::{Whitespace, WhitespaceSplit};
 use tk::pre_tokenizers::PreTokenizerWrapper;
 use tk::{PreTokenizedString, PreTokenizer};
 
-use super::{module, RbResult};
+use super::utils::*;
+use super::{module, RbError, RbResult};
 
 #[derive(DataTypeFunctions, Clone, Serialize, Deserialize)]
 pub struct RbPreTokenizer {
@@ -88,41 +88,19 @@ impl RbMetaspace {
     }
 }
 
-pub trait ConvertsSplitDelimiterBehavior {
-    fn from_string(behavior: String) -> RbResult<SplitDelimiterBehavior> {
-        match behavior.as_str() {
-            "removed" => Ok(SplitDelimiterBehavior::Removed),
-            "isolated" => Ok(SplitDelimiterBehavior::Isolated),
-            "merged_with_previous" => Ok(SplitDelimiterBehavior::MergedWithPrevious),
-            "merged_with_next" => Ok(SplitDelimiterBehavior::MergedWithNext),
-            "contiguous" => Ok(SplitDelimiterBehavior::Contiguous),
-            _ => Err(Error::new(exception::arg_error(), "The behavior value must be 'contiguous', 'isolated', 'merged_with_next', 'merged_with_previous' or 'removed'"))
-        }
-    }
-}
-
 pub struct RbPunctuation {}
 
-impl ConvertsSplitDelimiterBehavior for RbPunctuation {}
-
 impl RbPunctuation {
-    pub fn new(behavior: String) -> RbResult<RbPreTokenizer> {
-        let behavior_as_enum =  <RbPunctuation as ConvertsSplitDelimiterBehavior>::from_string(behavior)?;
-        Ok(Punctuation::new(behavior_as_enum).into())
+    pub fn new(behavior: RbSplitDelimiterBehavior) -> RbResult<RbPreTokenizer> {
+        Ok(Punctuation::new(behavior.into()).into())
     }
 }
 
 pub struct RbSplit {}
 
-impl ConvertsSplitDelimiterBehavior for RbSplit {}
-
 impl RbSplit {
-    pub fn new(pattern: String, behavior: String, invert: bool) -> RbResult<RbPreTokenizer> {
-        let behavior_as_enum =  <RbPunctuation as ConvertsSplitDelimiterBehavior>::from_string(behavior)?;
-        match Split::new(pattern, behavior_as_enum, invert) {
-            Ok(split) => return Ok(split.into()),
-            _ => Err(Error::new(exception::arg_error(), "Could not parse Split arguments."))
-        }
+    pub fn new(pattern: String, behavior: RbSplitDelimiterBehavior, invert: bool) -> RbResult<RbPreTokenizer> {
+        Split::new(pattern, behavior.into(), invert).map(|v| v.into()).map_err(RbError::from)
     }
 }
 
