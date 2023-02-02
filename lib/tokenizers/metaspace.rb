@@ -1,6 +1,6 @@
 module Tokenizers
   class Metaspace
-    def self.new(replacement: '_', add_prefix_space: true)
+    def self.new(replacement: "\u2581", add_prefix_space: true)
       _new(replacement, add_prefix_space)
     end
   end
