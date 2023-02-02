@@ -1,6 +1,50 @@
 use crate::RbResult;
 use magnus::{exception, Error, TryConvert, Value};
 use tk::normalizer::SplitDelimiterBehavior;
+use tk::pattern::Pattern;
+
+/// Represents a Pattern as used by `NormalizedString`
+#[derive(Clone)]
+pub enum RbPattern {
+    Str(String),
+}
+
+impl TryConvert for RbPattern {
+    fn try_convert(obj: Value) -> RbResult<Self> {
+        Ok(RbPattern::Str(obj.try_convert()?))
+    }
+}
+
+impl Pattern for RbPattern {
+    fn find_matches(&self, inside: &str) -> tk::Result<Vec<(tk::Offsets, bool)>> {
+        match self {
+            RbPattern::Str(s) => {
+                let mut chars = s.chars();
+                if let (Some(c), None) = (chars.next(), chars.next()) {
+                    c.find_matches(inside)
+                } else {
+                    s.find_matches(inside)
+                }
+            }
+        }
+    }
+}
+
+impl From<RbPattern> for tk::normalizers::replace::ReplacePattern {
+    fn from(pattern: RbPattern) -> Self {
+        match pattern {
+            RbPattern::Str(s) => Self::String(s),
+        }
+    }
+}
+
+impl From<RbPattern> for tk::pre_tokenizers::split::SplitPattern {
+    fn from(pattern: RbPattern) -> Self {
+        match pattern {
+            RbPattern::Str(s) => Self::String(s),
+        }
+    }
+}
 
 #[derive(Clone)]
 pub struct RbSplitDelimiterBehavior(pub SplitDelimiterBehavior);

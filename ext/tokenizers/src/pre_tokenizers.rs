@@ -99,7 +99,7 @@ impl RbPunctuation {
 pub struct RbSplit {}
 
 impl RbSplit {
-    pub fn new(pattern: String, behavior: RbSplitDelimiterBehavior, invert: bool) -> RbResult<RbPreTokenizer> {
+    pub fn new(pattern: RbPattern, behavior: RbSplitDelimiterBehavior, invert: bool) -> RbResult<RbPreTokenizer> {
         Split::new(pattern, behavior.into(), invert).map(|v| v.into()).map_err(RbError::from)
     }
 }
