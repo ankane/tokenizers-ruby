@@ -2,14 +2,23 @@ use std::sync::{Arc, RwLock};
 
 use magnus::typed_data::DataTypeBuilder;
 use magnus::{
-    function, memoize, Class, DataType, DataTypeFunctions, Module, Object, RClass, RModule,
-    TypedData,
+    exception, function, memoize, Class, DataType, DataTypeFunctions, Error, Module, Object,
+    RClass, RModule, TypedData,
 };
+
 use serde::ser::SerializeStruct;
 use serde::{Deserialize, Serialize, Serializer};
 
+use tk::normalizer::SplitDelimiterBehavior;
 use tk::pre_tokenizers::bert::BertPreTokenizer;
-use tk::pre_tokenizers::whitespace::Whitespace;
+use tk::pre_tokenizers::byte_level::ByteLevel;
+use tk::pre_tokenizers::delimiter::CharDelimiterSplit;
+use tk::pre_tokenizers::digits::Digits;
+use tk::pre_tokenizers::metaspace::Metaspace;
+use tk::pre_tokenizers::punctuation::Punctuation;
+use tk::pre_tokenizers::split::Split;
+use tk::pre_tokenizers::unicode_scripts::UnicodeScripts;
+use tk::pre_tokenizers::whitespace::{Whitespace, WhitespaceSplit};
 use tk::pre_tokenizers::PreTokenizerWrapper;
 use tk::{PreTokenizedString, PreTokenizer};
 
@@ -34,11 +43,110 @@ impl PreTokenizer for RbPreTokenizer {
     }
 }
 
+pub struct RbByteLevel {}
+
+impl RbByteLevel {
+    pub fn new(add_prefix_space: bool, use_regex: bool) -> RbPreTokenizer {
+        ByteLevel::default()
+            .add_prefix_space(add_prefix_space)
+            .use_regex(use_regex)
+            .into()
+    }
+
+    fn alphabet() -> Vec<String> {
+        ByteLevel::alphabet()
+            .into_iter()
+            .map(|c| c.to_string())
+            .collect()
+    }
+}
+
+pub struct RbCharDelimiterSplit {}
+
+impl RbCharDelimiterSplit {
+    pub fn new(delimiter: char) -> RbPreTokenizer {
+        CharDelimiterSplit::new(delimiter).into()
+    }
+}
+
+pub struct RbDigits {}
+
+impl RbDigits {
+    fn new(individual_digits: bool) -> RbPreTokenizer {
+        Digits::new(individual_digits).into()
+    }
+}
+
+pub struct RbMetaspace {}
+
+impl RbMetaspace {
+    fn new(
+        replacement: char,
+        add_prefix_space: bool,
+    ) -> RbPreTokenizer {
+        Metaspace::new(replacement, add_prefix_space).into()
+    }
+}
+
+pub trait ConvertsSplitDelimiterBehavior {
+    fn from_string(behavior: String) -> RbResult<SplitDelimiterBehavior> {
+        match behavior.as_str() {
+            "removed" => Ok(SplitDelimiterBehavior::Removed),
+            "isolated" => Ok(SplitDelimiterBehavior::Isolated),
+            "merged_with_previous" => Ok(SplitDelimiterBehavior::MergedWithPrevious),
+            "merged_with_next" => Ok(SplitDelimiterBehavior::MergedWithNext),
+            "contiguous" => Ok(SplitDelimiterBehavior::Contiguous),
+            _ => Err(Error::new(exception::arg_error(), "The behavior value must be 'contiguous', 'isolated', 'merged_with_next', 'merged_with_previous' or 'removed'"))
+        }
+    }
+}
+
+pub struct RbPunctuation {}
+
+impl ConvertsSplitDelimiterBehavior for RbPunctuation {}
+
+impl RbPunctuation {
+    pub fn new(behavior: String) -> RbResult<RbPreTokenizer> {
+        let behavior_as_enum =  <RbPunctuation as ConvertsSplitDelimiterBehavior>::from_string(behavior)?;
+        Ok(Punctuation::new(behavior_as_enum).into())
+    }
+}
+
+pub struct RbSplit {}
+
+impl ConvertsSplitDelimiterBehavior for RbSplit {}
+
+impl RbSplit {
+    pub fn new(pattern: String, behavior: String, invert: bool) -> RbResult<RbPreTokenizer> {
+        let behavior_as_enum =  <RbPunctuation as ConvertsSplitDelimiterBehavior>::from_string(behavior)?;
+        match Split::new(pattern, behavior_as_enum, invert) {
+            Ok(split) => return Ok(split.into()),
+            _ => Err(Error::new(exception::arg_error(), "Could not parse Split arguments."))
+        }
+    }
+}
+
+pub struct RbUnicodeScripts {}
+
+impl RbUnicodeScripts {
+    pub fn new() -> RbPreTokenizer {
+        UnicodeScripts::new().into()
+    }
+}
+
 pub struct RbWhitespace {}
 
 impl RbWhitespace {
     pub fn new() -> RbPreTokenizer {
         Whitespace::default().into()
+    }
+}
+
+pub struct RbWhitespaceSplit {}
+
+impl RbWhitespaceSplit {
+    pub fn new() -> RbPreTokenizer {
+        WhitespaceSplit.into()
     }
 }
 
@@ -160,13 +268,53 @@ unsafe impl TypedData for RbPreTokenizer {
             RbPreTokenizerTypeWrapper::Sequence(_seq) => todo!(),
             RbPreTokenizerTypeWrapper::Single(inner) => match &*inner.read().unwrap() {
                 RbPreTokenizerWrapper::Wrapped(wrapped) => match &wrapped {
+                    PreTokenizerWrapper::BertPreTokenizer(_) => *memoize!(RClass: {
+                        let class: RClass = module().const_get("BertPreTokenizer").unwrap();
+                        class.undef_alloc_func();
+                        class
+                    }),
+                    PreTokenizerWrapper::ByteLevel(_) => *memoize!(RClass: {
+                        let class: RClass = module().const_get("ByteLevel").unwrap();
+                        class.undef_alloc_func();
+                        class
+                    }),
+                    PreTokenizerWrapper::Delimiter(_) => *memoize!(RClass: {
+                        let class: RClass = module().const_get("CharDelimiterSplit").unwrap();
+                        class.undef_alloc_func();
+                        class
+                    }),
+                    PreTokenizerWrapper::Digits(_) => *memoize!(RClass: {
+                        let class: RClass = module().const_get("Digits").unwrap();
+                        class.undef_alloc_func();
+                        class
+                    }),
+                    PreTokenizerWrapper::Metaspace(_) => *memoize!(RClass: {
+                        let class: RClass = module().const_get("Metaspace").unwrap();
+                        class.undef_alloc_func();
+                        class
+                    }),
+                    PreTokenizerWrapper::Punctuation(_) => *memoize!(RClass: {
+                        let class: RClass = module().const_get("Punctuation").unwrap();
+                        class.undef_alloc_func();
+                        class
+                    }),
+                    PreTokenizerWrapper::Split(_) => *memoize!(RClass: {
+                        let class: RClass = module().const_get("Split").unwrap();
+                        class.undef_alloc_func();
+                        class
+                    }),
+                    PreTokenizerWrapper::UnicodeScripts(_) => *memoize!(RClass: {
+                        let class: RClass = module().const_get("UnicodeScripts").unwrap();
+                        class.undef_alloc_func();
+                        class
+                    }),
                     PreTokenizerWrapper::Whitespace(_) => *memoize!(RClass: {
                         let class: RClass = module().const_get("Whitespace").unwrap();
                         class.undef_alloc_func();
                         class
                     }),
-                    PreTokenizerWrapper::BertPreTokenizer(_) => *memoize!(RClass: {
-                        let class: RClass = module().const_get("BertPreTokenizer").unwrap();
+                    PreTokenizerWrapper::WhitespaceSplit(_) => *memoize!(RClass: {
+                        let class: RClass = module().const_get("WhitespaceSplit").unwrap();
                         class.undef_alloc_func();
                         class
                     }),
@@ -183,8 +331,33 @@ pub fn pre_tokenizers(module: &RModule) -> RbResult<()> {
     let class = module.define_class("BertPreTokenizer", pre_tokenizer)?;
     class.define_singleton_method("new", function!(RbBertPreTokenizer::new, 0))?;
 
+    let class = module.define_class("ByteLevel", pre_tokenizer)?;
+    class.define_singleton_method("_new", function!(RbByteLevel::new, 2))?;
+    class.define_singleton_method("alphabet", function!(RbByteLevel::alphabet, 0))?;
+
+    let class = module.define_class("CharDelimiterSplit", pre_tokenizer)?;
+    class.define_singleton_method("new", function!(RbCharDelimiterSplit::new, 1))?;
+
+    let class = module.define_class("Digits", pre_tokenizer)?;
+    class.define_singleton_method("_new", function!(RbDigits::new, 1))?;
+
+    let class = module.define_class("Metaspace", pre_tokenizer)?;
+    class.define_singleton_method("_new", function!(RbMetaspace::new, 2))?;
+
+    let class = module.define_class("Punctuation", pre_tokenizer)?;
+    class.define_singleton_method("_new", function!(RbPunctuation::new, 1))?;
+
+    let class = module.define_class("Split", pre_tokenizer)?;
+    class.define_singleton_method("_new", function!(RbSplit::new, 3))?;
+
+    let class = module.define_class("UnicodeScripts", pre_tokenizer)?;
+    class.define_singleton_method("new", function!(RbUnicodeScripts::new, 0))?;
+
     let class = module.define_class("Whitespace", pre_tokenizer)?;
     class.define_singleton_method("new", function!(RbWhitespace::new, 0))?;
+
+    let class = module.define_class("WhitespaceSplit", pre_tokenizer)?;
+    class.define_singleton_method("new", function!(RbWhitespaceSplit::new, 0))?;
 
     Ok(())
 }
