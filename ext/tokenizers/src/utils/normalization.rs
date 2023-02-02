@@ -3,7 +3,7 @@ use magnus::{exception, Error, TryConvert, Value};
 use tk::normalizer::SplitDelimiterBehavior;
 use tk::pattern::Pattern;
 
-/// Represents a Pattern as used by `NormalizedString`
+// TODO add Regex
 #[derive(Clone)]
 pub enum RbPattern {
     Str(String),
