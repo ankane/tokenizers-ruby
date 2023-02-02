@@ -9,6 +9,8 @@ use tk::tokenizer::{
 };
 use tk::AddedToken;
 
+use crate::tk::PostProcessor;
+
 use super::decoders::RbDecoder;
 use super::encoding::RbEncoding;
 use super::models::RbModel;
@@ -465,6 +467,13 @@ impl RbTokenizer {
 
             Ok(Some(ret_hash))
         })
+    }
+
+    pub fn num_special_tokens_to_add(&self, is_pair: bool) -> usize {
+        self.tokenizer
+            .borrow()
+            .get_post_processor()
+            .map_or(0, |p| p.added_tokens(is_pair))
     }
 
     pub fn vocab(&self, with_added_tokens: bool) -> HashMap<String, u32> {

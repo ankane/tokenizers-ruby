@@ -220,4 +220,10 @@ class TokenizerTest < Minitest::Test
     assert_equal preserialization_size_with_added_tokens, new_tokenizer.vocab_size
     assert_equal 28996, new_tokenizer.vocab["mellifluous"]
   end
+
+  def test_num_special_tokens_to_add
+    tokenizer = Tokenizers.from_pretrained("bert-base-cased")
+    assert_equal 3, tokenizer.num_special_tokens_to_add(true)
+    assert_equal 2, tokenizer.num_special_tokens_to_add(false)
+  end
 end
