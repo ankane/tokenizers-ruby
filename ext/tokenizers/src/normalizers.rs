@@ -7,10 +7,14 @@ use magnus::{
 };
 use serde::ser::SerializeStruct;
 use serde::{Deserialize, Serialize, Serializer};
-use tk::normalizers::{BertNormalizer, NormalizerWrapper};
+use tk::normalizers::{
+    BertNormalizer, Lowercase, Nmt, NormalizerWrapper, Replace, Strip, StripAccents,
+    NFC, NFD, NFKC, NFKD,
+};
 use tk::{NormalizedString, Normalizer};
 
-use super::{module, RbResult};
+use super::utils::*;
+use super::{module, RbError, RbResult};
 
 #[derive(DataTypeFunctions, Clone, Serialize, Deserialize)]
 pub struct RbNormalizer {
@@ -27,8 +31,80 @@ impl Normalizer for RbNormalizer {
 pub struct RbBertNormalizer {}
 
 impl RbBertNormalizer {
+    pub fn new(clean_text: bool, handle_chinese_chars: bool, strip_accents: Option<bool>, lowercase: bool) -> RbNormalizer {
+        BertNormalizer::new(clean_text, handle_chinese_chars, strip_accents, lowercase).into()
+    }
+}
+
+pub struct RbLowercase {}
+
+impl RbLowercase {
     pub fn new() -> RbNormalizer {
-        BertNormalizer::default().into()
+        Lowercase.into()
+    }
+}
+
+pub struct RbNFC {}
+
+impl RbNFC {
+    pub fn new() -> RbNormalizer {
+        NFC.into()
+    }
+}
+
+pub struct RbNFD {}
+
+impl RbNFD {
+    pub fn new() -> RbNormalizer {
+        NFD.into()
+    }
+}
+
+pub struct RbNFKC {}
+
+impl RbNFKC {
+    pub fn new() -> RbNormalizer {
+        NFKC.into()
+    }
+}
+
+pub struct RbNFKD {}
+
+impl RbNFKD {
+    pub fn new() -> RbNormalizer {
+        NFKD.into()
+    }
+}
+
+pub struct RbNmt {}
+
+impl RbNmt {
+    pub fn new() -> RbNormalizer {
+        Nmt.into()
+    }
+}
+
+pub struct RbReplace {}
+
+impl RbReplace {
+    pub fn new(pattern: RbPattern, content: String) -> RbResult<RbNormalizer> {
+        Replace::new(pattern, content).map(|v| v.into()).map_err(RbError::from)
+    }
+}
+
+pub struct RbStrip {}
+
+impl RbStrip {
+    pub fn new(left: bool, right: bool) -> RbNormalizer {
+        Strip::new(left, right).into()
+    }
+}
+
+pub struct RbStripAccents {}
+
+impl RbStripAccents {
+    pub fn new() -> RbNormalizer {
+        StripAccents.into()
     }
 }
 
@@ -147,6 +223,51 @@ unsafe impl TypedData for RbNormalizer {
                         class.undef_alloc_func();
                         class
                     }),
+                    NormalizerWrapper::Lowercase(_) => *memoize!(RClass: {
+                        let class: RClass = module().const_get("Lowercase").unwrap();
+                        class.undef_alloc_func();
+                        class
+                    }),
+                    NormalizerWrapper::NFD(_) => *memoize!(RClass: {
+                        let class: RClass = module().const_get("NFD").unwrap();
+                        class.undef_alloc_func();
+                        class
+                    }),
+                    NormalizerWrapper::NFC(_) => *memoize!(RClass: {
+                        let class: RClass = module().const_get("NFC").unwrap();
+                        class.undef_alloc_func();
+                        class
+                    }),
+                    NormalizerWrapper::NFKC(_) => *memoize!(RClass: {
+                        let class: RClass = module().const_get("NFKC").unwrap();
+                        class.undef_alloc_func();
+                        class
+                    }),
+                    NormalizerWrapper::NFKD(_) => *memoize!(RClass: {
+                        let class: RClass = module().const_get("NFKD").unwrap();
+                        class.undef_alloc_func();
+                        class
+                    }),
+                    NormalizerWrapper::Nmt(_) => *memoize!(RClass: {
+                        let class: RClass = module().const_get("Nmt").unwrap();
+                        class.undef_alloc_func();
+                        class
+                    }),
+                    NormalizerWrapper::Replace(_) => *memoize!(RClass: {
+                        let class: RClass = module().const_get("Replace").unwrap();
+                        class.undef_alloc_func();
+                        class
+                    }),
+                    NormalizerWrapper::StripNormalizer(_) => *memoize!(RClass: {
+                        let class: RClass = module().const_get("Strip").unwrap();
+                        class.undef_alloc_func();
+                        class
+                    }),
+                    NormalizerWrapper::StripAccents(_) => *memoize!(RClass: {
+                        let class: RClass = module().const_get("StripAccents").unwrap();
+                        class.undef_alloc_func();
+                        class
+                    }),
                     _ => todo!(),
                 },
             },
@@ -158,7 +279,34 @@ pub fn normalizers(module: &RModule) -> RbResult<()> {
     let normalizer = module.define_class("Normalizer", Default::default())?;
 
     let class = module.define_class("BertNormalizer", normalizer)?;
-    class.define_singleton_method("new", function!(RbBertNormalizer::new, 0))?;
+    class.define_singleton_method("_new", function!(RbBertNormalizer::new, 4))?;
+
+    let class = module.define_class("Lowercase", normalizer)?;
+    class.define_singleton_method("new", function!(RbLowercase::new, 0))?;
+
+    let class = module.define_class("NFC", normalizer)?;
+    class.define_singleton_method("new", function!(RbNFC::new, 0))?;
+
+    let class = module.define_class("NFD", normalizer)?;
+    class.define_singleton_method("new", function!(RbNFD::new, 0))?;
+
+    let class = module.define_class("NFKC", normalizer)?;
+    class.define_singleton_method("new", function!(RbNFKC::new, 0))?;
+
+    let class = module.define_class("NFKD", normalizer)?;
+    class.define_singleton_method("new", function!(RbNFKD::new, 0))?;
+
+    let class = module.define_class("Nmt", normalizer)?;
+    class.define_singleton_method("new", function!(RbNmt::new, 0))?;
+
+    let class = module.define_class("Replace", normalizer)?;
+    class.define_singleton_method("new", function!(RbReplace::new, 2))?;
+
+    let class = module.define_class("Strip", normalizer)?;
+    class.define_singleton_method("_new", function!(RbStrip::new, 2))?;
+
+    let class = module.define_class("StripAccents", normalizer)?;
+    class.define_singleton_method("new", function!(RbStripAccents::new, 0))?;
 
     Ok(())
 }
