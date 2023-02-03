@@ -41,7 +41,7 @@ def download_file(url)
   file = File.basename(url)
   puts "Downloading #{file}..."
   dest = "test/support/#{file}"
-  File.binwrite(dest, URI.open(url).read)
+  File.binwrite(dest, URI.parse(url).read)
   puts "Saved #{dest}"
 end
 

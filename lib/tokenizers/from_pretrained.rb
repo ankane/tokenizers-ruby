@@ -57,7 +57,7 @@ module Tokenizers
 
       tempfile =
         begin
-          URI.open(url, options)
+          URI.parse(url).open(options)
         rescue OpenURI::HTTPError => e
           if e.message == "304 Not Modified"
             return resource_path
