@@ -35,6 +35,9 @@ require_relative "tokenizers/processors/template_processing"
 
 # trainers
 require_relative "tokenizers/trainers/bpe_trainer"
+require_relative "tokenizers/trainers/unigram_trainer"
+require_relative "tokenizers/trainers/word_level_trainer"
+require_relative "tokenizers/trainers/word_piece_trainer"
 
 # other
 require_relative "tokenizers/char_bpe_tokenizer"

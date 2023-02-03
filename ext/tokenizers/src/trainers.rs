@@ -124,6 +124,192 @@ impl RbBpeTrainer {
     }
 }
 
+pub struct RbUnigramTrainer {}
+
+impl RbUnigramTrainer {
+    pub fn new(kwargs: RHash) -> RbResult<RbTrainer> {
+        let mut builder = tk::models::unigram::UnigramTrainer::builder();
+
+        let value: Value = kwargs.delete(Symbol::new("special_tokens"))?;
+        if !value.is_nil() {
+            builder.special_tokens(
+                value
+                    .try_convert::<RArray>()?
+                    .each()
+                    .map(|token| {
+                        if let Ok(content) = token?.try_convert::<String>() {
+                            Ok(RbAddedToken::from(content, Some(true)).get_token())
+                        } else {
+                            todo!()
+                        }
+                    })
+                    .collect::<RbResult<Vec<_>>>()?,
+            );
+        }
+
+        let value: Value = kwargs.delete(Symbol::new("initial_alphabet"))?;
+        if !value.is_nil() {
+            let arr = value.try_convert::<Vec<char>>()?;
+            let set: HashSet<char> = HashSet::from_iter(arr);
+            builder.initial_alphabet(set);
+        }
+
+        let value: Value = kwargs.delete(Symbol::new("vocab_size"))?;
+        if !value.is_nil() {
+            builder.vocab_size(value.try_convert::<u32>()?);
+        }
+
+        let value: Value = kwargs.delete(Symbol::new("show_progress"))?;
+        if !value.is_nil() {
+            builder.show_progress(value.try_convert::<bool>()?);
+        }
+
+        let value: Value = kwargs.delete(Symbol::new("n_sub_iterations"))?;
+        if !value.is_nil() {
+            builder.n_sub_iterations(value.try_convert::<u32>()?);
+        }
+
+        let value: Value = kwargs.delete(Symbol::new("unk_token"))?;
+        if !value.is_nil() {
+            builder.unk_token(Some(value.try_convert::<String>()?));
+        }
+
+        let value: Value = kwargs.delete(Symbol::new("max_piece_length"))?;
+        if !value.is_nil() {
+            builder.max_piece_length(value.try_convert::<usize>()?);
+        }
+
+        let value: Value = kwargs.delete(Symbol::new("seed_size"))?;
+        if !value.is_nil() {
+            builder.seed_size(value.try_convert::<usize>()?);
+        }
+
+        let value: Value = kwargs.delete(Symbol::new("shrinking_factor"))?;
+        if !value.is_nil() {
+            builder.shrinking_factor(value.try_convert::<f64>()?);
+        }
+
+        if !kwargs.is_empty() {
+            // TODO improve message
+            return Err(Error::new(exception::arg_error(), "unknown keyword"));
+        }
+
+        let trainer = builder.build().map_err(|_| { Error::new(exception::arg_error(), "Cannot build UnigramTrainer") })?;
+        Ok(trainer.into())
+    }
+}
+
+pub struct RbWordLevelTrainer {}
+
+impl RbWordLevelTrainer {
+    pub fn new(kwargs: RHash) -> RbResult<RbTrainer> {
+        let mut builder = tk::models::wordlevel::WordLevelTrainer::builder();
+
+        let value: Value = kwargs.delete(Symbol::new("special_tokens"))?;
+        if !value.is_nil() {
+            builder.special_tokens(
+                value
+                    .try_convert::<RArray>()?
+                    .each()
+                    .map(|token| {
+                        if let Ok(content) = token?.try_convert::<String>() {
+                            Ok(RbAddedToken::from(content, Some(true)).get_token())
+                        } else {
+                            todo!()
+                        }
+                    })
+                    .collect::<RbResult<Vec<_>>>()?,
+            );
+        }
+
+        let value: Value = kwargs.delete(Symbol::new("vocab_size"))?;
+        if !value.is_nil() {
+            builder.vocab_size(value.try_convert::<usize>()?);
+        }
+
+        let value: Value = kwargs.delete(Symbol::new("min_frequency"))?;
+        if !value.is_nil() {
+            builder.min_frequency(value.try_convert::<u32>()?);
+        }
+
+        let value: Value = kwargs.delete(Symbol::new("show_progress"))?;
+        if !value.is_nil() {
+            builder.show_progress(value.try_convert::<bool>()?);
+        }
+
+        Ok(builder.build().expect("WordLevelTrainerBuilder cannot fail").into())
+    }
+}
+
+pub struct RbWordPieceTrainer {}
+
+impl RbWordPieceTrainer {
+    pub fn new(kwargs: RHash) -> RbResult<RbTrainer> {
+        let mut builder = tk::models::wordpiece::WordPieceTrainer::builder();
+
+        let value: Value = kwargs.delete(Symbol::new("special_tokens"))?;
+        if !value.is_nil() {
+            builder = builder.special_tokens(
+                value
+                    .try_convert::<RArray>()?
+                    .each()
+                    .map(|token| {
+                        if let Ok(content) = token?.try_convert::<String>() {
+                            Ok(RbAddedToken::from(content, Some(true)).get_token())
+                        } else {
+                            todo!()
+                        }
+                    })
+                    .collect::<RbResult<Vec<_>>>()?,
+            );
+        }
+
+        let value: Value = kwargs.delete(Symbol::new("initial_alphabet"))?;
+        if !value.is_nil() {
+            let arr = value.try_convert::<Vec<char>>()?;
+            let set: HashSet<char> = HashSet::from_iter(arr);
+            builder = builder.initial_alphabet(set);
+        }
+
+        let value: Value = kwargs.delete(Symbol::new("vocab_size"))?;
+        if !value.is_nil() {
+            builder = builder.vocab_size(value.try_convert::<usize>()?);
+        }
+
+        let value: Value = kwargs.delete(Symbol::new("min_frequency"))?;
+        if !value.is_nil() {
+            builder = builder.min_frequency(value.try_convert::<u32>()?);
+        }
+
+        let value: Value = kwargs.delete(Symbol::new("show_progress"))?;
+        if !value.is_nil() {
+            builder = builder.show_progress(value.try_convert::<bool>()?);
+        }
+
+        let value: Value = kwargs.delete(Symbol::new("limit_alphabet"))?;
+        if !value.is_nil() {
+            builder = builder.limit_alphabet(value.try_convert::<usize>()?);
+        }
+
+        let value: Value = kwargs.delete(Symbol::new("continuing_subword_prefix"))?;
+        if !value.is_nil() {
+            builder = builder.continuing_subword_prefix(value.try_convert::<String>()?);
+        }
+
+        let value: Value = kwargs.delete(Symbol::new("end_of_word_suffix"))?;
+        if !value.is_nil() {
+            builder = builder.end_of_word_suffix(value.try_convert::<String>()?);
+        }
+
+        if !kwargs.is_empty() {
+            // TODO improve message
+            return Err(Error::new(exception::arg_error(), "unknown keyword"));
+        }
+
+        Ok(builder.build().into())
+    }
+}
+
 unsafe impl TypedData for RbTrainer {
     fn class() -> RClass {
         *memoize!(RClass: {
@@ -144,7 +330,21 @@ unsafe impl TypedData for RbTrainer {
                 class.undef_alloc_func();
                 class
             }),
-            _ => todo!(),
+            TrainerWrapper::UnigramTrainer(_) => *memoize!(RClass: {
+                let class: RClass = crate::trainers().const_get("UnigramTrainer").unwrap();
+                class.undef_alloc_func();
+                class
+            }),
+            TrainerWrapper::WordLevelTrainer(_) => *memoize!(RClass: {
+                let class: RClass = crate::trainers().const_get("WordLevelTrainer").unwrap();
+                class.undef_alloc_func();
+                class
+            }),
+            TrainerWrapper::WordPieceTrainer(_) => *memoize!(RClass: {
+                let class: RClass = crate::trainers().const_get("WordPieceTrainer").unwrap();
+                class.undef_alloc_func();
+                class
+            }),
         }
     }
 }
@@ -154,6 +354,15 @@ pub fn trainers(module: &RModule) -> RbResult<()> {
 
     let class = module.define_class("BpeTrainer", trainer)?;
     class.define_singleton_method("_new", function!(RbBpeTrainer::new, 1))?;
+
+    let class = module.define_class("UnigramTrainer", trainer)?;
+    class.define_singleton_method("_new", function!(RbUnigramTrainer::new, 1))?;
+
+    let class = module.define_class("WordLevelTrainer", trainer)?;
+    class.define_singleton_method("_new", function!(RbWordLevelTrainer::new, 1))?;
+
+    let class = module.define_class("WordPieceTrainer", trainer)?;
+    class.define_singleton_method("_new", function!(RbWordPieceTrainer::new, 1))?;
 
     Ok(())
 }
