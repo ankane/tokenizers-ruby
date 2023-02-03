@@ -87,32 +87,32 @@ impl RbBpeTrainer {
 
         let value: Value = kwargs.delete(Symbol::new("vocab_size"))?;
         if !value.is_nil() {
-            builder = builder.vocab_size(value.try_convert::<usize>()?);
+            builder = builder.vocab_size(value.try_convert()?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("min_frequency"))?;
         if !value.is_nil() {
-            builder = builder.min_frequency(value.try_convert::<u32>()?);
+            builder = builder.min_frequency(value.try_convert()?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("show_progress"))?;
         if !value.is_nil() {
-            builder = builder.show_progress(value.try_convert::<bool>()?);
+            builder = builder.show_progress(value.try_convert()?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("limit_alphabet"))?;
         if !value.is_nil() {
-            builder = builder.limit_alphabet(value.try_convert::<usize>()?);
+            builder = builder.limit_alphabet(value.try_convert()?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("continuing_subword_prefix"))?;
         if !value.is_nil() {
-            builder = builder.continuing_subword_prefix(value.try_convert::<String>()?);
+            builder = builder.continuing_subword_prefix(value.try_convert()?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("end_of_word_suffix"))?;
         if !value.is_nil() {
-            builder = builder.end_of_word_suffix(value.try_convert::<String>()?);
+            builder = builder.end_of_word_suffix(value.try_convert()?);
         }
 
         if !kwargs.is_empty() {
@@ -156,37 +156,37 @@ impl RbUnigramTrainer {
 
         let value: Value = kwargs.delete(Symbol::new("vocab_size"))?;
         if !value.is_nil() {
-            builder.vocab_size(value.try_convert::<u32>()?);
+            builder.vocab_size(value.try_convert()?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("show_progress"))?;
         if !value.is_nil() {
-            builder.show_progress(value.try_convert::<bool>()?);
+            builder.show_progress(value.try_convert()?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("n_sub_iterations"))?;
         if !value.is_nil() {
-            builder.n_sub_iterations(value.try_convert::<u32>()?);
+            builder.n_sub_iterations(value.try_convert()?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("unk_token"))?;
         if !value.is_nil() {
-            builder.unk_token(Some(value.try_convert::<String>()?));
+            builder.unk_token(Some(value.try_convert()?));
         }
 
         let value: Value = kwargs.delete(Symbol::new("max_piece_length"))?;
         if !value.is_nil() {
-            builder.max_piece_length(value.try_convert::<usize>()?);
+            builder.max_piece_length(value.try_convert()?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("seed_size"))?;
         if !value.is_nil() {
-            builder.seed_size(value.try_convert::<usize>()?);
+            builder.seed_size(value.try_convert()?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("shrinking_factor"))?;
         if !value.is_nil() {
-            builder.shrinking_factor(value.try_convert::<f64>()?);
+            builder.shrinking_factor(value.try_convert()?);
         }
 
         if !kwargs.is_empty() {
@@ -224,17 +224,17 @@ impl RbWordLevelTrainer {
 
         let value: Value = kwargs.delete(Symbol::new("vocab_size"))?;
         if !value.is_nil() {
-            builder.vocab_size(value.try_convert::<usize>()?);
+            builder.vocab_size(value.try_convert()?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("min_frequency"))?;
         if !value.is_nil() {
-            builder.min_frequency(value.try_convert::<u32>()?);
+            builder.min_frequency(value.try_convert()?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("show_progress"))?;
         if !value.is_nil() {
-            builder.show_progress(value.try_convert::<bool>()?);
+            builder.show_progress(value.try_convert()?);
         }
 
         Ok(builder.build().expect("WordLevelTrainerBuilder cannot fail").into())
@@ -273,32 +273,32 @@ impl RbWordPieceTrainer {
 
         let value: Value = kwargs.delete(Symbol::new("vocab_size"))?;
         if !value.is_nil() {
-            builder = builder.vocab_size(value.try_convert::<usize>()?);
+            builder = builder.vocab_size(value.try_convert()?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("min_frequency"))?;
         if !value.is_nil() {
-            builder = builder.min_frequency(value.try_convert::<u32>()?);
+            builder = builder.min_frequency(value.try_convert()?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("show_progress"))?;
         if !value.is_nil() {
-            builder = builder.show_progress(value.try_convert::<bool>()?);
+            builder = builder.show_progress(value.try_convert()?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("limit_alphabet"))?;
         if !value.is_nil() {
-            builder = builder.limit_alphabet(value.try_convert::<usize>()?);
+            builder = builder.limit_alphabet(value.try_convert()?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("continuing_subword_prefix"))?;
         if !value.is_nil() {
-            builder = builder.continuing_subword_prefix(value.try_convert::<String>()?);
+            builder = builder.continuing_subword_prefix(value.try_convert()?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("end_of_word_suffix"))?;
         if !value.is_nil() {
-            builder = builder.end_of_word_suffix(value.try_convert::<String>()?);
+            builder = builder.end_of_word_suffix(value.try_convert()?);
         }
 
         if !kwargs.is_empty() {
