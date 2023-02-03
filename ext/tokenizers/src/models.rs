@@ -160,6 +160,14 @@ impl RbModel {
     pub fn bpe_set_unk_token(&self, unk_token: Option<String>) {
         setter!(self, BPE, unk_token, unk_token);
     }
+
+    pub fn bpe_fuse_unk(&self) -> bool {
+        getter!(self, BPE, fuse_unk)
+    }
+
+    pub fn bpe_set_fuse_unk(&self, fuse_unk: bool) {
+        setter!(self, BPE, fuse_unk, fuse_unk);
+    }
 }
 
 pub struct RbUnigram {}
@@ -293,6 +301,8 @@ pub fn models(module: &RModule) -> RbResult<()> {
     class.define_method("dropout=", method!(RbModel::bpe_set_dropout, 1))?;
     class.define_method("unk_token", method!(RbModel::bpe_unk_token, 0))?;
     class.define_method("unk_token=", method!(RbModel::bpe_set_unk_token, 1))?;
+    class.define_method("fuse_unk", method!(RbModel::bpe_fuse_unk, 0))?;
+    class.define_method("fuse_unk=", method!(RbModel::bpe_set_fuse_unk, 1))?;
 
     let class = module.define_class("Unigram", model)?;
     class.define_singleton_method("_new", function!(RbUnigram::new, 2))?;

@@ -24,6 +24,10 @@ class ModelTest < Minitest::Test
 
     model.dropout = 0.6
     assert_in_delta 0.6, model.dropout
+
+    assert_equal true, model.fuse_unk
+    model.fuse_unk = false
+    assert_equal false, model.fuse_unk
   end
 
   def test_word_level
