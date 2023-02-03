@@ -14,6 +14,7 @@ mod utils;
 use encoding::RbEncoding;
 use error::RbError;
 use tokenizer::RbTokenizer;
+use utils::RbRegex;
 
 use magnus::{define_module, function, memoize, method, prelude::*, Error, RModule};
 
@@ -109,6 +110,9 @@ fn init() -> RbResult<()> {
     class.define_method("token_to_word", method!(RbEncoding::token_to_word, 1))?;
     class.define_method("_char_to_token", method!(RbEncoding::char_to_token, 2))?;
     class.define_method("_char_to_word", method!(RbEncoding::char_to_word, 2))?;
+
+    let class = module.define_class("Regex", Default::default())?;
+    class.define_singleton_method("new", function!(RbRegex::new, 1))?;
 
     let models = module.define_module("Models")?;
     let pre_tokenizers = module.define_module("PreTokenizers")?;

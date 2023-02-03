@@ -754,6 +754,7 @@ name = "tokenizers"
 version = "0.2.3"
 dependencies = [
  "magnus",
+ "onig",
  "serde",
  "tokenizers 0.13.2",
 ]

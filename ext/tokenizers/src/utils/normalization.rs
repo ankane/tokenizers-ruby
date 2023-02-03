@@ -1,18 +1,19 @@
+use super::regex::regex;
 use crate::RbResult;
-use magnus::{class, exception, Error, RRegexp, TryConvert, Value};
+use magnus::{exception, Error, TryConvert, Value};
 use tk::normalizer::SplitDelimiterBehavior;
 use tk::pattern::Pattern;
 
 #[derive(Clone)]
 pub enum RbPattern {
     Str(String),
-    Regex(RRegexp),
+    Regex(String), // TODO fix
 }
 
 impl TryConvert for RbPattern {
     fn try_convert(obj: Value) -> RbResult<Self> {
-        if obj.is_kind_of(class::regexp()) {
-            Ok(RbPattern::Regex(obj.try_convert()?))
+        if obj.is_kind_of(regex()) {
+            todo!()
         } else {
             Ok(RbPattern::Str(obj.try_convert()?))
         }

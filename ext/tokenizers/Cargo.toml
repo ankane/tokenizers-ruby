@@ -11,6 +11,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 magnus = { git = "https://github.com/matsadler/magnus" }
+onig = { version = "6.0", default-features = false }
 serde = { version = "1.0", features = ["rc", "derive"] }
 
 [dependencies.tokenizers]
