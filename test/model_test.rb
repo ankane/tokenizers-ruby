@@ -19,6 +19,7 @@ class ModelTest < Minitest::Test
         end_of_word_suffix: "</end>",
         fuse_unk: true
       )
+    assert_in_delta 0.5, model.dropout
     assert_equal "[UNK]", model.unk_token
   end
 

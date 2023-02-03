@@ -136,6 +136,10 @@ macro_rules! getter {
 }
 
 impl RbModel {
+    pub fn bpe_dropout(&self) -> Option<f32> {
+        getter!(self, BPE, dropout)
+    }
+
     pub fn bpe_unk_token(&self) -> Option<String> {
         getter!(self, BPE, unk_token.clone())
     }
@@ -268,6 +272,7 @@ pub fn models(module: &RModule) -> RbResult<()> {
     let class = module.define_class("BPE", model)?;
     class.define_singleton_method("_new", function!(RbBPE::new, 3))?;
     class.define_singleton_method("_from_file", function!(RbBPE::from_file, 3))?;
+    class.define_method("dropout", method!(RbModel::bpe_dropout, 0))?;
     class.define_method("unk_token", method!(RbModel::bpe_unk_token, 0))?;
 
     let class = module.define_class("Unigram", model)?;
