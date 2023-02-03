@@ -1,17 +1,21 @@
 use crate::RbResult;
-use magnus::{exception, Error, TryConvert, Value};
+use magnus::{class, exception, Error, RRegexp, TryConvert, Value};
 use tk::normalizer::SplitDelimiterBehavior;
 use tk::pattern::Pattern;
 
-// TODO add Regex
 #[derive(Clone)]
 pub enum RbPattern {
     Str(String),
+    Regex(RRegexp),
 }
 
 impl TryConvert for RbPattern {
     fn try_convert(obj: Value) -> RbResult<Self> {
-        Ok(RbPattern::Str(obj.try_convert()?))
+        if obj.is_kind_of(class::regexp()) {
+            Ok(RbPattern::Regex(obj.try_convert()?))
+        } else {
+            Ok(RbPattern::Str(obj.try_convert()?))
+        }
     }
 }
 
@@ -26,6 +30,9 @@ impl Pattern for RbPattern {
                     s.find_matches(inside)
                 }
             }
+            RbPattern::Regex(_r) => {
+                todo!()
+            }
         }
     }
 }
@@ -34,6 +41,7 @@ impl From<RbPattern> for tk::normalizers::replace::ReplacePattern {
     fn from(pattern: RbPattern) -> Self {
         match pattern {
             RbPattern::Str(s) => Self::String(s),
+            RbPattern::Regex(_r) => todo!(),
         }
     }
 }
@@ -42,6 +50,7 @@ impl From<RbPattern> for tk::pre_tokenizers::split::SplitPattern {
     fn from(pattern: RbPattern) -> Self {
         match pattern {
             RbPattern::Str(s) => Self::String(s),
+            RbPattern::Regex(_r) => todo!(),
         }
     }
 }
