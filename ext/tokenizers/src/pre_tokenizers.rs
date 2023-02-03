@@ -56,7 +56,6 @@ macro_rules! setter {
         }
     }};
     ($self: ident, $variant: ident, @$name: ident, $value: expr) => {{
-        let super_ = $self.as_ref();
         if let RbPreTokenizerTypeWrapper::Single(ref single) = &$self.pretok {
             if let RbPreTokenizerWrapper::Wrapped(PreTokenizerWrapper::$variant(ref mut pretok)) =
                 *single.write().unwrap()
@@ -118,13 +117,7 @@ impl RbPreTokenizer {
     }
 
     fn metaspace_set_replacement(&self, replacement: char) {
-        if let RbPreTokenizerTypeWrapper::Single(ref single) = &self.pretok {
-            if let RbPreTokenizerWrapper::Wrapped(PreTokenizerWrapper::Metaspace(ref mut pretok)) =
-                *single.write().unwrap()
-            {
-                pretok.set_replacement(replacement);
-            }
-        }
+        setter!(self, Metaspace, @set_replacement, replacement);
     }
 }
 

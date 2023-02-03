@@ -94,11 +94,7 @@ impl RbDecoder {
     }
 
     pub fn metaspace_set_replacement(&self, replacement: char) {
-        let decoder = &self.decoder;
-        let RbDecoderWrapper::Wrapped(ref wrap) = decoder;
-        if let DecoderWrapper::Metaspace(ref mut dec) = *wrap.write().unwrap() {
-            dec.set_replacement(replacement)
-        }
+        setter!(self, Metaspace, @set_replacement, replacement);
     }
 
     pub fn metaspace_add_prefix_space(&self) -> bool {
