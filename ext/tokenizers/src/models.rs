@@ -158,7 +158,7 @@ impl RbWordLevel {
     }
 
     pub fn from_file(vocab: String, unk_token: Option<String>) -> RbResult<RbModel> {
-        let vocab = WordPiece::read_file(&vocab).map_err(RbError::from)?;
+        let vocab = WordLevel::read_file(&vocab).map_err(RbError::from)?;
 
         RbWordLevel::new(Some(vocab), unk_token)
     }
