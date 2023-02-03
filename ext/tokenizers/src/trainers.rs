@@ -5,7 +5,7 @@ use crate::models::RbModel;
 use crate::tokenizer::RbAddedToken;
 use magnus::typed_data::DataTypeBuilder;
 use magnus::{
-    exception, function, memoize, Class, DataType, DataTypeFunctions, Error, Module, Object,
+    exception, function, memoize, method, Class, DataType, DataTypeFunctions, Error, Module, Object,
     RArray, RClass, RHash, RModule, Symbol, TypedData, Value,
 };
 use serde::{Deserialize, Serialize};
@@ -41,6 +41,339 @@ impl Trainer for RbTrainer {
         F: Fn(&str) -> tk::Result<Vec<String>> + Sync,
     {
         self.trainer.write().unwrap().feed(iterator, process)
+    }
+}
+
+macro_rules! getter {
+    ($self: ident, $variant: ident, $($name: tt)+) => {{
+        if let TrainerWrapper::$variant(ref trainer) = *$self.trainer.read().unwrap() {
+            trainer.$($name)+
+        } else {
+            unreachable!()
+        }
+    }};
+}
+
+macro_rules! setter {
+    ($self: ident, $variant: ident, $name: ident, $value: expr) => {{
+        if let TrainerWrapper::$variant(ref mut trainer) = *$self.trainer.write().unwrap() {
+            trainer.$name = $value;
+        }
+    }};
+    ($self: ident, $variant: ident, @$name: ident, $value: expr) => {{
+        if let TrainerWrapper::$variant(ref mut trainer) = *$self.trainer.write().unwrap() {
+            trainer.$name($value);
+        }
+    }};
+}
+
+impl RbTrainer {
+
+    fn bpe_trainer_vocab_size(&self) -> usize {
+        getter!(self, BpeTrainer, vocab_size)
+    }
+
+    fn bpe_trainer_set_vocab_size(&self, vocab_size: usize) {
+        setter!(self, BpeTrainer, vocab_size, vocab_size);
+    }
+
+    fn bpe_trainer_min_frequency(&self) -> u32 {
+        getter!(self, BpeTrainer, min_frequency)
+    }
+
+    fn bpe_trainer_set_min_frequency(&self, freq: u32) {
+        setter!(self, BpeTrainer, min_frequency, freq);
+    }
+
+    fn bpe_trainer_show_progress(&self) -> bool {
+        getter!(self, BpeTrainer, show_progress)
+    }
+
+    fn bpe_trainer_set_show_progress(&self, show_progress: bool) {
+        setter!(self, BpeTrainer, show_progress, show_progress);
+    }
+
+    fn bpe_trainer_special_tokens(&self) -> Vec<String> {
+        getter!(
+            self,
+            BpeTrainer,
+            special_tokens
+                .iter()
+                .map(|tok| tok.content.clone())
+                .collect()
+        )
+    }
+
+    fn bpe_trainer_set_special_tokens(&self, special_tokens: RArray) -> RbResult<()> {
+        setter!(
+            self,
+            BpeTrainer,
+            special_tokens,
+            special_tokens
+                .each()
+                .map(|token| {
+                    if let Ok(content) = token?.try_convert::<String>() {
+                        Ok(RbAddedToken::from(content, Some(true)).get_token())
+                    } else {
+                        todo!()
+                    }
+                })
+                .collect::<RbResult<Vec<_>>>()?
+        );
+        Ok(())
+    }
+
+    fn bpe_trainer_limit_alphabet(&self) -> Option<usize> {
+        getter!(self, BpeTrainer, limit_alphabet)
+    }
+
+    fn bpe_trainer_set_limit_alphabet(&self, limit: Option<usize>) {
+        setter!(self, BpeTrainer, limit_alphabet, limit);
+    }
+
+    fn bpe_trainer_initial_alphabet(&self) -> Vec<String> {
+        getter!(
+            self,
+            BpeTrainer,
+            initial_alphabet.iter().map(|c| c.to_string()).collect()
+        )
+    }
+
+    fn bpe_trainer_set_initial_alphabet(&self, alphabet: Vec<char>) {
+        setter!(
+            self,
+            BpeTrainer,
+            initial_alphabet,
+            alphabet.into_iter().map(|c| c).collect()
+        );
+    }
+
+    fn bpe_trainer_continuing_subword_prefix(&self) -> Option<String> {
+        getter!(self, BpeTrainer, continuing_subword_prefix.clone())
+    }
+
+    fn bpe_trainer_set_continuing_subword_prefix(&self, prefix: Option<String>) {
+        setter!(self, BpeTrainer, continuing_subword_prefix, prefix);
+    }
+
+    fn bpe_trainer_end_of_word_suffix(&self) -> Option<String> {
+        getter!(self, BpeTrainer, end_of_word_suffix.clone())
+    }
+
+    fn bpe_trainer_set_end_of_word_suffix(&self, suffix: Option<String>) {
+        setter!(self, BpeTrainer, end_of_word_suffix, suffix);
+    }
+
+    fn unigram_trainer_vocab_size(&self) -> u32 {
+        getter!(self, UnigramTrainer, vocab_size)
+    }
+
+    fn unigram_trainer_set_vocab_size(&self, vocab_size: u32) {
+        setter!(self, UnigramTrainer, vocab_size, vocab_size);
+    }
+
+    fn unigram_trainer_show_progress(&self) -> bool {
+        getter!(self, UnigramTrainer, show_progress)
+    }
+
+    fn unigram_trainer_set_show_progress(&self, show_progress: bool) {
+        setter!(self, UnigramTrainer, show_progress, show_progress);
+    }
+
+    fn unigram_trainer_special_tokens(&self) -> Vec<String> {
+        getter!(
+            self,
+            UnigramTrainer,
+            special_tokens
+                .iter()
+                .map(|tok| tok.content.clone())
+                .collect()
+        )
+    }
+
+    fn unigram_trainer_set_special_tokens(&self, special_tokens: RArray) -> RbResult<()> {
+        setter!(
+            self,
+            UnigramTrainer,
+            special_tokens,
+            special_tokens
+                .each()
+                .map(|token| {
+                    if let Ok(content) = token?.try_convert::<String>() {
+                        Ok(RbAddedToken::from(content, Some(true)).get_token())
+                    } else {
+                        todo!()
+                    }
+                })
+                .collect::<RbResult<Vec<_>>>()?
+        );
+        Ok(())
+    }
+
+    fn unigram_trainer_initial_alphabet(&self) -> Vec<String> {
+        getter!(
+            self,
+            UnigramTrainer,
+            initial_alphabet.iter().map(|c| c.to_string()).collect()
+        )
+    }
+
+    fn unigram_trainer_set_initial_alphabet(&self, alphabet: Vec<char>) {
+        setter!(
+            self,
+            UnigramTrainer,
+            initial_alphabet,
+            alphabet.into_iter().map(|c| c).collect()
+        );
+    }
+
+    fn word_level_trainer_vocab_size(&self) -> usize {
+        getter!(self, WordLevelTrainer, vocab_size)
+    }
+
+    fn word_level_trainer_set_vocab_size(&self, vocab_size: usize) {
+        setter!(self, WordLevelTrainer, vocab_size, vocab_size);
+    }
+
+    fn word_level_trainer_min_frequency(&self) -> u32 {
+        getter!(self, WordLevelTrainer, min_frequency)
+    }
+
+    fn word_level_trainer_set_min_frequency(&self, freq: u32) {
+        setter!(self, WordLevelTrainer, min_frequency, freq);
+    }
+
+    fn word_level_trainer_show_progress(&self) -> bool {
+        getter!(self, WordLevelTrainer, show_progress)
+    }
+
+    fn word_level_trainer_set_show_progress(&self, show_progress: bool) {
+        setter!(self, WordLevelTrainer, show_progress, show_progress);
+    }
+
+    fn word_level_trainer_special_tokens(&self) -> Vec<String> {
+        getter!(
+            self,
+            WordLevelTrainer,
+            special_tokens
+                .iter()
+                .map(|tok| tok.content.clone())
+                .collect()
+        )
+    }
+
+    fn word_level_trainer_set_special_tokens(&self, special_tokens: RArray) -> RbResult<()> {
+        setter!(
+            self,
+            WordLevelTrainer,
+            special_tokens,
+            special_tokens
+                .each()
+                .map(|token| {
+                    if let Ok(content) = token?.try_convert::<String>() {
+                        Ok(RbAddedToken::from(content, Some(true)).get_token())
+                    } else {
+                        todo!()
+                    }
+                })
+                .collect::<RbResult<Vec<_>>>()?
+        );
+        Ok(())
+    }
+
+    fn word_piece_trainer_vocab_size(&self) -> usize {
+        getter!(self, WordPieceTrainer, vocab_size())
+    }
+
+    fn word_piece_trainer_set_vocab_size(&self, vocab_size: usize) {
+        setter!(self, WordPieceTrainer, @set_vocab_size, vocab_size);
+    }
+
+    fn word_piece_trainer_min_frequency(&self) -> u32 {
+        getter!(self, WordPieceTrainer, min_frequency())
+    }
+
+    fn word_piece_trainer_set_min_frequency(&self, freq: u32) {
+        setter!(self, WordPieceTrainer, @set_min_frequency, freq);
+    }
+
+    fn word_piece_trainer_show_progress(&self) -> bool {
+        getter!(self, WordPieceTrainer, show_progress())
+    }
+
+    fn word_piece_trainer_set_show_progress(&self, show_progress: bool) {
+        setter!(self, WordPieceTrainer, @set_show_progress, show_progress);
+    }
+
+    fn word_piece_trainer_special_tokens(&self) -> Vec<String> {
+        getter!(
+            self,
+            WordPieceTrainer,
+            special_tokens()
+                .iter()
+                .map(|tok| tok.content.clone())
+                .collect()
+        )
+    }
+
+    fn word_piece_trainer_set_special_tokens(&self, special_tokens: RArray) -> RbResult<()> {
+        setter!(
+            self,
+            WordPieceTrainer,
+            @set_special_tokens,
+            special_tokens
+                .each()
+                .map(|token| {
+                    if let Ok(content) = token?.try_convert::<String>() {
+                        Ok(RbAddedToken::from(content, Some(true)).get_token())
+                    } else {
+                        todo!()
+                    }
+                })
+                .collect::<RbResult<Vec<_>>>()?
+        );
+        Ok(())
+    }
+
+    fn word_piece_trainer_limit_alphabet(&self) -> Option<usize> {
+        getter!(self, WordPieceTrainer, limit_alphabet())
+    }
+
+    fn word_piece_trainer_set_limit_alphabet(&self, limit: Option<usize>) {
+        setter!(self, WordPieceTrainer, @set_limit_alphabet, limit);
+    }
+
+    fn word_piece_trainer_initial_alphabet(&self) -> Vec<String> {
+        getter!(
+            self,
+            WordPieceTrainer,
+            initial_alphabet().iter().map(|c| c.to_string()).collect()
+        )
+    }
+
+    fn word_piece_trainer_set_initial_alphabet(&self, alphabet: Vec<char>) {
+        setter!(
+            self,
+            WordPieceTrainer,
+            @set_initial_alphabet,
+            alphabet.into_iter().map(|c| c).collect()
+        );
+    }
+
+    fn word_piece_trainer_continuing_subword_prefix(&self) -> Option<String> {
+        getter!(self, WordPieceTrainer, continuing_subword_prefix().clone())
+    }
+
+    fn word_piece_trainer_set_continuing_subword_prefix(&self, prefix: Option<String>) {
+        setter!(self, WordPieceTrainer, @set_continuing_subword_prefix, prefix);
+    }
+
+    fn word_piece_trainer_end_of_word_suffix(&self) -> Option<String> {
+        getter!(self, WordPieceTrainer, end_of_word_suffix().clone())
+    }
+
+    fn word_piece_trainer_set_end_of_word_suffix(&self, suffix: Option<String>) {
+        setter!(self, WordPieceTrainer, @set_end_of_word_suffix, suffix);
     }
 }
 
@@ -354,15 +687,63 @@ pub fn trainers(module: &RModule) -> RbResult<()> {
 
     let class = module.define_class("BpeTrainer", trainer)?;
     class.define_singleton_method("_new", function!(RbBpeTrainer::new, 1))?;
+    class.define_method("vocab_size", method!(RbTrainer::bpe_trainer_vocab_size, 0))?;
+    class.define_method("vocab_size=", method!(RbTrainer::bpe_trainer_set_vocab_size, 1))?;
+    class.define_method("min_frequency", method!(RbTrainer::bpe_trainer_min_frequency, 0))?;
+    class.define_method("min_frequency=", method!(RbTrainer::bpe_trainer_set_min_frequency, 1))?;
+    class.define_method("show_progress", method!(RbTrainer::bpe_trainer_show_progress, 0))?;
+    class.define_method("show_progress=", method!(RbTrainer::bpe_trainer_set_show_progress, 1))?;
+    class.define_method("special_tokens", method!(RbTrainer::bpe_trainer_special_tokens, 0))?;
+    class.define_method("special_tokens=", method!(RbTrainer::bpe_trainer_set_special_tokens, 1))?;
+    class.define_method("limit_alphabet", method!(RbTrainer::bpe_trainer_limit_alphabet, 0))?;
+    class.define_method("limit_alphabet=", method!(RbTrainer::bpe_trainer_set_limit_alphabet, 1))?;
+    class.define_method("initial_alphabet", method!(RbTrainer::bpe_trainer_initial_alphabet, 0))?;
+    class.define_method("initial_alphabet=", method!(RbTrainer::bpe_trainer_set_initial_alphabet, 1))?;
+    class.define_method("continuing_subword_prefix", method!(RbTrainer::bpe_trainer_continuing_subword_prefix, 0))?;
+    class.define_method("continuing_subword_prefix=", method!(RbTrainer::bpe_trainer_set_continuing_subword_prefix, 1))?;
+    class.define_method("end_of_word_suffix", method!(RbTrainer::bpe_trainer_end_of_word_suffix, 0))?;
+    class.define_method("end_of_word_suffix=", method!(RbTrainer::bpe_trainer_set_end_of_word_suffix, 1))?;
 
     let class = module.define_class("UnigramTrainer", trainer)?;
     class.define_singleton_method("_new", function!(RbUnigramTrainer::new, 1))?;
+    class.define_method("vocab_size", method!(RbTrainer::unigram_trainer_vocab_size, 0))?;
+    class.define_method("vocab_size=", method!(RbTrainer::unigram_trainer_set_vocab_size, 1))?;
+    class.define_method("show_progress", method!(RbTrainer::unigram_trainer_show_progress, 0))?;
+    class.define_method("show_progress=", method!(RbTrainer::unigram_trainer_set_show_progress, 1))?;
+    class.define_method("special_tokens", method!(RbTrainer::unigram_trainer_special_tokens, 0))?;
+    class.define_method("special_tokens=", method!(RbTrainer::unigram_trainer_set_special_tokens, 1))?;
+    class.define_method("initial_alphabet", method!(RbTrainer::unigram_trainer_initial_alphabet, 0))?;
+    class.define_method("initial_alphabet=", method!(RbTrainer::unigram_trainer_set_initial_alphabet, 1))?;
 
     let class = module.define_class("WordLevelTrainer", trainer)?;
     class.define_singleton_method("_new", function!(RbWordLevelTrainer::new, 1))?;
+    class.define_method("vocab_size", method!(RbTrainer::word_level_trainer_vocab_size, 0))?;
+    class.define_method("vocab_size=", method!(RbTrainer::word_level_trainer_set_vocab_size, 1))?;
+    class.define_method("min_frequency", method!(RbTrainer::word_level_trainer_min_frequency, 0))?;
+    class.define_method("min_frequency=", method!(RbTrainer::word_level_trainer_set_min_frequency, 1))?;
+    class.define_method("show_progress", method!(RbTrainer::word_level_trainer_show_progress, 0))?;
+    class.define_method("show_progress=", method!(RbTrainer::word_level_trainer_set_show_progress, 1))?;
+    class.define_method("special_tokens", method!(RbTrainer::word_level_trainer_special_tokens, 0))?;
+    class.define_method("special_tokens=", method!(RbTrainer::word_level_trainer_set_special_tokens, 1))?;
 
     let class = module.define_class("WordPieceTrainer", trainer)?;
     class.define_singleton_method("_new", function!(RbWordPieceTrainer::new, 1))?;
+    class.define_method("vocab_size", method!(RbTrainer::word_piece_trainer_vocab_size, 0))?;
+    class.define_method("vocab_size=", method!(RbTrainer::word_piece_trainer_set_vocab_size, 1))?;
+    class.define_method("min_frequency", method!(RbTrainer::word_piece_trainer_min_frequency, 0))?;
+    class.define_method("min_frequency=", method!(RbTrainer::word_piece_trainer_set_min_frequency, 1))?;
+    class.define_method("show_progress", method!(RbTrainer::word_piece_trainer_show_progress, 0))?;
+    class.define_method("show_progress=", method!(RbTrainer::word_piece_trainer_set_show_progress, 1))?;
+    class.define_method("special_tokens", method!(RbTrainer::word_piece_trainer_special_tokens, 0))?;
+    class.define_method("special_tokens=", method!(RbTrainer::word_piece_trainer_set_special_tokens, 1))?;
+    class.define_method("limit_alphabet", method!(RbTrainer::word_piece_trainer_limit_alphabet, 0))?;
+    class.define_method("limit_alphabet=", method!(RbTrainer::word_piece_trainer_set_limit_alphabet, 1))?;
+    class.define_method("initial_alphabet", method!(RbTrainer::word_piece_trainer_initial_alphabet, 0))?;
+    class.define_method("initial_alphabet=", method!(RbTrainer::word_piece_trainer_set_initial_alphabet, 1))?;
+    class.define_method("continuing_subword_prefix", method!(RbTrainer::word_piece_trainer_continuing_subword_prefix, 0))?;
+    class.define_method("continuing_subword_prefix=", method!(RbTrainer::word_piece_trainer_set_continuing_subword_prefix, 1))?;
+    class.define_method("end_of_word_suffix", method!(RbTrainer::word_piece_trainer_end_of_word_suffix, 0))?;
+    class.define_method("end_of_word_suffix=", method!(RbTrainer::word_piece_trainer_set_end_of_word_suffix, 1))?;
 
     Ok(())
 }

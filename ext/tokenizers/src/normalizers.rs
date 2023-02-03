@@ -2,7 +2,7 @@ use std::sync::{Arc, RwLock};
 
 use magnus::typed_data::DataTypeBuilder;
 use magnus::{
-    function, memoize, Class, DataType, DataTypeFunctions, Module, Object, RClass, RModule,
+    function, memoize, method, Class, DataType, DataTypeFunctions, Module, Object, RClass, RModule,
     TypedData,
 };
 use serde::ser::SerializeStruct;
@@ -25,6 +25,88 @@ pub struct RbNormalizer {
 impl Normalizer for RbNormalizer {
     fn normalize(&self, normalized: &mut NormalizedString) -> tk::Result<()> {
         self.normalizer.normalize(normalized)
+    }
+}
+
+macro_rules! getter {
+    ($self: ident, $variant: ident, $name: ident) => {{
+        if let RbNormalizerTypeWrapper::Single(ref norm) = &$self.normalizer {
+            let wrapper = norm.read().unwrap();
+            if let RbNormalizerWrapper::Wrapped(NormalizerWrapper::$variant(o)) = *wrapper {
+                o.$name
+            } else {
+                unreachable!()
+            }
+        } else {
+            unreachable!()
+        }
+    }};
+}
+
+macro_rules! setter {
+    ($self: ident, $variant: ident, $name: ident, $value: expr) => {{
+        if let RbNormalizerTypeWrapper::Single(ref norm) = &$self.normalizer {
+            let mut wrapper = norm.write().unwrap();
+            if let RbNormalizerWrapper::Wrapped(NormalizerWrapper::$variant(ref mut o)) = *wrapper {
+                o.$name = $value;
+            }
+        }
+    }};
+}
+
+impl RbNormalizer {
+
+    fn bert_clean_text(&self) -> bool {
+        getter!(self, BertNormalizer, clean_text)
+    }
+
+    fn bert_set_clean_text(&self, clean_text: bool) {
+        setter!(self, BertNormalizer, clean_text, clean_text);
+    }
+
+    fn bert_handle_chinese_chars(&self) -> bool {
+        getter!(self, BertNormalizer, handle_chinese_chars)
+    }
+
+    fn bert_set_handle_chinese_chars(&self, handle_chinese_chars: bool) {
+        setter!(
+            self,
+            BertNormalizer,
+            handle_chinese_chars,
+            handle_chinese_chars
+        );
+    }
+
+    fn bert_strip_accents(&self) -> Option<bool> {
+        getter!(self, BertNormalizer, strip_accents)
+    }
+
+    fn bert_set_strip_accents(&self, strip_accents: Option<bool>) {
+        setter!(self, BertNormalizer, strip_accents, strip_accents);
+    }
+
+    fn bert_lowercase(&self) -> bool {
+        getter!(self, BertNormalizer, lowercase)
+    }
+
+    fn bert_set_lowercase(&self, lowercase: bool) {
+        setter!(self, BertNormalizer, lowercase, lowercase)
+    }
+
+    fn strip_left(&self) -> bool {
+        getter!(self, StripNormalizer, strip_left)
+    }
+
+    fn strip_set_left(&self, left: bool) {
+        setter!(self, StripNormalizer, strip_left, left)
+    }
+
+    fn strip_right(&self) -> bool {
+        getter!(self, StripNormalizer, strip_right)
+    }
+
+    fn strip_set_right(&self, right: bool) {
+        setter!(self, StripNormalizer, strip_right, right)
     }
 }
 
@@ -280,6 +362,14 @@ pub fn normalizers(module: &RModule) -> RbResult<()> {
 
     let class = module.define_class("BertNormalizer", normalizer)?;
     class.define_singleton_method("_new", function!(RbBertNormalizer::new, 4))?;
+    class.define_method("clean_text", method!(RbNormalizer::bert_clean_text, 0))?;
+    class.define_method("clean_text=", method!(RbNormalizer::bert_set_clean_text, 1))?;
+    class.define_method("handle_chinese_chars", method!(RbNormalizer::bert_handle_chinese_chars, 0))?;
+    class.define_method("handle_chinese_chars=", method!(RbNormalizer::bert_set_handle_chinese_chars, 1))?;
+    class.define_method("strip_accents", method!(RbNormalizer::bert_strip_accents, 0))?;
+    class.define_method("strip_accents=", method!(RbNormalizer::bert_set_strip_accents, 1))?;
+    class.define_method("lowercase", method!(RbNormalizer::bert_lowercase, 0))?;
+    class.define_method("lowercase=", method!(RbNormalizer::bert_set_lowercase, 1))?;
 
     let class = module.define_class("Lowercase", normalizer)?;
     class.define_singleton_method("new", function!(RbLowercase::new, 0))?;
@@ -304,6 +394,10 @@ pub fn normalizers(module: &RModule) -> RbResult<()> {
 
     let class = module.define_class("Strip", normalizer)?;
     class.define_singleton_method("_new", function!(RbStrip::new, 2))?;
+    class.define_method("left", method!(RbNormalizer::strip_left, 0))?;
+    class.define_method("left=", method!(RbNormalizer::strip_set_left, 1))?;
+    class.define_method("right", method!(RbNormalizer::strip_right, 0))?;
+    class.define_method("right=", method!(RbNormalizer::strip_set_right, 1))?;
 
     let class = module.define_class("StripAccents", normalizer)?;
     class.define_singleton_method("new", function!(RbStripAccents::new, 0))?;

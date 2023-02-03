@@ -2,7 +2,7 @@ use std::sync::{Arc, RwLock};
 
 use magnus::typed_data::DataTypeBuilder;
 use magnus::{
-    function, memoize, Class, DataType, DataTypeFunctions, Module, Object,
+    function, memoize, method, Class, DataType, DataTypeFunctions, Module, Object,
     RClass, RModule, TypedData,
 };
 
@@ -30,10 +30,101 @@ pub struct RbPreTokenizer {
     pub(crate) pretok: RbPreTokenizerTypeWrapper,
 }
 
+macro_rules! getter {
+    ($self: ident, $variant: ident, $($name: tt)+) => {{
+        if let RbPreTokenizerTypeWrapper::Single(ref single) = &$self.pretok {
+            if let RbPreTokenizerWrapper::Wrapped(PreTokenizerWrapper::$variant(ref pretok)) =
+                *single.read().unwrap() {
+                    pretok.$($name)+
+                } else {
+                    unreachable!()
+                }
+        } else {
+            unreachable!()
+        }
+    }};
+}
+
+macro_rules! setter {
+    ($self: ident, $variant: ident, $name: ident, $value: expr) => {{
+        if let RbPreTokenizerTypeWrapper::Single(ref single) = &$self.pretok {
+            if let RbPreTokenizerWrapper::Wrapped(PreTokenizerWrapper::$variant(ref mut pretok)) =
+                *single.write().unwrap()
+            {
+                pretok.$name = $value;
+            }
+        }
+    }};
+    ($self: ident, $variant: ident, @$name: ident, $value: expr) => {{
+        let super_ = $self.as_ref();
+        if let RbPreTokenizerTypeWrapper::Single(ref single) = &$self.pretok {
+            if let RbPreTokenizerWrapper::Wrapped(PreTokenizerWrapper::$variant(ref mut pretok)) =
+                *single.write().unwrap()
+            {
+                pretok.$name($value);
+            }
+        }
+    }};
+}
+
 impl RbPreTokenizer {
     #[allow(dead_code)]
     pub(crate) fn new(pretok: RbPreTokenizerTypeWrapper) -> Self {
         RbPreTokenizer { pretok }
+    }
+
+    fn byte_level_add_prefix_space(&self) -> bool {
+        getter!(self, ByteLevel, add_prefix_space)
+    }
+
+    fn byte_level_set_add_prefix_space(&self, add_prefix_space: bool) {
+        setter!(self, ByteLevel, add_prefix_space, add_prefix_space);
+    }
+
+    fn byte_level_use_regex(&self) -> bool {
+        getter!(self, ByteLevel, use_regex)
+    }
+
+    fn byte_level_set_use_regex(&self, use_regex: bool) {
+        setter!(self, ByteLevel, use_regex, use_regex);
+    }
+
+    fn char_delimiter_split_delimiter(&self) -> String {
+        getter!(self, Delimiter, delimiter.to_string())
+    }
+
+    fn char_delimiter_split_set_delimiter(&self, delimiter: char) {
+        setter!(self, Delimiter, delimiter, delimiter);
+    }
+
+    fn digits_individual_digits(&self) -> bool {
+        getter!(self, Digits, individual_digits)
+    }
+
+    fn digits_set_individual_digits(&self, individual_digits: bool) {
+        setter!(self, Digits, individual_digits, individual_digits);
+    }
+
+    fn metaspace_add_prefix_space(&self) -> bool {
+        getter!(self, Metaspace, add_prefix_space)
+    }
+
+    fn metaspace_set_add_prefix_space(&self, add_prefix_space: bool) {
+        setter!(self, Metaspace, add_prefix_space, add_prefix_space);
+    }
+
+    fn metaspace_replacement(&self) -> String {
+        getter!(self, Metaspace, get_replacement().to_string())
+    }
+
+    fn metaspace_set_replacement(&self, replacement: char) {
+        if let RbPreTokenizerTypeWrapper::Single(ref single) = &self.pretok {
+            if let RbPreTokenizerWrapper::Wrapped(PreTokenizerWrapper::Metaspace(ref mut pretok)) =
+                *single.write().unwrap()
+            {
+                pretok.set_replacement(replacement);
+            }
+        }
     }
 }
 
@@ -312,15 +403,27 @@ pub fn pre_tokenizers(module: &RModule) -> RbResult<()> {
     let class = module.define_class("ByteLevel", pre_tokenizer)?;
     class.define_singleton_method("_new", function!(RbByteLevel::new, 2))?;
     class.define_singleton_method("alphabet", function!(RbByteLevel::alphabet, 0))?;
+    class.define_method("add_prefix_space", method!(RbPreTokenizer::byte_level_add_prefix_space, 0))?;
+    class.define_method("add_prefix_space=", method!(RbPreTokenizer::byte_level_set_add_prefix_space, 1))?;
+    class.define_method("use_regex", method!(RbPreTokenizer::byte_level_use_regex, 0))?;
+    class.define_method("use_regex=", method!(RbPreTokenizer::byte_level_set_use_regex, 1))?;
 
     let class = module.define_class("CharDelimiterSplit", pre_tokenizer)?;
     class.define_singleton_method("new", function!(RbCharDelimiterSplit::new, 1))?;
+    class.define_method("delimiter", method!(RbPreTokenizer::char_delimiter_split_delimiter, 0))?;
+    class.define_method("delimiter=", method!(RbPreTokenizer::char_delimiter_split_set_delimiter, 1))?;
 
     let class = module.define_class("Digits", pre_tokenizer)?;
     class.define_singleton_method("_new", function!(RbDigits::new, 1))?;
+    class.define_method("individual_digits", method!(RbPreTokenizer::digits_individual_digits, 0))?;
+    class.define_method("individual_digits=", method!(RbPreTokenizer::digits_set_individual_digits, 1))?;
 
     let class = module.define_class("Metaspace", pre_tokenizer)?;
     class.define_singleton_method("_new", function!(RbMetaspace::new, 2))?;
+    class.define_method("add_prefix_space", method!(RbPreTokenizer::metaspace_add_prefix_space, 0))?;
+    class.define_method("add_prefix_space=", method!(RbPreTokenizer::metaspace_set_add_prefix_space, 1))?;
+    class.define_method("replacement", method!(RbPreTokenizer::metaspace_replacement, 0))?;
+    class.define_method("replacement=", method!(RbPreTokenizer::metaspace_set_replacement, 1))?;
 
     let class = module.define_class("Punctuation", pre_tokenizer)?;
     class.define_singleton_method("_new", function!(RbPunctuation::new, 1))?;

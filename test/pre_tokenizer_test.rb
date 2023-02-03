@@ -6,7 +6,15 @@ class PreTokenizerTest < Minitest::Test
     assert_instance_of Tokenizers::PreTokenizers::ByteLevel, pre_tokenizer
     assert_kind_of Tokenizers::PreTokenizers::PreTokenizer, pre_tokenizer
 
-    Tokenizers::PreTokenizers::ByteLevel.new(add_prefix_space: false, use_regex: false)
+    pre_tokenizer = Tokenizers::PreTokenizers::ByteLevel.new(add_prefix_space: false, use_regex: false)
+
+    assert_equal false, pre_tokenizer.add_prefix_space
+    pre_tokenizer.add_prefix_space = true
+    assert_equal true, pre_tokenizer.add_prefix_space
+
+    assert_equal false, pre_tokenizer.use_regex
+    pre_tokenizer.use_regex = true
+    assert_equal true, pre_tokenizer.use_regex
 
     alphabet = Tokenizers::PreTokenizers::ByteLevel.alphabet
     assert 256, alphabet.size
@@ -16,6 +24,10 @@ class PreTokenizerTest < Minitest::Test
     pre_tokenizer = Tokenizers::PreTokenizers::CharDelimiterSplit.new('a')
     assert_instance_of Tokenizers::PreTokenizers::CharDelimiterSplit, pre_tokenizer
     assert_kind_of Tokenizers::PreTokenizers::PreTokenizer, pre_tokenizer
+ 
+    assert_equal 'a', pre_tokenizer.delimiter
+    pre_tokenizer.delimiter = 'b'
+    assert_equal 'b', pre_tokenizer.delimiter
   end
 
   def test_digits
@@ -23,7 +35,11 @@ class PreTokenizerTest < Minitest::Test
     assert_instance_of Tokenizers::PreTokenizers::Digits, pre_tokenizer
     assert_kind_of Tokenizers::PreTokenizers::PreTokenizer, pre_tokenizer
 
-    Tokenizers::PreTokenizers::Digits.new(individual_digits: true)
+    pre_tokenizer = Tokenizers::PreTokenizers::Digits.new(individual_digits: true)
+
+    assert_equal true, pre_tokenizer.individual_digits
+    pre_tokenizer.individual_digits = false
+    assert_equal false, pre_tokenizer.individual_digits
   end
 
   def test_metaspace
@@ -31,7 +47,15 @@ class PreTokenizerTest < Minitest::Test
     assert_instance_of Tokenizers::PreTokenizers::Metaspace, pre_tokenizer
     assert_kind_of Tokenizers::PreTokenizers::PreTokenizer, pre_tokenizer
 
-    Tokenizers::PreTokenizers::Metaspace.new(replacement: 'c', add_prefix_space: false)
+    pre_tokenizer = Tokenizers::PreTokenizers::Metaspace.new(replacement: 'c', add_prefix_space: false)
+
+    assert_equal 'c', pre_tokenizer.replacement
+    pre_tokenizer.replacement = 'd'
+    assert_equal 'd', pre_tokenizer.replacement
+
+    assert_equal false, pre_tokenizer.add_prefix_space
+    pre_tokenizer.add_prefix_space = true
+    assert_equal true, pre_tokenizer.add_prefix_space
   end
 
   def test_punctuation
