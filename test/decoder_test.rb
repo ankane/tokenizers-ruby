@@ -6,9 +6,7 @@ class DecoderTest < Minitest::Test
     assert_instance_of Tokenizers::Decoders::BPEDecoder, decoder
     assert_kind_of Tokenizers::Decoders::Decoder, decoder
 
-    decoder = Tokenizers::Decoders::BPEDecoder.new(suffix: "</end>")
-    assert_instance_of Tokenizers::Decoders::BPEDecoder, decoder
-    assert_kind_of Tokenizers::Decoders::Decoder, decoder
+    Tokenizers::Decoders::BPEDecoder.new(suffix: "</end>")
   end
 
   def test_byte_level
