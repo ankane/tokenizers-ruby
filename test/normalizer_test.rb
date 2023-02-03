@@ -2,86 +2,86 @@ require_relative "test_helper"
 
 class NormalizerTest < Minitest::Test
   def test_bert_normalizer
-    normalizer = Tokenizers::BertNormalizer.new
-    assert_instance_of Tokenizers::BertNormalizer, normalizer
-    assert_kind_of Tokenizers::Normalizer, normalizer
+    normalizer = Tokenizers::Normalizers::BertNormalizer.new
+    assert_instance_of Tokenizers::Normalizers::BertNormalizer, normalizer
+    assert_kind_of Tokenizers::Normalizers::Normalizer, normalizer
 
-    normalizer = Tokenizers::BertNormalizer.new(clean_text: false)
-    assert_instance_of Tokenizers::BertNormalizer, normalizer
-    assert_kind_of Tokenizers::Normalizer, normalizer
+    normalizer = Tokenizers::Normalizers::BertNormalizer.new(clean_text: false)
+    assert_instance_of Tokenizers::Normalizers::BertNormalizer, normalizer
+    assert_kind_of Tokenizers::Normalizers::Normalizer, normalizer
 
-    normalizer = Tokenizers::BertNormalizer.new(handle_chinese_chars: false)
-    assert_instance_of Tokenizers::BertNormalizer, normalizer
-    assert_kind_of Tokenizers::Normalizer, normalizer
+    normalizer = Tokenizers::Normalizers::BertNormalizer.new(handle_chinese_chars: false)
+    assert_instance_of Tokenizers::Normalizers::BertNormalizer, normalizer
+    assert_kind_of Tokenizers::Normalizers::Normalizer, normalizer
 
-    normalizer = Tokenizers::BertNormalizer.new(strip_accents: false)
-    assert_instance_of Tokenizers::BertNormalizer, normalizer
-    assert_kind_of Tokenizers::Normalizer, normalizer
+    normalizer = Tokenizers::Normalizers::BertNormalizer.new(strip_accents: false)
+    assert_instance_of Tokenizers::Normalizers::BertNormalizer, normalizer
+    assert_kind_of Tokenizers::Normalizers::Normalizer, normalizer
 
-    normalizer = Tokenizers::BertNormalizer.new(lowercase: false)
-    assert_instance_of Tokenizers::BertNormalizer, normalizer
-    assert_kind_of Tokenizers::Normalizer, normalizer
+    normalizer = Tokenizers::Normalizers::BertNormalizer.new(lowercase: false)
+    assert_instance_of Tokenizers::Normalizers::BertNormalizer, normalizer
+    assert_kind_of Tokenizers::Normalizers::Normalizer, normalizer
   end
 
   def test_lowercase
-    normalizer = Tokenizers::Lowercase.new
-    assert_instance_of Tokenizers::Lowercase, normalizer
-    assert_kind_of Tokenizers::Lowercase, normalizer
+    normalizer = Tokenizers::Normalizers::Lowercase.new
+    assert_instance_of Tokenizers::Normalizers::Lowercase, normalizer
+    assert_kind_of Tokenizers::Normalizers::Lowercase, normalizer
   end
 
   def test_nfc
-    normalizer = Tokenizers::NFC.new
-    assert_instance_of Tokenizers::NFC, normalizer
-    assert_kind_of Tokenizers::NFC, normalizer
+    normalizer = Tokenizers::Normalizers::NFC.new
+    assert_instance_of Tokenizers::Normalizers::NFC, normalizer
+    assert_kind_of Tokenizers::Normalizers::NFC, normalizer
   end
 
   def test_nfd
-    normalizer = Tokenizers::NFD.new
-    assert_instance_of Tokenizers::NFD, normalizer
-    assert_kind_of Tokenizers::NFD, normalizer
+    normalizer = Tokenizers::Normalizers::NFD.new
+    assert_instance_of Tokenizers::Normalizers::NFD, normalizer
+    assert_kind_of Tokenizers::Normalizers::NFD, normalizer
   end
 
   def test_nfkc
-    normalizer = Tokenizers::NFKC.new
-    assert_instance_of Tokenizers::NFKC, normalizer
-    assert_kind_of Tokenizers::NFKC, normalizer
+    normalizer = Tokenizers::Normalizers::NFKC.new
+    assert_instance_of Tokenizers::Normalizers::NFKC, normalizer
+    assert_kind_of Tokenizers::Normalizers::NFKC, normalizer
   end
 
   def test_nfkd
-    normalizer = Tokenizers::NFKD.new
-    assert_instance_of Tokenizers::NFKD, normalizer
-    assert_kind_of Tokenizers::NFKD, normalizer
+    normalizer = Tokenizers::Normalizers::NFKD.new
+    assert_instance_of Tokenizers::Normalizers::NFKD, normalizer
+    assert_kind_of Tokenizers::Normalizers::NFKD, normalizer
   end
 
   def test_nmt
-    normalizer = Tokenizers::Nmt.new
-    assert_instance_of Tokenizers::Nmt, normalizer
-    assert_kind_of Tokenizers::Nmt, normalizer
+    normalizer = Tokenizers::Normalizers::Nmt.new
+    assert_instance_of Tokenizers::Normalizers::Nmt, normalizer
+    assert_kind_of Tokenizers::Normalizers::Nmt, normalizer
   end
 
   def test_replace
-    normalizer = Tokenizers::Replace.new('abc', 'xyz')
-    assert_instance_of Tokenizers::Replace, normalizer
-    assert_kind_of Tokenizers::Replace, normalizer
+    normalizer = Tokenizers::Normalizers::Replace.new('abc', 'xyz')
+    assert_instance_of Tokenizers::Normalizers::Replace, normalizer
+    assert_kind_of Tokenizers::Normalizers::Replace, normalizer
   end
 
   def test_strip
-    normalizer = Tokenizers::Strip.new
-    assert_instance_of Tokenizers::Strip, normalizer
-    assert_kind_of Tokenizers::Strip, normalizer
+    normalizer = Tokenizers::Normalizers::Strip.new
+    assert_instance_of Tokenizers::Normalizers::Strip, normalizer
+    assert_kind_of Tokenizers::Normalizers::Strip, normalizer
 
-    normalizer = Tokenizers::Strip.new(left: false)
-    assert_instance_of Tokenizers::Strip, normalizer
-    assert_kind_of Tokenizers::Strip, normalizer
+    normalizer = Tokenizers::Normalizers::Strip.new(left: false)
+    assert_instance_of Tokenizers::Normalizers::Strip, normalizer
+    assert_kind_of Tokenizers::Normalizers::Strip, normalizer
 
-    normalizer = Tokenizers::Strip.new(right: false)
-    assert_instance_of Tokenizers::Strip, normalizer
-    assert_kind_of Tokenizers::Strip, normalizer
+    normalizer = Tokenizers::Normalizers::Strip.new(right: false)
+    assert_instance_of Tokenizers::Normalizers::Strip, normalizer
+    assert_kind_of Tokenizers::Normalizers::Strip, normalizer
   end
 
   def test_strip_accents
-    normalizer = Tokenizers::StripAccents.new
-    assert_instance_of Tokenizers::StripAccents, normalizer
-    assert_kind_of Tokenizers::StripAccents, normalizer
+    normalizer = Tokenizers::Normalizers::StripAccents.new
+    assert_instance_of Tokenizers::Normalizers::StripAccents, normalizer
+    assert_kind_of Tokenizers::Normalizers::StripAccents, normalizer
   end
 end

@@ -23,6 +23,30 @@ fn module() -> RModule {
     *memoize!(RModule: define_module("Tokenizers").unwrap())
 }
 
+fn decoders() -> RModule {
+    *memoize!(RModule: module().const_get("Decoders").unwrap())
+}
+
+fn models() -> RModule {
+    *memoize!(RModule: module().const_get("Models").unwrap())
+}
+
+fn normalizers() -> RModule {
+    *memoize!(RModule: module().const_get("Normalizers").unwrap())
+}
+
+fn pre_tokenizers() -> RModule {
+    *memoize!(RModule: module().const_get("PreTokenizers").unwrap())
+}
+
+fn processors() -> RModule {
+    *memoize!(RModule: module().const_get("Processors").unwrap())
+}
+
+fn trainers() -> RModule {
+    *memoize!(RModule: module().const_get("Trainers").unwrap())
+}
+
 #[magnus::init]
 fn init() -> RbResult<()> {
     let module = module();
@@ -86,12 +110,19 @@ fn init() -> RbResult<()> {
     class.define_method("_char_to_token", method!(RbEncoding::char_to_token, 2))?;
     class.define_method("_char_to_word", method!(RbEncoding::char_to_word, 2))?;
 
-    models::models(&module)?;
-    pre_tokenizers::pre_tokenizers(&module)?;
-    decoders::decoders(&module)?;
-    processors::processors(&module)?;
-    normalizers::normalizers(&module)?;
-    trainers::trainers(&module)?;
+    let models = module.define_module("Models")?;
+    let pre_tokenizers = module.define_module("PreTokenizers")?;
+    let decoders = module.define_module("Decoders")?;
+    let processors = module.define_module("Processors")?;
+    let normalizers = module.define_module("Normalizers")?;
+    let trainers = module.define_module("Trainers")?;
+
+    models::models(&models)?;
+    pre_tokenizers::pre_tokenizers(&pre_tokenizers)?;
+    decoders::decoders(&decoders)?;
+    processors::processors(&processors)?;
+    normalizers::normalizers(&normalizers)?;
+    trainers::trainers(&trainers)?;
 
     Ok(())
 }

@@ -7,11 +7,11 @@ class QuicktourTest < Minitest::Test
 
   # https://huggingface.co/docs/tokenizers/quicktour
   def test_works
-    tokenizer = Tokenizers::Tokenizer.new(Tokenizers::BPE.new(unk_token: "[UNK]"))
+    tokenizer = Tokenizers::Tokenizer.new(Tokenizers::Models::BPE.new(unk_token: "[UNK]"))
 
-    trainer = Tokenizers::BpeTrainer.new(special_tokens: ["[UNK]", "[CLS]", "[SEP]", "[PAD]", "[MASK]"])
+    trainer = Tokenizers::Trainers::BpeTrainer.new(special_tokens: ["[UNK]", "[CLS]", "[SEP]", "[PAD]", "[MASK]"])
 
-    tokenizer.pre_tokenizer = Tokenizers::Whitespace.new
+    tokenizer.pre_tokenizer = Tokenizers::PreTokenizers::Whitespace.new
 
     files = ["test", "train", "valid"].map { |split| "#{data_path}/wikitext-103-raw/wiki.#{split}.raw" }
     tokenizer.train(files, trainer)
@@ -33,7 +33,7 @@ class QuicktourTest < Minitest::Test
 
     assert_equal 2, tokenizer.token_to_id("[SEP]")
 
-    tokenizer.post_processor = Tokenizers::TemplateProcessing.new(
+    tokenizer.post_processor = Tokenizers::Processors::TemplateProcessing.new(
       single: "[CLS] $A [SEP]",
       pair: "[CLS] $A [SEP] $B:1 [SEP]:1",
       special_tokens: [

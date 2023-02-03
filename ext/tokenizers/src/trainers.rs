@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 use tk::models::TrainerWrapper;
 use tk::Trainer;
 
-use super::{module, RbResult};
+use super::RbResult;
 
 #[derive(DataTypeFunctions, Clone, Deserialize, Serialize)]
 pub struct RbTrainer {
@@ -127,20 +127,20 @@ impl RbBpeTrainer {
 unsafe impl TypedData for RbTrainer {
     fn class() -> RClass {
         *memoize!(RClass: {
-          let class: RClass = module().const_get("Trainer").unwrap();
+          let class: RClass = crate::trainers().const_get("Trainer").unwrap();
           class.undef_alloc_func();
           class
         })
     }
 
     fn data_type() -> &'static DataType {
-        memoize!(DataType: DataTypeBuilder::<RbTrainer>::new("Tokenizers::Trainer").build())
+        memoize!(DataType: DataTypeBuilder::<RbTrainer>::new("Tokenizers::Trainers::Trainer").build())
     }
 
     fn class_for(value: &Self) -> RClass {
         match *value.trainer.read().unwrap() {
             TrainerWrapper::BpeTrainer(_) => *memoize!(RClass: {
-                let class: RClass = module().const_get("BpeTrainer").unwrap();
+                let class: RClass = crate::trainers().const_get("BpeTrainer").unwrap();
                 class.undef_alloc_func();
                 class
             }),

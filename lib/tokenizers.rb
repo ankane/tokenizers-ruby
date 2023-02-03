@@ -5,26 +5,38 @@ rescue LoadError
   require_relative "tokenizers/tokenizers"
 end
 
-# modules
-require_relative "tokenizers/bert_normalizer"
-require_relative "tokenizers/bpe"
-require_relative "tokenizers/bpe_decoder"
-require_relative "tokenizers/bpe_trainer"
-require_relative "tokenizers/byte_level"
+# decoders
+require_relative "tokenizers/decoders/bpe_decoder"
+require_relative "tokenizers/decoders/ctc"
+require_relative "tokenizers/decoders/metaspace"
+require_relative "tokenizers/decoders/word_piece"
+
+# models
+require_relative "tokenizers/models/bpe"
+
+# normalizers
+require_relative "tokenizers/normalizers/bert_normalizer"
+require_relative "tokenizers/normalizers/strip"
+
+# pre-tokenizers
+require_relative "tokenizers/pre_tokenizers/byte_level"
+require_relative "tokenizers/pre_tokenizers/digits"
+require_relative "tokenizers/pre_tokenizers/metaspace"
+require_relative "tokenizers/pre_tokenizers/punctuation"
+require_relative "tokenizers/pre_tokenizers/split"
+
+# processors
+require_relative "tokenizers/processors/template_processing"
+
+# trainers
+require_relative "tokenizers/trainers/bpe_trainer"
+
+# other
 require_relative "tokenizers/char_bpe_tokenizer"
-require_relative "tokenizers/ctc"
-require_relative "tokenizers/digits"
 require_relative "tokenizers/encoding"
 require_relative "tokenizers/from_pretrained"
-require_relative "tokenizers/metaspace"
-require_relative "tokenizers/metaspace_decoder"
-require_relative "tokenizers/punctuation"
-require_relative "tokenizers/split"
-require_relative "tokenizers/strip"
-require_relative "tokenizers/template_processing"
 require_relative "tokenizers/tokenizer"
 require_relative "tokenizers/version"
-require_relative "tokenizers/word_piece_decoder"
 
 module Tokenizers
   class Error < StandardError; end

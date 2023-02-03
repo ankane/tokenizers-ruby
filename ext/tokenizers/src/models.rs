@@ -13,7 +13,7 @@ use tk::models::bpe::{BpeBuilder, Merges, Vocab, BPE};
 use tk::models::ModelWrapper;
 use tk::{Model, Token};
 
-use super::{module, RbError, RbResult};
+use super::{RbError, RbResult};
 
 #[derive(DataTypeFunctions, Clone, Serialize, Deserialize)]
 pub struct RbModel {
@@ -104,20 +104,20 @@ impl RbBPE {
 unsafe impl TypedData for RbModel {
     fn class() -> RClass {
         *memoize!(RClass: {
-          let class: RClass = module().const_get("Model").unwrap();
+          let class: RClass = crate::models().const_get("Model").unwrap();
           class.undef_alloc_func();
           class
         })
     }
 
     fn data_type() -> &'static DataType {
-        memoize!(DataType: DataTypeBuilder::<RbModel>::new("Tokenizers::Model").build())
+        memoize!(DataType: DataTypeBuilder::<RbModel>::new("Tokenizers::Models::Model").build())
     }
 
     fn class_for(value: &Self) -> RClass {
         match *value.model.read().unwrap() {
             ModelWrapper::BPE(_) => *memoize!(RClass: {
-                let class: RClass = module().const_get("BPE").unwrap();
+                let class: RClass = crate::models().const_get("BPE").unwrap();
                 class.undef_alloc_func();
                 class
             }),

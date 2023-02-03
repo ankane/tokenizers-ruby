@@ -14,7 +14,7 @@ use tk::normalizers::{
 use tk::{NormalizedString, Normalizer};
 
 use super::utils::*;
-use super::{module, RbError, RbResult};
+use super::{RbError, RbResult};
 
 #[derive(DataTypeFunctions, Clone, Serialize, Deserialize)]
 pub struct RbNormalizer {
@@ -203,14 +203,14 @@ impl Normalizer for RbNormalizerWrapper {
 unsafe impl TypedData for RbNormalizer {
     fn class() -> RClass {
         *memoize!(RClass: {
-          let class: RClass = module().const_get("Normalizer").unwrap();
+          let class: RClass = crate::normalizers().const_get("Normalizer").unwrap();
           class.undef_alloc_func();
           class
         })
     }
 
     fn data_type() -> &'static DataType {
-        memoize!(DataType: DataTypeBuilder::<RbNormalizer>::new("Tokenizers::Normalizer").build())
+        memoize!(DataType: DataTypeBuilder::<RbNormalizer>::new("Tokenizers::Normalizers::Normalizer").build())
     }
 
     fn class_for(value: &Self) -> RClass {
@@ -219,52 +219,52 @@ unsafe impl TypedData for RbNormalizer {
             RbNormalizerTypeWrapper::Single(inner) => match &*inner.read().unwrap() {
                 RbNormalizerWrapper::Wrapped(wrapped) => match &wrapped {
                     NormalizerWrapper::BertNormalizer(_) => *memoize!(RClass: {
-                        let class: RClass = module().const_get("BertNormalizer").unwrap();
+                        let class: RClass = crate::normalizers().const_get("BertNormalizer").unwrap();
                         class.undef_alloc_func();
                         class
                     }),
                     NormalizerWrapper::Lowercase(_) => *memoize!(RClass: {
-                        let class: RClass = module().const_get("Lowercase").unwrap();
+                        let class: RClass = crate::normalizers().const_get("Lowercase").unwrap();
                         class.undef_alloc_func();
                         class
                     }),
                     NormalizerWrapper::NFD(_) => *memoize!(RClass: {
-                        let class: RClass = module().const_get("NFD").unwrap();
+                        let class: RClass = crate::normalizers().const_get("NFD").unwrap();
                         class.undef_alloc_func();
                         class
                     }),
                     NormalizerWrapper::NFC(_) => *memoize!(RClass: {
-                        let class: RClass = module().const_get("NFC").unwrap();
+                        let class: RClass = crate::normalizers().const_get("NFC").unwrap();
                         class.undef_alloc_func();
                         class
                     }),
                     NormalizerWrapper::NFKC(_) => *memoize!(RClass: {
-                        let class: RClass = module().const_get("NFKC").unwrap();
+                        let class: RClass = crate::normalizers().const_get("NFKC").unwrap();
                         class.undef_alloc_func();
                         class
                     }),
                     NormalizerWrapper::NFKD(_) => *memoize!(RClass: {
-                        let class: RClass = module().const_get("NFKD").unwrap();
+                        let class: RClass = crate::normalizers().const_get("NFKD").unwrap();
                         class.undef_alloc_func();
                         class
                     }),
                     NormalizerWrapper::Nmt(_) => *memoize!(RClass: {
-                        let class: RClass = module().const_get("Nmt").unwrap();
+                        let class: RClass = crate::normalizers().const_get("Nmt").unwrap();
                         class.undef_alloc_func();
                         class
                     }),
                     NormalizerWrapper::Replace(_) => *memoize!(RClass: {
-                        let class: RClass = module().const_get("Replace").unwrap();
+                        let class: RClass = crate::normalizers().const_get("Replace").unwrap();
                         class.undef_alloc_func();
                         class
                     }),
                     NormalizerWrapper::StripNormalizer(_) => *memoize!(RClass: {
-                        let class: RClass = module().const_get("Strip").unwrap();
+                        let class: RClass = crate::normalizers().const_get("Strip").unwrap();
                         class.undef_alloc_func();
                         class
                     }),
                     NormalizerWrapper::StripAccents(_) => *memoize!(RClass: {
-                        let class: RClass = module().const_get("StripAccents").unwrap();
+                        let class: RClass = crate::normalizers().const_get("StripAccents").unwrap();
                         class.undef_alloc_func();
                         class
                     }),

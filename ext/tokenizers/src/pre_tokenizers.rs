@@ -22,7 +22,7 @@ use tk::pre_tokenizers::PreTokenizerWrapper;
 use tk::{PreTokenizedString, PreTokenizer};
 
 use super::utils::*;
-use super::{module, RbError, RbResult};
+use super::{RbError, RbResult};
 
 #[derive(DataTypeFunctions, Clone, Serialize, Deserialize)]
 pub struct RbPreTokenizer {
@@ -231,14 +231,14 @@ impl PreTokenizer for RbPreTokenizerWrapper {
 unsafe impl TypedData for RbPreTokenizer {
     fn class() -> RClass {
         *memoize!(RClass: {
-          let class: RClass = module().const_get("PreTokenizer").unwrap();
+          let class: RClass = crate::pre_tokenizers().const_get("PreTokenizer").unwrap();
           class.undef_alloc_func();
           class
         })
     }
 
     fn data_type() -> &'static DataType {
-        memoize!(DataType: DataTypeBuilder::<RbPreTokenizer>::new("Tokenizers::PreTokenizer").build())
+        memoize!(DataType: DataTypeBuilder::<RbPreTokenizer>::new("Tokenizers::PreTokenizers::PreTokenizer").build())
     }
 
     fn class_for(value: &Self) -> RClass {
@@ -247,52 +247,52 @@ unsafe impl TypedData for RbPreTokenizer {
             RbPreTokenizerTypeWrapper::Single(inner) => match &*inner.read().unwrap() {
                 RbPreTokenizerWrapper::Wrapped(wrapped) => match &wrapped {
                     PreTokenizerWrapper::BertPreTokenizer(_) => *memoize!(RClass: {
-                        let class: RClass = module().const_get("BertPreTokenizer").unwrap();
+                        let class: RClass = crate::pre_tokenizers().const_get("BertPreTokenizer").unwrap();
                         class.undef_alloc_func();
                         class
                     }),
                     PreTokenizerWrapper::ByteLevel(_) => *memoize!(RClass: {
-                        let class: RClass = module().const_get("ByteLevel").unwrap();
+                        let class: RClass = crate::pre_tokenizers().const_get("ByteLevel").unwrap();
                         class.undef_alloc_func();
                         class
                     }),
                     PreTokenizerWrapper::Delimiter(_) => *memoize!(RClass: {
-                        let class: RClass = module().const_get("CharDelimiterSplit").unwrap();
+                        let class: RClass = crate::pre_tokenizers().const_get("CharDelimiterSplit").unwrap();
                         class.undef_alloc_func();
                         class
                     }),
                     PreTokenizerWrapper::Digits(_) => *memoize!(RClass: {
-                        let class: RClass = module().const_get("Digits").unwrap();
+                        let class: RClass = crate::pre_tokenizers().const_get("Digits").unwrap();
                         class.undef_alloc_func();
                         class
                     }),
                     PreTokenizerWrapper::Metaspace(_) => *memoize!(RClass: {
-                        let class: RClass = module().const_get("Metaspace").unwrap();
+                        let class: RClass = crate::pre_tokenizers().const_get("Metaspace").unwrap();
                         class.undef_alloc_func();
                         class
                     }),
                     PreTokenizerWrapper::Punctuation(_) => *memoize!(RClass: {
-                        let class: RClass = module().const_get("Punctuation").unwrap();
+                        let class: RClass = crate::pre_tokenizers().const_get("Punctuation").unwrap();
                         class.undef_alloc_func();
                         class
                     }),
                     PreTokenizerWrapper::Split(_) => *memoize!(RClass: {
-                        let class: RClass = module().const_get("Split").unwrap();
+                        let class: RClass = crate::pre_tokenizers().const_get("Split").unwrap();
                         class.undef_alloc_func();
                         class
                     }),
                     PreTokenizerWrapper::UnicodeScripts(_) => *memoize!(RClass: {
-                        let class: RClass = module().const_get("UnicodeScripts").unwrap();
+                        let class: RClass = crate::pre_tokenizers().const_get("UnicodeScripts").unwrap();
                         class.undef_alloc_func();
                         class
                     }),
                     PreTokenizerWrapper::Whitespace(_) => *memoize!(RClass: {
-                        let class: RClass = module().const_get("Whitespace").unwrap();
+                        let class: RClass = crate::pre_tokenizers().const_get("Whitespace").unwrap();
                         class.undef_alloc_func();
                         class
                     }),
                     PreTokenizerWrapper::WhitespaceSplit(_) => *memoize!(RClass: {
-                        let class: RClass = module().const_get("WhitespaceSplit").unwrap();
+                        let class: RClass = crate::pre_tokenizers().const_get("WhitespaceSplit").unwrap();
                         class.undef_alloc_func();
                         class
                     }),

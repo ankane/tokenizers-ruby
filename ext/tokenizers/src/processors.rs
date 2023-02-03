@@ -10,7 +10,7 @@ use tk::processors::template::{SpecialToken, Template};
 use tk::processors::PostProcessorWrapper;
 use tk::{Encoding, PostProcessor};
 
-use super::{module, RbResult};
+use super::RbResult;
 
 #[derive(DataTypeFunctions, Clone, Deserialize, Serialize)]
 pub struct RbPostProcessor {
@@ -113,20 +113,20 @@ impl RbTemplateProcessing {
 unsafe impl TypedData for RbPostProcessor {
     fn class() -> RClass {
         *memoize!(RClass: {
-          let class: RClass = module().const_get("PostProcessor").unwrap();
+          let class: RClass = crate::processors().const_get("PostProcessor").unwrap();
           class.undef_alloc_func();
           class
         })
     }
 
     fn data_type() -> &'static DataType {
-        memoize!(DataType: DataTypeBuilder::<RbPostProcessor>::new("Tokenizers::PostProcessor").build())
+        memoize!(DataType: DataTypeBuilder::<RbPostProcessor>::new("Tokenizers::Processors::PostProcessor").build())
     }
 
     fn class_for(value: &Self) -> RClass {
         match *value.processor {
             PostProcessorWrapper::Template(_) => *memoize!(RClass: {
-                let class: RClass = module().const_get("TemplateProcessing").unwrap();
+                let class: RClass = crate::processors().const_get("TemplateProcessing").unwrap();
                 class.undef_alloc_func();
                 class
             }),

@@ -14,7 +14,7 @@ use tk::decoders::wordpiece::WordPiece;
 use tk::decoders::DecoderWrapper;
 use tk::Decoder;
 
-use super::{module, RbResult};
+use super::RbResult;
 
 #[derive(DataTypeFunctions, Clone, Deserialize, Serialize)]
 pub struct RbDecoder {
@@ -107,41 +107,41 @@ impl Decoder for RbDecoderWrapper {
 unsafe impl TypedData for RbDecoder {
     fn class() -> RClass {
         *memoize!(RClass: {
-          let class: RClass = module().const_get("Decoder").unwrap();
+          let class: RClass = crate::decoders().const_get("Decoder").unwrap();
           class.undef_alloc_func();
           class
         })
     }
 
     fn data_type() -> &'static DataType {
-        memoize!(DataType: DataTypeBuilder::<RbDecoder>::new("Tokenizers::Decoder").build())
+        memoize!(DataType: DataTypeBuilder::<RbDecoder>::new("Tokenizers::Decoders::Decoder").build())
     }
 
     fn class_for(value: &Self) -> RClass {
         match &value.decoder {
             RbDecoderWrapper::Wrapped(inner) => match *inner.read().unwrap() {
                 DecoderWrapper::BPE(_) => *memoize!(RClass: {
-                    let class: RClass = module().const_get("BPEDecoder").unwrap();
+                    let class: RClass = crate::decoders().const_get("BPEDecoder").unwrap();
                     class.undef_alloc_func();
                     class
                 }),
                 DecoderWrapper::ByteLevel(_) => *memoize!(RClass: {
-                    let class: RClass = module().const_get("ByteLevelDecoder").unwrap();
+                    let class: RClass = crate::decoders().const_get("ByteLevel").unwrap();
                     class.undef_alloc_func();
                     class
                 }),
                 DecoderWrapper::CTC(_) => *memoize!(RClass: {
-                    let class: RClass = module().const_get("CTC").unwrap();
+                    let class: RClass = crate::decoders().const_get("CTC").unwrap();
                     class.undef_alloc_func();
                     class
                 }),
                 DecoderWrapper::Metaspace(_) => *memoize!(RClass: {
-                    let class: RClass = module().const_get("MetaspaceDecoder").unwrap();
+                    let class: RClass = crate::decoders().const_get("Metaspace").unwrap();
                     class.undef_alloc_func();
                     class
                 }),
                 DecoderWrapper::WordPiece(_) => *memoize!(RClass: {
-                    let class: RClass = module().const_get("WordPieceDecoder").unwrap();
+                    let class: RClass = crate::decoders().const_get("WordPiece").unwrap();
                     class.undef_alloc_func();
                     class
                 }),
@@ -157,16 +157,16 @@ pub fn decoders(module: &RModule) -> RbResult<()> {
     let class = module.define_class("BPEDecoder", decoder)?;
     class.define_singleton_method("_new", function!(RbBPEDecoder::new, 1))?;
 
-    let class = module.define_class("ByteLevelDecoder", decoder)?;
+    let class = module.define_class("ByteLevel", decoder)?;
     class.define_singleton_method("new", function!(RbByteLevelDecoder::new, 0))?;
 
     let class = module.define_class("CTC", decoder)?;
     class.define_singleton_method("_new", function!(RbCTC::new, 3))?;
 
-    let class = module.define_class("MetaspaceDecoder", decoder)?;
+    let class = module.define_class("Metaspace", decoder)?;
     class.define_singleton_method("_new", function!(RbMetaspaceDecoder::new, 2))?;
 
-    let class = module.define_class("WordPieceDecoder", decoder)?;
+    let class = module.define_class("WordPiece", decoder)?;
     class.define_singleton_method("_new", function!(RbWordPieceDecoder::new, 2))?;
 
     Ok(())
