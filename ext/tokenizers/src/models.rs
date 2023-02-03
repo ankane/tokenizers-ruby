@@ -5,7 +5,7 @@ use std::sync::{Arc, RwLock};
 use crate::trainers::RbTrainer;
 use magnus::typed_data::DataTypeBuilder;
 use magnus::{
-    exception, function, memoize, Class, DataType, DataTypeFunctions, Error, Module, Object,
+    exception, function, memoize, method, Class, DataType, DataTypeFunctions, Error, Module, Object,
     RClass, RHash, RModule, Symbol, TypedData, Value,
 };
 use serde::{Deserialize, Serialize};
@@ -121,6 +121,23 @@ impl RbBPE {
         let (vocab, merges) = BPE::read_file(&vocab, &merges).map_err(RbError::from)?;
 
         RbBPE::new(Some(vocab), Some(merges), kwargs)
+    }
+}
+
+macro_rules! getter {
+    ($self: ident, $variant: ident, $($name: tt)+) => {{
+        let model = $self.model.write().unwrap();
+        if let ModelWrapper::$variant(ref mo) = *model {
+            mo.$($name)+
+        } else {
+            unreachable!()
+        }
+    }};
+}
+
+impl RbModel {
+    pub fn bpe_unk_token(&self) -> Option<String> {
+        getter!(self, BPE, unk_token.clone())
     }
 }
 
@@ -251,6 +268,7 @@ pub fn models(module: &RModule) -> RbResult<()> {
     let class = module.define_class("BPE", model)?;
     class.define_singleton_method("_new", function!(RbBPE::new, 3))?;
     class.define_singleton_method("_from_file", function!(RbBPE::from_file, 3))?;
+    class.define_method("unk_token", method!(RbModel::bpe_unk_token, 0))?;
 
     let class = module.define_class("Unigram", model)?;
     class.define_singleton_method("_new", function!(RbUnigram::new, 2))?;

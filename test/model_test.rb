@@ -5,18 +5,21 @@ class ModelTest < Minitest::Test
     model = Tokenizers::Models::BPE.new
     assert_instance_of Tokenizers::Models::BPE, model
     assert_kind_of Tokenizers::Models::Model, model
+    assert_nil model.unk_token
 
     vocab = {"a" => 0, "b" => 1, "c" => 2, "d" => 3}
-    Tokenizers::Models::BPE.new(
-      vocab: vocab,
-      merges: [],
-      cache_capacity: 256,
-      dropout: 0.5,
-      unk_token: "[UNK]",
-      continuing_subword_prefix: "##",
-      end_of_word_suffix: "</end>",
-      fuse_unk: true
-    )
+    model =
+      Tokenizers::Models::BPE.new(
+        vocab: vocab,
+        merges: [],
+        cache_capacity: 256,
+        dropout: 0.5,
+        unk_token: "[UNK]",
+        continuing_subword_prefix: "##",
+        end_of_word_suffix: "</end>",
+        fuse_unk: true
+      )
+    assert_equal "[UNK]", model.unk_token
   end
 
   def test_word_level
