@@ -1,7 +1,5 @@
 require_relative "test_helper"
 
-require "json"
-
 class TokenizerTest < Minitest::Test
   def test_from_pretrained_bert
     tokenizer = Tokenizers.from_pretrained("bert-base-cased")
