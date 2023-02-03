@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::sync::{Arc, RwLock};
 
 use crate::models::RbModel;
@@ -75,6 +76,43 @@ impl RbBpeTrainer {
                     })
                     .collect::<RbResult<Vec<_>>>()?,
             );
+        }
+
+        let value: Value = kwargs.delete(Symbol::new("initial_alphabet"))?;
+        if !value.is_nil() {
+            let arr = value.try_convert::<Vec<char>>()?;
+            let set: HashSet<char> = HashSet::from_iter(arr);
+            builder = builder.initial_alphabet(set);
+        }
+
+        let value: Value = kwargs.delete(Symbol::new("vocab_size"))?;
+        if !value.is_nil() {
+            builder = builder.vocab_size(value.try_convert::<usize>()?);
+        }
+
+        let value: Value = kwargs.delete(Symbol::new("min_frequency"))?;
+        if !value.is_nil() {
+            builder = builder.min_frequency(value.try_convert::<u32>()?);
+        }
+
+        let value: Value = kwargs.delete(Symbol::new("show_progress"))?;
+        if !value.is_nil() {
+            builder = builder.show_progress(value.try_convert::<bool>()?);
+        }
+
+        let value: Value = kwargs.delete(Symbol::new("limit_alphabet"))?;
+        if !value.is_nil() {
+            builder = builder.limit_alphabet(value.try_convert::<usize>()?);
+        }
+
+        let value: Value = kwargs.delete(Symbol::new("continuing_subword_prefix"))?;
+        if !value.is_nil() {
+            builder = builder.continuing_subword_prefix(value.try_convert::<String>()?);
+        }
+
+        let value: Value = kwargs.delete(Symbol::new("end_of_word_suffix"))?;
+        if !value.is_nil() {
+            builder = builder.end_of_word_suffix(value.try_convert::<String>()?);
         }
 
         if !kwargs.is_empty() {
