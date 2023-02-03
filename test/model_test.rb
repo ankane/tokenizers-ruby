@@ -21,6 +21,9 @@ class ModelTest < Minitest::Test
       )
     assert_in_delta 0.5, model.dropout
     assert_equal "[UNK]", model.unk_token
+
+    model.dropout = 0.6
+    assert_in_delta 0.6, model.dropout
   end
 
   def test_word_level

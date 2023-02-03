@@ -135,13 +135,30 @@ macro_rules! getter {
     }};
 }
 
+macro_rules! setter {
+    ($self: ident, $variant: ident, $name: ident, $value: expr) => {{
+        let mut model = $self.model.write().unwrap();
+        if let ModelWrapper::$variant(ref mut mo) = *model {
+            mo.$name = $value;
+        }
+    }};
+}
+
 impl RbModel {
     pub fn bpe_dropout(&self) -> Option<f32> {
         getter!(self, BPE, dropout)
     }
 
+    pub fn bpe_set_dropout(&self, dropout: Option<f32>) {
+        setter!(self, BPE, dropout, dropout);
+    }
+
     pub fn bpe_unk_token(&self) -> Option<String> {
         getter!(self, BPE, unk_token.clone())
+    }
+
+    pub fn bpe_set_unk_token(&self, unk_token: Option<String>) {
+        setter!(self, BPE, unk_token, unk_token);
     }
 }
 
@@ -273,7 +290,9 @@ pub fn models(module: &RModule) -> RbResult<()> {
     class.define_singleton_method("_new", function!(RbBPE::new, 3))?;
     class.define_singleton_method("_from_file", function!(RbBPE::from_file, 3))?;
     class.define_method("dropout", method!(RbModel::bpe_dropout, 0))?;
+    class.define_method("dropout=", method!(RbModel::bpe_set_dropout, 1))?;
     class.define_method("unk_token", method!(RbModel::bpe_unk_token, 0))?;
+    class.define_method("unk_token=", method!(RbModel::bpe_set_unk_token, 1))?;
 
     let class = module.define_class("Unigram", model)?;
     class.define_singleton_method("_new", function!(RbUnigram::new, 2))?;
