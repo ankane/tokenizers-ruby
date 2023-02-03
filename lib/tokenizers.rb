@@ -29,6 +29,8 @@ require_relative "tokenizers/pre_tokenizers/punctuation"
 require_relative "tokenizers/pre_tokenizers/split"
 
 # processors
+require_relative "tokenizers/processors/byte_level"
+require_relative "tokenizers/processors/roberta_processing"
 require_relative "tokenizers/processors/template_processing"
 
 # trainers
