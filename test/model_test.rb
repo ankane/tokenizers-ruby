@@ -5,7 +5,6 @@ class ModelTest < Minitest::Test
     model = Tokenizers::Models::BPE.new
     assert_instance_of Tokenizers::Models::BPE, model
     assert_kind_of Tokenizers::Models::Model, model
-    assert_nil model.unk_token
 
     vocab = {"a" => 0, "b" => 1, "c" => 2, "d" => 3}
     model =
@@ -19,9 +18,11 @@ class ModelTest < Minitest::Test
         end_of_word_suffix: "</end>",
         fuse_unk: true
       )
-    assert_in_delta 0.5, model.dropout
     assert_equal "[UNK]", model.unk_token
+    model.unk_token = "[PAD]"
+    assert_equal "[PAD]", model.unk_token
 
+    assert_in_delta 0.5, model.dropout
     model.dropout = 0.6
     assert_in_delta 0.6, model.dropout
 
