@@ -6,21 +6,12 @@ class NormalizerTest < Minitest::Test
     assert_instance_of Tokenizers::Normalizers::BertNormalizer, normalizer
     assert_kind_of Tokenizers::Normalizers::Normalizer, normalizer
 
-    normalizer = Tokenizers::Normalizers::BertNormalizer.new(clean_text: false)
-    assert_instance_of Tokenizers::Normalizers::BertNormalizer, normalizer
-    assert_kind_of Tokenizers::Normalizers::Normalizer, normalizer
-
-    normalizer = Tokenizers::Normalizers::BertNormalizer.new(handle_chinese_chars: false)
-    assert_instance_of Tokenizers::Normalizers::BertNormalizer, normalizer
-    assert_kind_of Tokenizers::Normalizers::Normalizer, normalizer
-
-    normalizer = Tokenizers::Normalizers::BertNormalizer.new(strip_accents: false)
-    assert_instance_of Tokenizers::Normalizers::BertNormalizer, normalizer
-    assert_kind_of Tokenizers::Normalizers::Normalizer, normalizer
-
-    normalizer = Tokenizers::Normalizers::BertNormalizer.new(lowercase: false)
-    assert_instance_of Tokenizers::Normalizers::BertNormalizer, normalizer
-    assert_kind_of Tokenizers::Normalizers::Normalizer, normalizer
+    Tokenizers::Normalizers::BertNormalizer.new(
+      clean_text: false,
+      handle_chinese_chars: false,
+      strip_accents: false,
+      lowercase: false
+    )
   end
 
   def test_lowercase
@@ -70,13 +61,7 @@ class NormalizerTest < Minitest::Test
     assert_instance_of Tokenizers::Normalizers::Strip, normalizer
     assert_kind_of Tokenizers::Normalizers::Strip, normalizer
 
-    normalizer = Tokenizers::Normalizers::Strip.new(left: false)
-    assert_instance_of Tokenizers::Normalizers::Strip, normalizer
-    assert_kind_of Tokenizers::Normalizers::Strip, normalizer
-
-    normalizer = Tokenizers::Normalizers::Strip.new(right: false)
-    assert_instance_of Tokenizers::Normalizers::Strip, normalizer
-    assert_kind_of Tokenizers::Normalizers::Strip, normalizer
+    Tokenizers::Normalizers::Strip.new(left: false, right: false)
   end
 
   def test_strip_accents

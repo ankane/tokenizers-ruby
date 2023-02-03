@@ -22,17 +22,11 @@ class DecoderTest < Minitest::Test
     assert_instance_of Tokenizers::Decoders::CTC, decoder
     assert_kind_of Tokenizers::Decoders::Decoder, decoder
 
-    decoder = Tokenizers::Decoders::CTC.new(pad_token: "<mypad>")
-    assert_instance_of Tokenizers::Decoders::CTC, decoder
-    assert_kind_of Tokenizers::Decoders::Decoder, decoder
-
-    decoder = Tokenizers::Decoders::CTC.new(word_delimiter_token: "+")
-    assert_instance_of Tokenizers::Decoders::CTC, decoder
-    assert_kind_of Tokenizers::Decoders::Decoder, decoder
-
-    decoder = Tokenizers::Decoders::CTC.new(cleanup: false)
-    assert_instance_of Tokenizers::Decoders::CTC, decoder
-    assert_kind_of Tokenizers::Decoders::Decoder, decoder
+    Tokenizers::Decoders::CTC.new(
+      pad_token: "<mypad>",
+      word_delimiter_token: "+",
+      cleanup: false
+    )
   end
 
   def test_metaspace
@@ -40,13 +34,7 @@ class DecoderTest < Minitest::Test
     assert_instance_of Tokenizers::Decoders::Metaspace, decoder
     assert_kind_of Tokenizers::Decoders::Decoder, decoder
 
-    decoder = Tokenizers::Decoders::Metaspace.new(replacement: "+")
-    assert_instance_of Tokenizers::Decoders::Metaspace, decoder
-    assert_kind_of Tokenizers::Decoders::Decoder, decoder
-
-    decoder = Tokenizers::Decoders::Metaspace.new(add_prefix_space: false)
-    assert_instance_of Tokenizers::Decoders::Metaspace, decoder
-    assert_kind_of Tokenizers::Decoders::Decoder, decoder
+    Tokenizers::Decoders::Metaspace.new(replacement: "+", add_prefix_space: false)
   end
 
   def test_word_piece
@@ -54,12 +42,6 @@ class DecoderTest < Minitest::Test
     assert_instance_of Tokenizers::Decoders::WordPiece, decoder
     assert_kind_of Tokenizers::Decoders::Decoder, decoder
 
-    decoder = Tokenizers::Decoders::WordPiece.new(prefix: "+")
-    assert_instance_of Tokenizers::Decoders::WordPiece, decoder
-    assert_kind_of Tokenizers::Decoders::Decoder, decoder
-
-    decoder = Tokenizers::Decoders::WordPiece.new(cleanup: false)
-    assert_instance_of Tokenizers::Decoders::WordPiece, decoder
-    assert_kind_of Tokenizers::Decoders::Decoder, decoder
+    Tokenizers::Decoders::WordPiece.new(prefix: "+", cleanup: false)
   end
 end

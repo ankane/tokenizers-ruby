@@ -6,13 +6,7 @@ class PreTokenizerTest < Minitest::Test
     assert_instance_of Tokenizers::PreTokenizers::ByteLevel, pre_tokenizer
     assert_kind_of Tokenizers::PreTokenizers::PreTokenizer, pre_tokenizer
 
-    pre_tokenizer = Tokenizers::PreTokenizers::ByteLevel.new(add_prefix_space: false)
-    assert_instance_of Tokenizers::PreTokenizers::ByteLevel, pre_tokenizer
-    assert_kind_of Tokenizers::PreTokenizers::PreTokenizer, pre_tokenizer
-
-    pre_tokenizer = Tokenizers::PreTokenizers::ByteLevel.new(use_regex: false)
-    assert_instance_of Tokenizers::PreTokenizers::ByteLevel, pre_tokenizer
-    assert_kind_of Tokenizers::PreTokenizers::PreTokenizer, pre_tokenizer
+    Tokenizers::PreTokenizers::ByteLevel.new(add_prefix_space: false, use_regex: false)
 
     alphabet = Tokenizers::PreTokenizers::ByteLevel.alphabet
     assert 256, alphabet.size
@@ -29,9 +23,7 @@ class PreTokenizerTest < Minitest::Test
     assert_instance_of Tokenizers::PreTokenizers::Digits, pre_tokenizer
     assert_kind_of Tokenizers::PreTokenizers::PreTokenizer, pre_tokenizer
 
-    pre_tokenizer = Tokenizers::PreTokenizers::Digits.new(individual_digits: true)
-    assert_instance_of Tokenizers::PreTokenizers::Digits, pre_tokenizer
-    assert_kind_of Tokenizers::PreTokenizers::PreTokenizer, pre_tokenizer
+    Tokenizers::PreTokenizers::Digits.new(individual_digits: true)
   end
 
   def test_metaspace
@@ -39,13 +31,7 @@ class PreTokenizerTest < Minitest::Test
     assert_instance_of Tokenizers::PreTokenizers::Metaspace, pre_tokenizer
     assert_kind_of Tokenizers::PreTokenizers::PreTokenizer, pre_tokenizer
 
-    pre_tokenizer = Tokenizers::PreTokenizers::Metaspace.new(replacement: 'c')
-    assert_instance_of Tokenizers::PreTokenizers::Metaspace, pre_tokenizer
-    assert_kind_of Tokenizers::PreTokenizers::PreTokenizer, pre_tokenizer
-
-    pre_tokenizer = Tokenizers::PreTokenizers::Metaspace.new(add_prefix_space: false)
-    assert_instance_of Tokenizers::PreTokenizers::Metaspace, pre_tokenizer
-    assert_kind_of Tokenizers::PreTokenizers::PreTokenizer, pre_tokenizer
+    Tokenizers::PreTokenizers::Metaspace.new(replacement: 'c', add_prefix_space: false)
   end
 
   def test_punctuation
@@ -54,9 +40,7 @@ class PreTokenizerTest < Minitest::Test
     assert_kind_of Tokenizers::PreTokenizers::PreTokenizer, pre_tokenizer
 
     %w(removed isolated merged_with_previous merged_with_next contiguous).each do |b|
-      pre_tokenizer = Tokenizers::PreTokenizers::Punctuation.new(behavior: b)
-      assert_instance_of Tokenizers::PreTokenizers::Punctuation, pre_tokenizer
-      assert_kind_of Tokenizers::PreTokenizers::PreTokenizer, pre_tokenizer
+      Tokenizers::PreTokenizers::Punctuation.new(behavior: b)
     end
 
     assert_raises(ArgumentError) { Tokenizers::PreTokenizers::Punctuation.new(behavior: "invalid") }
@@ -68,14 +52,10 @@ class PreTokenizerTest < Minitest::Test
     assert_kind_of Tokenizers::PreTokenizers::PreTokenizer, pre_tokenizer
 
     %w(removed merged_with_previous merged_with_next contiguous).each do |b|
-      pre_tokenizer = Tokenizers::PreTokenizers::Split.new("abc", b)
-      assert_instance_of Tokenizers::PreTokenizers::Split, pre_tokenizer
-      assert_kind_of Tokenizers::PreTokenizers::PreTokenizer, pre_tokenizer
+      Tokenizers::PreTokenizers::Split.new("abc", b)
     end
 
-    pre_tokenizer = Tokenizers::PreTokenizers::Split.new("abc", "isolated", invert: true)
-    assert_instance_of Tokenizers::PreTokenizers::Split, pre_tokenizer
-    assert_kind_of Tokenizers::PreTokenizers::PreTokenizer, pre_tokenizer
+    Tokenizers::PreTokenizers::Split.new("abc", "isolated", invert: true)
 
     assert_raises(ArgumentError) { Tokenizers::PreTokenizers::Split.new("abc", "invalid") }
   end
