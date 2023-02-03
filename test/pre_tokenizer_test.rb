@@ -7,6 +7,12 @@ class PreTokenizerTest < Minitest::Test
     assert_equal ["Hello", [0, 5]], tokens.first
   end
 
+  def test_pre_tokenize_str_sequence
+    pre_tokenizer = Tokenizers::PreTokenizers::Sequence.new([Tokenizers::PreTokenizers::Whitespace.new, Tokenizers::PreTokenizers::Digits.new(individual_digits: true)])
+    expected = [["Call", [0, 4]], ["9", [5, 6]], ["1", [6, 7]], ["1", [7, 8]], ["!", [8, 9]]]
+    assert_equal expected, pre_tokenizer.pre_tokenize_str("Call 911!")
+  end
+
   def test_byte_level
     pre_tokenizer = Tokenizers::PreTokenizers::ByteLevel.new
     assert_instance_of Tokenizers::PreTokenizers::ByteLevel, pre_tokenizer

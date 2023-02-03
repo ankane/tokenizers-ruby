@@ -3,7 +3,7 @@ use std::sync::{Arc, RwLock};
 use magnus::typed_data::DataTypeBuilder;
 use magnus::{
     function, memoize, method, Class, DataType, DataTypeFunctions, Module, Object,
-    RClass, RModule, TypedData,
+    RArray, RClass, RModule, TypedData,
 };
 
 use serde::ser::SerializeStruct;
@@ -235,6 +235,24 @@ impl RbBertPreTokenizer {
     }
 }
 
+pub struct RbSequence {}
+
+impl RbSequence {
+    fn new(pre_tokenizers: RArray) -> RbResult<RbPreTokenizer> {
+        let mut sequence = Vec::with_capacity(pre_tokenizers.len());
+        for n in pre_tokenizers.each() {
+            let pretokenizer: &RbPreTokenizer = n?.try_convert()?;
+            match &pretokenizer.pretok {
+                RbPreTokenizerTypeWrapper::Sequence(inner) => {
+                    sequence.extend(inner.iter().cloned())
+                }
+                RbPreTokenizerTypeWrapper::Single(inner) => sequence.push(inner.clone()),
+            }
+        }
+        Ok(RbPreTokenizer::new(RbPreTokenizerTypeWrapper::Sequence(sequence)))
+    }
+}
+
 #[derive(Clone, Deserialize)]
 #[serde(untagged)]
 pub(crate) enum RbPreTokenizerWrapper {
@@ -342,7 +360,11 @@ unsafe impl TypedData for RbPreTokenizer {
 
     fn class_for(value: &Self) -> RClass {
         match &value.pretok {
-            RbPreTokenizerTypeWrapper::Sequence(_seq) => todo!(),
+            RbPreTokenizerTypeWrapper::Sequence(_seq) => *memoize!(RClass: {
+                let class: RClass = crate::pre_tokenizers().const_get("Sequence").unwrap();
+                class.undef_alloc_func();
+                class
+            }),
             RbPreTokenizerTypeWrapper::Single(inner) => match &*inner.read().unwrap() {
                 RbPreTokenizerWrapper::Wrapped(wrapped) => match &wrapped {
                     PreTokenizerWrapper::BertPreTokenizer(_) => *memoize!(RClass: {
@@ -405,6 +427,9 @@ unsafe impl TypedData for RbPreTokenizer {
 pub fn pre_tokenizers(module: &RModule) -> RbResult<()> {
     let pre_tokenizer = module.define_class("PreTokenizer", Default::default())?;
     pre_tokenizer.define_method("pre_tokenize_str", method!(RbPreTokenizer::pre_tokenize_str, 1))?;
+
+    let class = module.define_class("Sequence", pre_tokenizer)?;
+    class.define_singleton_method("new", function!(RbSequence::new, 1))?;
 
     let class = module.define_class("BertPreTokenizer", pre_tokenizer)?;
     class.define_singleton_method("new", function!(RbBertPreTokenizer::new, 0))?;
