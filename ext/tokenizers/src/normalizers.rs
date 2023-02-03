@@ -2,7 +2,7 @@ use std::sync::{Arc, RwLock};
 
 use magnus::typed_data::DataTypeBuilder;
 use magnus::{
-    function, memoize, method, Class, DataType, DataTypeFunctions, Module, Object, RClass, RModule,
+    function, memoize, method, Class, DataType, DataTypeFunctions, Module, Object, RArray, RClass, RModule,
     TypedData,
 };
 use serde::ser::SerializeStruct;
@@ -20,6 +20,18 @@ use super::{RbError, RbResult};
 pub struct RbNormalizer {
     #[serde(flatten)]
     pub(crate) normalizer: RbNormalizerTypeWrapper,
+}
+
+impl RbNormalizer {
+    pub(crate) fn new(normalizer: RbNormalizerTypeWrapper) -> Self {
+        RbNormalizer { normalizer }
+    }
+
+    pub fn normalize_str(&self, sequence: String) -> RbResult<String> {
+        let mut normalized = NormalizedString::from(sequence);
+        self.normalizer.normalize(&mut normalized).map_err(RbError::from)?;
+        Ok(normalized.get().to_owned())
+    }
 }
 
 impl Normalizer for RbNormalizer {
@@ -190,6 +202,22 @@ impl RbStripAccents {
     }
 }
 
+pub struct RbSequence {}
+
+impl RbSequence {
+    fn new(normalizers: RArray) -> RbResult<RbNormalizer> {
+        let mut sequence = Vec::with_capacity(normalizers.len());
+        for n in normalizers.each() {
+            let normalizer: &RbNormalizer = n?.try_convert()?;
+            match &normalizer.normalizer {
+                RbNormalizerTypeWrapper::Sequence(inner) => sequence.extend(inner.iter().cloned()),
+                RbNormalizerTypeWrapper::Single(inner) => sequence.push(inner.clone()),
+            }
+        }
+        Ok(RbNormalizer::new(RbNormalizerTypeWrapper::Sequence(sequence)))
+    }
+}
+
 #[derive(Debug, Clone, Deserialize)]
 #[serde(untagged)]
 pub(crate) enum RbNormalizerWrapper {
@@ -297,7 +325,11 @@ unsafe impl TypedData for RbNormalizer {
 
     fn class_for(value: &Self) -> RClass {
         match &value.normalizer {
-            RbNormalizerTypeWrapper::Sequence(_seq) => todo!(),
+            RbNormalizerTypeWrapper::Sequence(_seq) => *memoize!(RClass: {
+                let class: RClass = crate::normalizers().const_get("Sequence").unwrap();
+                class.undef_alloc_func();
+                class
+            }),
             RbNormalizerTypeWrapper::Single(inner) => match &*inner.read().unwrap() {
                 RbNormalizerWrapper::Wrapped(wrapped) => match &wrapped {
                     NormalizerWrapper::BertNormalizer(_) => *memoize!(RClass: {
@@ -359,6 +391,10 @@ unsafe impl TypedData for RbNormalizer {
 
 pub fn normalizers(module: &RModule) -> RbResult<()> {
     let normalizer = module.define_class("Normalizer", Default::default())?;
+    normalizer.define_method("normalize_str", method!(RbNormalizer::normalize_str, 1))?;
+
+    let class = module.define_class("Sequence", normalizer)?;
+    class.define_singleton_method("new", function!(RbSequence::new, 1))?;
 
     let class = module.define_class("BertNormalizer", normalizer)?;
     class.define_singleton_method("_new", function!(RbBertNormalizer::new, 4))?;

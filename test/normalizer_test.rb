@@ -1,6 +1,11 @@
 require_relative "test_helper"
 
 class NormalizerTest < Minitest::Test
+  def test_normalize_str
+    normalizer = Tokenizers::Normalizers::Sequence.new([Tokenizers::Normalizers::NFD.new, Tokenizers::Normalizers::StripAccents.new])
+    assert_equal "Hello how are u?", normalizer.normalize_str("Héllò hôw are ü?")
+  end
+
   def test_bert_normalizer
     normalizer = Tokenizers::Normalizers::BertNormalizer.new
     assert_instance_of Tokenizers::Normalizers::BertNormalizer, normalizer
