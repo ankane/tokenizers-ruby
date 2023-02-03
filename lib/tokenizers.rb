@@ -13,6 +13,9 @@ require_relative "tokenizers/decoders/word_piece"
 
 # models
 require_relative "tokenizers/models/bpe"
+require_relative "tokenizers/models/word_level"
+require_relative "tokenizers/models/word_piece"
+require_relative "tokenizers/models/unigram"
 
 # normalizers
 require_relative "tokenizers/normalizers/bert_normalizer"
