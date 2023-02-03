@@ -6,6 +6,9 @@ use magnus::{
     TryConvert, TypedData, Value,
 };
 use serde::{Deserialize, Serialize};
+use tk::processors::bert::BertProcessing;
+use tk::processors::byte_level::ByteLevel;
+use tk::processors::roberta::RobertaProcessing;
 use tk::processors::template::{SpecialToken, Template};
 use tk::processors::PostProcessorWrapper;
 use tk::{Encoding, PostProcessor};
@@ -85,6 +88,44 @@ impl TryConvert for RbTemplate {
     }
 }
 
+pub struct RbBertProcessing {}
+
+impl RbBertProcessing {
+    pub fn new(sep: (String, u32), cls: (String, u32)) -> RbPostProcessor {
+        RbPostProcessor::new(Arc::new(BertProcessing::new(sep, cls).into()))
+    }
+}
+
+pub struct RbByteLevel {}
+
+impl RbByteLevel {
+    pub fn new(trim_offsets: Option<bool>) -> RbPostProcessor {
+        let mut byte_level = ByteLevel::default();
+
+        if let Some(to) = trim_offsets {
+            byte_level = byte_level.trim_offsets(to);
+        }
+        RbPostProcessor::new(Arc::new(byte_level.into()))
+    }
+
+}
+
+pub struct RbRobertaProcessing {}
+
+impl RbRobertaProcessing {
+    fn new(
+        sep: (String, u32),
+        cls: (String, u32),
+        trim_offsets: bool,
+        add_prefix_space: bool,
+    ) ->  RbPostProcessor {
+        let proc = RobertaProcessing::new(sep, cls)
+            .trim_offsets(trim_offsets)
+            .add_prefix_space(add_prefix_space);
+        RbPostProcessor::new(Arc::new(proc.into()))
+    }
+}
+
 pub struct RbTemplateProcessing {}
 
 impl RbTemplateProcessing {
@@ -125,6 +166,21 @@ unsafe impl TypedData for RbPostProcessor {
 
     fn class_for(value: &Self) -> RClass {
         match *value.processor {
+            PostProcessorWrapper::Bert(_) => *memoize!(RClass: {
+                let class: RClass = crate::processors().const_get("BertProcessing").unwrap();
+                class.undef_alloc_func();
+                class
+            }),
+            PostProcessorWrapper::ByteLevel(_) => *memoize!(RClass: {
+                let class: RClass = crate::processors().const_get("ByteLevel").unwrap();
+                class.undef_alloc_func();
+                class
+            }),
+            PostProcessorWrapper::Roberta(_) => *memoize!(RClass: {
+                let class: RClass = crate::processors().const_get("RobertaProcessing").unwrap();
+                class.undef_alloc_func();
+                class
+            }),
             PostProcessorWrapper::Template(_) => *memoize!(RClass: {
                 let class: RClass = crate::processors().const_get("TemplateProcessing").unwrap();
                 class.undef_alloc_func();
@@ -137,6 +193,15 @@ unsafe impl TypedData for RbPostProcessor {
 
 pub fn processors(module: &RModule) -> RbResult<()> {
     let post_processor = module.define_class("PostProcessor", Default::default())?;
+
+    let class = module.define_class("BertProcessing", post_processor)?;
+    class.define_singleton_method("new", function!(RbBertProcessing::new, 2))?;
+
+    let class = module.define_class("ByteLevel", post_processor)?;
+    class.define_singleton_method("_new", function!(RbByteLevel::new, 1))?;
+
+    let class = module.define_class("RobertaProcessing", post_processor)?;
+    class.define_singleton_method("_new", function!(RbRobertaProcessing::new, 4))?;
 
     let class = module.define_class("TemplateProcessing", post_processor)?;
     class.define_singleton_method("_new", function!(RbTemplateProcessing::new, 3))?;
