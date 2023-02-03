@@ -1,6 +1,12 @@
 require_relative "test_helper"
 
 class PreTokenizerTest < Minitest::Test
+  def test_pre_tokenize_str
+    pre_tokenizer = Tokenizers::PreTokenizers::Whitespace.new
+    tokens = pre_tokenizer.pre_tokenize_str("Hello! How are you? I'm fine, thank you.")
+    assert_equal ["Hello", [0, 5]], tokens.first
+  end
+
   def test_byte_level
     pre_tokenizer = Tokenizers::PreTokenizers::ByteLevel.new
     assert_instance_of Tokenizers::PreTokenizers::ByteLevel, pre_tokenizer
@@ -24,7 +30,7 @@ class PreTokenizerTest < Minitest::Test
     pre_tokenizer = Tokenizers::PreTokenizers::CharDelimiterSplit.new('a')
     assert_instance_of Tokenizers::PreTokenizers::CharDelimiterSplit, pre_tokenizer
     assert_kind_of Tokenizers::PreTokenizers::PreTokenizer, pre_tokenizer
- 
+
     assert_equal 'a', pre_tokenizer.delimiter
     pre_tokenizer.delimiter = 'b'
     assert_equal 'b', pre_tokenizer.delimiter

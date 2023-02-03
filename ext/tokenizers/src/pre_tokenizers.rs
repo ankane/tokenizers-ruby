@@ -19,6 +19,7 @@ use tk::pre_tokenizers::split::Split;
 use tk::pre_tokenizers::unicode_scripts::UnicodeScripts;
 use tk::pre_tokenizers::whitespace::{Whitespace, WhitespaceSplit};
 use tk::pre_tokenizers::PreTokenizerWrapper;
+use tk::tokenizer::Offsets;
 use tk::{PreTokenizedString, PreTokenizer};
 
 use super::utils::*;
@@ -28,6 +29,20 @@ use super::{RbError, RbResult};
 pub struct RbPreTokenizer {
     #[serde(flatten)]
     pub(crate) pretok: RbPreTokenizerTypeWrapper,
+}
+
+impl RbPreTokenizer {
+    fn pre_tokenize_str(&self, s: String) -> RbResult<Vec<(String, Offsets)>> {
+        let mut pretokenized = tk::tokenizer::PreTokenizedString::from(s);
+
+        self.pretok.pre_tokenize(&mut pretokenized).map_err(RbError::from)?;
+
+        Ok(pretokenized
+            .get_splits(tk::OffsetReferential::Original, tk::OffsetType::Char)
+            .into_iter()
+            .map(|(s, o, _)| (s.to_owned(), o))
+            .collect())
+    }
 }
 
 macro_rules! getter {
@@ -389,6 +404,7 @@ unsafe impl TypedData for RbPreTokenizer {
 
 pub fn pre_tokenizers(module: &RModule) -> RbResult<()> {
     let pre_tokenizer = module.define_class("PreTokenizer", Default::default())?;
+    pre_tokenizer.define_method("pre_tokenize_str", method!(RbPreTokenizer::pre_tokenize_str, 1))?;
 
     let class = module.define_class("BertPreTokenizer", pre_tokenizer)?;
     class.define_singleton_method("new", function!(RbBertPreTokenizer::new, 0))?;
