@@ -29,6 +29,14 @@ class ModelTest < Minitest::Test
     assert_equal true, model.fuse_unk
     model.fuse_unk = false
     assert_equal false, model.fuse_unk
+
+    assert_equal "##", model.continuing_subword_prefix
+    model.continuing_subword_prefix = "#xxx#"
+    assert_equal "#xxx#", model.continuing_subword_prefix
+
+    assert_equal "</end>", model.end_of_word_suffix
+    model.end_of_word_suffix = "</w>"
+    assert_equal "</w>", model.end_of_word_suffix
   end
 
   def test_word_level
@@ -37,7 +45,11 @@ class ModelTest < Minitest::Test
     assert_kind_of Tokenizers::Models::Model, model
 
     vocab = {"am" => 0}
-    Tokenizers::Models::WordLevel.new(vocab: vocab, unk_token: "[UNK]")
+    model = Tokenizers::Models::WordLevel.new(vocab: vocab, unk_token: "[UNK]")
+
+    assert_equal "[UNK]", model.unk_token
+    model.unk_token = "[PAD]"
+    assert_equal "[PAD]", model.unk_token
   end
 
   def test_word_piece
@@ -46,12 +58,24 @@ class ModelTest < Minitest::Test
     assert_kind_of Tokenizers::Models::Model, model
 
     vocab = {"am" => 0}
-    Tokenizers::Models::WordPiece.new(
+    model = Tokenizers::Models::WordPiece.new(
       vocab: vocab,
       unk_token: "[UNK]",
       max_input_chars_per_word: 5,
       continuing_subword_prefix: "abc"
     )
+
+    assert_equal "[UNK]", model.unk_token
+    model.unk_token = "[PAD]"
+    assert_equal "[PAD]", model.unk_token
+
+    assert_equal 5, model.max_input_chars_per_word
+    model.max_input_chars_per_word = 10
+    assert_equal 10, model.max_input_chars_per_word
+
+    assert_equal "abc", model.continuing_subword_prefix
+    model.continuing_subword_prefix = "#xxx#"
+    assert_equal "#xxx#", model.continuing_subword_prefix
   end
 
   def test_unigram

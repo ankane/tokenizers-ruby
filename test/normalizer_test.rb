@@ -6,12 +6,28 @@ class NormalizerTest < Minitest::Test
     assert_instance_of Tokenizers::Normalizers::BertNormalizer, normalizer
     assert_kind_of Tokenizers::Normalizers::Normalizer, normalizer
 
-    Tokenizers::Normalizers::BertNormalizer.new(
+    normalizer = Tokenizers::Normalizers::BertNormalizer.new(
       clean_text: false,
       handle_chinese_chars: false,
       strip_accents: false,
       lowercase: false
     )
+
+    assert_equal false, normalizer.clean_text
+    normalizer.clean_text = true
+    assert_equal true, normalizer.clean_text
+
+    assert_equal false, normalizer.handle_chinese_chars
+    normalizer.handle_chinese_chars = true
+    assert_equal true, normalizer.handle_chinese_chars
+
+    assert_equal false, normalizer.strip_accents
+    normalizer.strip_accents = true
+    assert_equal true, normalizer.strip_accents
+
+    assert_equal false, normalizer.lowercase
+    normalizer.lowercase = true
+    assert_equal true, normalizer.lowercase
   end
 
   def test_lowercase
@@ -61,7 +77,15 @@ class NormalizerTest < Minitest::Test
     assert_instance_of Tokenizers::Normalizers::Strip, normalizer
     assert_kind_of Tokenizers::Normalizers::Strip, normalizer
 
-    Tokenizers::Normalizers::Strip.new(left: false, right: false)
+    normalizer = Tokenizers::Normalizers::Strip.new(left: false, right: false)
+
+    assert_equal false, normalizer.left
+    normalizer.left = true
+    assert_equal true, normalizer.left
+
+    assert_equal false, normalizer.right
+    normalizer.right = true
+    assert_equal true, normalizer.right
   end
 
   def test_strip_accents

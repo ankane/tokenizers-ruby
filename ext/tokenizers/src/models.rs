@@ -168,6 +168,54 @@ impl RbModel {
     pub fn bpe_set_fuse_unk(&self, fuse_unk: bool) {
         setter!(self, BPE, fuse_unk, fuse_unk);
     }
+
+    pub fn bpe_continuing_subword_prefix(&self) -> Option<String> {
+        getter!(self, BPE, continuing_subword_prefix.clone())
+    }
+
+    pub fn bpe_set_continuing_subword_prefix(&self, continuing_subword_prefix: Option<String>) {
+        setter!(self, BPE, continuing_subword_prefix, continuing_subword_prefix);
+    }
+
+    pub fn bpe_end_of_word_suffix(&self) -> Option<String> {
+        getter!(self, BPE, end_of_word_suffix.clone())
+    }
+
+    pub fn bpe_set_end_of_word_suffix(&self, end_of_word_suffix: Option<String>) {
+        setter!(self, BPE, end_of_word_suffix, end_of_word_suffix);
+    }
+
+    pub fn word_level_unk_token(&self) -> String {
+        getter!(self, WordLevel, unk_token.clone())
+    }
+
+    pub fn word_level_set_unk_token(&self, unk_token: String) {
+        setter!(self, WordLevel, unk_token, unk_token);
+    }
+
+    pub fn word_piece_unk_token(&self) -> String {
+        getter!(self, WordPiece, unk_token.clone())
+    }
+
+    pub fn word_piece_set_unk_token(&self, unk_token: String) {
+        setter!(self, WordPiece, unk_token, unk_token);
+    }
+
+    pub fn word_piece_continuing_subword_prefix(&self) -> String {
+        getter!(self, WordPiece, continuing_subword_prefix.clone())
+    }
+
+    pub fn word_piece_set_continuing_subword_prefix(&self, continuing_subword_prefix: String) {
+        setter!(self, WordPiece, continuing_subword_prefix, continuing_subword_prefix);
+    }
+
+    pub fn word_piece_max_input_chars_per_word(&self) -> usize {
+        getter!(self, WordPiece, max_input_chars_per_word.clone())
+    }
+
+    pub fn word_piece_set_max_input_chars_per_word(&self, max_input_chars_per_word: usize) {
+        setter!(self, WordPiece, max_input_chars_per_word, max_input_chars_per_word);
+    }
 }
 
 pub struct RbUnigram {}
@@ -301,6 +349,10 @@ pub fn models(module: &RModule) -> RbResult<()> {
     class.define_method("dropout=", method!(RbModel::bpe_set_dropout, 1))?;
     class.define_method("unk_token", method!(RbModel::bpe_unk_token, 0))?;
     class.define_method("unk_token=", method!(RbModel::bpe_set_unk_token, 1))?;
+    class.define_method("continuing_subword_prefix", method!(RbModel::bpe_continuing_subword_prefix, 0))?;
+    class.define_method("continuing_subword_prefix=", method!(RbModel::bpe_set_continuing_subword_prefix, 1))?;
+    class.define_method("end_of_word_suffix", method!(RbModel::bpe_end_of_word_suffix, 0))?;
+    class.define_method("end_of_word_suffix=", method!(RbModel::bpe_set_end_of_word_suffix, 1))?;
     class.define_method("fuse_unk", method!(RbModel::bpe_fuse_unk, 0))?;
     class.define_method("fuse_unk=", method!(RbModel::bpe_set_fuse_unk, 1))?;
 
@@ -311,10 +363,18 @@ pub fn models(module: &RModule) -> RbResult<()> {
     class.define_singleton_method("_new", function!(RbWordLevel::new, 2))?;
     class.define_singleton_method("_from_file", function!(RbWordLevel::from_file, 2))?;
     class.define_singleton_method("read_file", function!(RbWordLevel::read_file, 1))?;
+    class.define_method("unk_token", method!(RbModel::word_level_unk_token, 0))?;
+    class.define_method("unk_token=", method!(RbModel::word_level_set_unk_token, 1))?;
 
     let class = module.define_class("WordPiece", model)?;
     class.define_singleton_method("_new", function!(RbWordPiece::new, 2))?;
     class.define_singleton_method("_from_file", function!(RbWordPiece::from_file, 2))?;
+    class.define_method("unk_token", method!(RbModel::word_piece_unk_token, 0))?;
+    class.define_method("unk_token=", method!(RbModel::word_piece_set_unk_token, 1))?;
+    class.define_method("continuing_subword_prefix", method!(RbModel::word_piece_continuing_subword_prefix, 0))?;
+    class.define_method("continuing_subword_prefix=", method!(RbModel::word_piece_set_continuing_subword_prefix, 1))?;
+    class.define_method("max_input_chars_per_word", method!(RbModel::word_piece_max_input_chars_per_word, 0))?;
+    class.define_method("max_input_chars_per_word=", method!(RbModel::word_piece_set_max_input_chars_per_word, 1))?;
 
     Ok(())
 }

@@ -61,6 +61,19 @@ impl RbAddedToken {
     }
 }
 
+impl From<tk::AddedToken> for RbAddedToken {
+    fn from(token: tk::AddedToken) -> Self {
+        Self {
+            content: token.content,
+            single_word: Some(token.single_word),
+            lstrip: Some(token.lstrip),
+            rstrip: Some(token.rstrip),
+            normalized: Some(token.normalized),
+            is_special_token: !token.normalized,
+        }
+    }
+}
+
 struct TextInputSequence<'s>(tk::InputSequence<'s>);
 
 impl<'s> TryConvert for TextInputSequence<'s> {
