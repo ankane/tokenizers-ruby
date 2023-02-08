@@ -1,4 +1,4 @@
-## 0.3.0 (unreleased)
+## 0.3.0 (2022-02-07)
 
 - Added support for training tokenizers
 - Added more methods to `Tokenizer`
