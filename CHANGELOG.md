@@ -1,3 +1,7 @@
+## 0.3.1 (unreleased)
+
+- Fixed error with Ruby 2.7
+
 ## 0.3.0 (2022-02-07)
 
 - Added support for training tokenizers

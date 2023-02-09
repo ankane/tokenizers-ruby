@@ -44,7 +44,7 @@ module Tokenizers
     def cached_path(cache_dir, url, options)
       fsum = Digest::SHA256.hexdigest(url)
       meta_paths = Dir[File.join(cache_dir, "#{fsum}.*.meta")]
-      meta = meta_paths.map { |f| JSON.load_file(f) }.max_by { |m| m["creation_time"] }
+      meta = meta_paths.map { |f| JSON.parse(File.read(f)) }.max_by { |m| m["creation_time"] }
       etag = meta["etag"] if meta
 
       if etag
