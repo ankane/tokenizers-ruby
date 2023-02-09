@@ -1,4 +1,4 @@
-## 0.3.1 (unreleased)
+## 0.3.1 (2022-02-08)
 
 - Fixed error with Ruby 2.7
 
