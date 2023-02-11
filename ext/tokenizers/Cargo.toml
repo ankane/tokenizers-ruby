@@ -10,7 +10,7 @@ publish = false
 crate-type = ["cdylib"]
 
 [dependencies]
-magnus = { git = "https://github.com/matsadler/magnus" }
+magnus = "0.5"
 onig = { version = "6.0", default-features = false }
 serde = { version = "1.0", features = ["rc", "derive"] }
 
