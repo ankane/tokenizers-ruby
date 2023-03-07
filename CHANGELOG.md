@@ -1,4 +1,4 @@
-## 0.3.2 (unreleased)
+## 0.3.2 (2023-03-06)
 
 - Added precompiled gem for Linux x86-64 MUSL
 
