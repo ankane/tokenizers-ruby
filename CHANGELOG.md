@@ -1,3 +1,7 @@
+## 0.3.2 (unreleased)
+
+- Added precompiled gem for Linux x86-64 MUSL
+
 ## 0.3.1 (2022-02-08)
 
 - Fixed error with Ruby 2.7
