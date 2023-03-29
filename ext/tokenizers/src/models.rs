@@ -101,6 +101,11 @@ impl RbBPE {
             builder = builder.fuse_unk(value.try_convert()?);
         }
 
+        let value: Value = kwargs.delete(Symbol::new("byte_fallback"))?;
+        if !value.is_nil() {
+            builder = builder.byte_fallback(value.try_convert()?);
+        }
+
         if !kwargs.is_empty() {
             // TODO improve message
             return Err(Error::new(exception::arg_error(), "unknown keyword"));
@@ -167,6 +172,14 @@ impl RbModel {
 
     pub fn bpe_set_fuse_unk(&self, fuse_unk: bool) {
         setter!(self, BPE, fuse_unk, fuse_unk);
+    }
+
+    pub fn bpe_byte_fallback(&self) -> bool {
+        getter!(self, BPE, byte_fallback)
+    }
+
+    pub fn bpe_set_byte_fallback(&self, byte_fallback: bool) {
+        setter!(self, BPE, byte_fallback, byte_fallback);
     }
 
     pub fn bpe_continuing_subword_prefix(&self) -> Option<String> {
@@ -355,6 +368,8 @@ pub fn models(module: &RModule) -> RbResult<()> {
     class.define_method("end_of_word_suffix=", method!(RbModel::bpe_set_end_of_word_suffix, 1))?;
     class.define_method("fuse_unk", method!(RbModel::bpe_fuse_unk, 0))?;
     class.define_method("fuse_unk=", method!(RbModel::bpe_set_fuse_unk, 1))?;
+    class.define_method("byte_fallback", method!(RbModel::bpe_byte_fallback, 0))?;
+    class.define_method("byte_fallback=", method!(RbModel::bpe_set_byte_fallback, 1))?;
 
     let class = module.define_class("Unigram", model)?;
     class.define_singleton_method("_new", function!(RbUnigram::new, 2))?;

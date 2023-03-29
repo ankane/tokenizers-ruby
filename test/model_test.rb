@@ -16,7 +16,8 @@ class ModelTest < Minitest::Test
         unk_token: "[UNK]",
         continuing_subword_prefix: "##",
         end_of_word_suffix: "</end>",
-        fuse_unk: true
+        fuse_unk: true,
+        byte_fallback: true
       )
     assert_equal "[UNK]", model.unk_token
     model.unk_token = "[PAD]"
@@ -37,6 +38,10 @@ class ModelTest < Minitest::Test
     assert_equal "</end>", model.end_of_word_suffix
     model.end_of_word_suffix = "</w>"
     assert_equal "</w>", model.end_of_word_suffix
+
+    assert_equal true, model.byte_fallback
+    model.byte_fallback = false
+    assert_equal false, model.byte_fallback
   end
 
   def test_word_level
