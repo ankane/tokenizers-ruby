@@ -77,6 +77,16 @@ class NormalizerTest < Minitest::Test
     assert_kind_of Tokenizers::Normalizers::Replace, normalizer
   end
 
+  def test_prepend
+    normalizer = Tokenizers::Normalizers::Prepend.new
+    assert_instance_of Tokenizers::Normalizers::Prepend, normalizer
+    assert_kind_of Tokenizers::Normalizers::Prepend, normalizer
+    assert_equal '_', normalizer.prepend
+
+    normalizer = Tokenizers::Normalizers::Prepend.new(prepend: '-')
+    assert_equal '-', normalizer.prepend
+  end
+
   def test_strip
     normalizer = Tokenizers::Normalizers::Strip.new
     assert_instance_of Tokenizers::Normalizers::Strip, normalizer

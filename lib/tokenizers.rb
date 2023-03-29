@@ -20,6 +20,7 @@ require_relative "tokenizers/models/unigram"
 
 # normalizers
 require_relative "tokenizers/normalizers/bert_normalizer"
+require_relative "tokenizers/normalizers/prepend"
 require_relative "tokenizers/normalizers/strip"
 
 # pre-tokenizers
