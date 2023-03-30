@@ -81,7 +81,7 @@ class NormalizerTest < Minitest::Test
     normalizer = Tokenizers::Normalizers::Prepend.new
     assert_instance_of Tokenizers::Normalizers::Prepend, normalizer
     assert_kind_of Tokenizers::Normalizers::Prepend, normalizer
-    assert_equal '_', normalizer.prepend
+    assert_equal '▁', normalizer.prepend
 
     normalizer = Tokenizers::Normalizers::Prepend.new(prepend: '-')
     assert_equal '-', normalizer.prepend
