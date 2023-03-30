@@ -9,6 +9,7 @@ end
 require_relative "tokenizers/decoders/bpe_decoder"
 require_relative "tokenizers/decoders/ctc"
 require_relative "tokenizers/decoders/metaspace"
+require_relative "tokenizers/decoders/strip"
 require_relative "tokenizers/decoders/word_piece"
 
 # models
@@ -19,6 +20,7 @@ require_relative "tokenizers/models/unigram"
 
 # normalizers
 require_relative "tokenizers/normalizers/bert_normalizer"
+require_relative "tokenizers/normalizers/prepend"
 require_relative "tokenizers/normalizers/strip"
 
 # pre-tokenizers

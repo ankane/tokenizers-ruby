@@ -7,14 +7,19 @@ use magnus::{
 };
 use serde::{Deserialize, Serialize};
 use tk::decoders::bpe::BPEDecoder;
+use tk::decoders::byte_fallback::ByteFallback;
 use tk::decoders::byte_level::ByteLevel;
 use tk::decoders::ctc::CTC;
+use tk::decoders::fuse::Fuse;
 use tk::decoders::metaspace::Metaspace;
+use tk::decoders::strip::Strip;
 use tk::decoders::wordpiece::WordPiece;
 use tk::decoders::DecoderWrapper;
 use tk::Decoder;
+use tk::normalizers::replace::Replace;
 
-use super::RbResult;
+use super::utils::*;
+use super::{RbError, RbResult};
 
 #[derive(DataTypeFunctions, Clone, Deserialize, Serialize)]
 pub struct RbDecoder {
@@ -89,6 +94,30 @@ impl RbDecoder {
         setter!(self, CTC, word_delimiter_token, word_delimiter_token);
     }
 
+    fn strip_content(&self) -> char {
+        getter!(self, Strip, content)
+    }
+
+    fn strip_set_content(&self, content: char) {
+        setter!(self, Strip, content, content)
+    }
+
+    fn strip_start(&self) -> usize {
+        getter!(self, Strip, start)
+    }
+
+    fn strip_set_start(&self, start: usize) {
+        setter!(self, Strip, start, start)
+    }
+
+    fn strip_stop(&self) -> usize {
+        getter!(self, Strip, stop)
+    }
+
+    fn strip_set_stop(&self, stop: usize) {
+        setter!(self, Strip, stop, stop)
+    }
+
     pub fn metaspace_replacement(&self) -> char {
         getter!(self, Metaspace, get_replacement().clone())
     }
@@ -130,6 +159,14 @@ impl RbBPEDecoder {
     }
 }
 
+pub struct RbByteFallbackDecoder {}
+
+impl RbByteFallbackDecoder {
+    pub fn new() -> RbDecoder {
+        ByteFallback::default().into()
+    }
+}
+
 pub struct RbByteLevelDecoder {}
 
 impl RbByteLevelDecoder {
@@ -146,11 +183,35 @@ impl RbCTC {
     }
 }
 
+pub struct RbFuse {}
+
+impl RbFuse {
+    pub fn new() -> RbDecoder {
+        Fuse::default().into()
+    }
+}
+
 pub struct RbMetaspaceDecoder {}
 
 impl RbMetaspaceDecoder {
     pub fn new(replacement: char, add_prefix_space: bool) -> RbDecoder {
         Metaspace::new(replacement, add_prefix_space).into()
+    }
+}
+
+pub struct RbReplaceDecoder {}
+
+impl RbReplaceDecoder {
+    pub fn new(pattern: RbPattern, content: String) -> RbResult<RbDecoder> {
+        Replace::new(pattern, content).map(|v| v.into()).map_err(RbError::from)
+    }
+}
+
+pub struct RbStripDecoder {}
+
+impl RbStripDecoder {
+    pub fn new(content: char, start: usize, stop: usize) -> RbDecoder {
+        Strip::new(content, start, stop).into()
     }
 }
 
@@ -219,6 +280,11 @@ unsafe impl TypedData for RbDecoder {
                     class.undef_alloc_func();
                     class
                 }),
+                DecoderWrapper::ByteFallback(_) => *memoize!(RClass: {
+                    let class: RClass = crate::decoders().const_get("ByteFallback").unwrap();
+                    class.undef_alloc_func();
+                    class
+                }),
                 DecoderWrapper::ByteLevel(_) => *memoize!(RClass: {
                     let class: RClass = crate::decoders().const_get("ByteLevel").unwrap();
                     class.undef_alloc_func();
@@ -229,8 +295,23 @@ unsafe impl TypedData for RbDecoder {
                     class.undef_alloc_func();
                     class
                 }),
+                DecoderWrapper::Fuse(_) => *memoize!(RClass: {
+                    let class: RClass = crate::decoders().const_get("Fuse").unwrap();
+                    class.undef_alloc_func();
+                    class
+                }),
                 DecoderWrapper::Metaspace(_) => *memoize!(RClass: {
                     let class: RClass = crate::decoders().const_get("Metaspace").unwrap();
+                    class.undef_alloc_func();
+                    class
+                }),
+                DecoderWrapper::Replace(_) => *memoize!(RClass: {
+                    let class: RClass = crate::decoders().const_get("Replace").unwrap();
+                    class.undef_alloc_func();
+                    class
+                }),
+                DecoderWrapper::Strip(_) => *memoize!(RClass: {
+                    let class: RClass = crate::decoders().const_get("Strip").unwrap();
                     class.undef_alloc_func();
                     class
                 }),
@@ -253,6 +334,9 @@ pub fn decoders(module: &RModule) -> RbResult<()> {
     class.define_method("suffix", method!(RbDecoder::bpe_suffix, 0))?;
     class.define_method("suffix=", method!(RbDecoder::bpe_set_suffix, 1))?;
 
+    let class = module.define_class("ByteFallback", decoder)?;
+    class.define_singleton_method("new", function!(RbByteFallbackDecoder::new, 0))?;
+
     let class = module.define_class("ByteLevel", decoder)?;
     class.define_singleton_method("new", function!(RbByteLevelDecoder::new, 0))?;
 
@@ -265,12 +349,27 @@ pub fn decoders(module: &RModule) -> RbResult<()> {
     class.define_method("word_delimiter_token", method!(RbDecoder::ctc_word_delimiter_token, 0))?;
     class.define_method("word_delimiter_token=", method!(RbDecoder::ctc_set_word_delimiter_token, 1))?;
 
+    let class = module.define_class("Fuse", decoder)?;
+    class.define_singleton_method("new", function!(RbFuse::new, 0))?;
+
     let class = module.define_class("Metaspace", decoder)?;
     class.define_singleton_method("_new", function!(RbMetaspaceDecoder::new, 2))?;
     class.define_method("add_prefix_space", method!(RbDecoder::metaspace_add_prefix_space, 0))?;
     class.define_method("add_prefix_space=", method!(RbDecoder::metaspace_set_add_prefix_space, 1))?;
     class.define_method("replacement", method!(RbDecoder::metaspace_replacement, 0))?;
     class.define_method("replacement=", method!(RbDecoder::metaspace_set_replacement, 1))?;
+
+    let class = module.define_class("Replace", decoder)?;
+    class.define_singleton_method("new", function!(RbReplaceDecoder::new, 2))?;
+
+    let class = module.define_class("Strip", decoder)?;
+    class.define_singleton_method("_new", function!(RbStripDecoder::new, 3))?;
+    class.define_method("content", method!(RbDecoder::strip_content, 0))?;
+    class.define_method("content=", method!(RbDecoder::strip_set_content, 1))?;
+    class.define_method("start", method!(RbDecoder::strip_start, 0))?;
+    class.define_method("start=", method!(RbDecoder::strip_set_start, 1))?;
+    class.define_method("stop", method!(RbDecoder::strip_stop, 0))?;
+    class.define_method("stop=", method!(RbDecoder::strip_set_stop, 1))?;
 
     let class = module.define_class("WordPiece", decoder)?;
     class.define_singleton_method("_new", function!(RbWordPieceDecoder::new, 2))?;

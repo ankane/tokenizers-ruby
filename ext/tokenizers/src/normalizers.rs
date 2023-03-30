@@ -8,7 +8,7 @@ use magnus::{
 use serde::ser::SerializeStruct;
 use serde::{Deserialize, Serialize, Serializer};
 use tk::normalizers::{
-    BertNormalizer, Lowercase, Nmt, NormalizerWrapper, Replace, Strip, StripAccents,
+    BertNormalizer, Lowercase, Nmt, NormalizerWrapper, Replace, Prepend, Strip, StripAccents,
     NFC, NFD, NFKC, NFKD,
 };
 use tk::{NormalizedString, Normalizer};
@@ -44,7 +44,7 @@ macro_rules! getter {
     ($self: ident, $variant: ident, $name: ident) => {{
         if let RbNormalizerTypeWrapper::Single(ref norm) = &$self.normalizer {
             let wrapper = norm.read().unwrap();
-            if let RbNormalizerWrapper::Wrapped(NormalizerWrapper::$variant(o)) = *wrapper {
+            if let RbNormalizerWrapper::Wrapped(NormalizerWrapper::$variant(o)) = (*wrapper).clone() {
                 o.$name
             } else {
                 unreachable!()
@@ -103,6 +103,14 @@ impl RbNormalizer {
 
     fn bert_set_lowercase(&self, lowercase: bool) {
         setter!(self, BertNormalizer, lowercase, lowercase)
+    }
+
+    fn prepend_prepend(&self) -> String {
+        getter!(self, Prepend, prepend)
+    }
+
+    fn prepend_set_prepend(&self, prepend: String) {
+        setter!(self, Prepend, prepend, prepend)
     }
 
     fn strip_left(&self) -> bool {
@@ -183,6 +191,14 @@ pub struct RbReplace {}
 impl RbReplace {
     pub fn new(pattern: RbPattern, content: String) -> RbResult<RbNormalizer> {
         Replace::new(pattern, content).map(|v| v.into()).map_err(RbError::from)
+    }
+}
+
+pub struct RbPrepend {}
+
+impl RbPrepend {
+    pub fn new(prepend: String) -> RbNormalizer {
+        Prepend::new(prepend).into()
     }
 }
 
@@ -372,6 +388,11 @@ unsafe impl TypedData for RbNormalizer {
                         class.undef_alloc_func();
                         class
                     }),
+                    NormalizerWrapper::Prepend(_) => *memoize!(RClass: {
+                        let class: RClass = crate::normalizers().const_get("Prepend").unwrap();
+                        class.undef_alloc_func();
+                        class
+                    }),
                     NormalizerWrapper::StripNormalizer(_) => *memoize!(RClass: {
                         let class: RClass = crate::normalizers().const_get("Strip").unwrap();
                         class.undef_alloc_func();
@@ -427,6 +448,11 @@ pub fn normalizers(module: &RModule) -> RbResult<()> {
 
     let class = module.define_class("Replace", normalizer)?;
     class.define_singleton_method("new", function!(RbReplace::new, 2))?;
+
+    let class = module.define_class("Prepend", normalizer)?;
+    class.define_singleton_method("_new", function!(RbPrepend::new, 1))?;
+    class.define_method("prepend", method!(RbNormalizer::prepend_prepend, 0))?;
+    class.define_method("prepend=", method!(RbNormalizer::prepend_set_prepend, 1))?;
 
     let class = module.define_class("Strip", normalizer)?;
     class.define_singleton_method("_new", function!(RbStrip::new, 2))?;

@@ -13,6 +13,12 @@ class DecoderTest < Minitest::Test
     assert_equal "</w>", decoder.suffix
   end
 
+  def test_byte_fallback
+    decoder = Tokenizers::Decoders::ByteFallback.new
+    assert_instance_of Tokenizers::Decoders::ByteFallback, decoder
+    assert_kind_of Tokenizers::Decoders::ByteFallback, decoder
+  end
+
   def test_byte_level
     decoder = Tokenizers::Decoders::ByteLevel.new
     assert_instance_of Tokenizers::Decoders::ByteLevel, decoder
@@ -43,6 +49,12 @@ class DecoderTest < Minitest::Test
     assert_equal true, decoder.cleanup
   end
 
+  def test_fuse
+    decoder = Tokenizers::Decoders::Fuse.new
+    assert_instance_of Tokenizers::Decoders::Fuse, decoder
+    assert_kind_of Tokenizers::Decoders::Fuse, decoder
+  end
+
   def test_metaspace
     decoder = Tokenizers::Decoders::Metaspace.new
     assert_instance_of Tokenizers::Decoders::Metaspace, decoder
@@ -57,6 +69,40 @@ class DecoderTest < Minitest::Test
     assert_equal false, decoder.add_prefix_space
     decoder.add_prefix_space = true
     assert_equal true, decoder.add_prefix_space
+  end
+
+  def test_replace
+    decoder = Tokenizers::Decoders::Replace.new('abc', 'xyz')
+    assert_instance_of Tokenizers::Decoders::Replace, decoder
+    assert_kind_of Tokenizers::Decoders::Replace, decoder
+  end
+
+  def test_strip
+    decoder = Tokenizers::Decoders::Strip.new
+    assert_instance_of Tokenizers::Decoders::Strip, decoder
+    assert_kind_of Tokenizers::Decoders::Strip, decoder
+
+    assert_equal " ", decoder.content
+    assert_equal 0, decoder.start
+    assert_equal 0, decoder.stop
+
+    decoder = Tokenizers::Decoders::Strip.new(
+      content: "-",
+      start: 4,
+      stop: 12
+    )
+
+    assert_equal "-", decoder.content
+    decoder.content = "_"
+    assert_equal "_", decoder.content
+
+    assert_equal 4, decoder.start
+    decoder.start = 8
+    assert_equal 8, decoder.start
+
+    assert_equal 12, decoder.stop
+    decoder.stop = 16
+    assert_equal 16, decoder.stop
   end
 
   def test_word_piece
