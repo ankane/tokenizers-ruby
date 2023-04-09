@@ -15,7 +15,6 @@ onig = { version = "6.0", default-features = false }
 serde = { version = "1.0", features = ["rc", "derive"] }
 
 [dependencies.tokenizers]
-version = "0.13.2" # also update in from_pretrained.rb
-git = "https://github.com/huggingface/tokenizers"
+version = "0.13.3" # also update in from_pretrained.rb
 default-features = false
 features = ["progressbar", "onig", "esaxx_fast"]
