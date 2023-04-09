@@ -1,4 +1,4 @@
-## 0.3.3 (unreleased)
+## 0.3.3 (2023-04-09)
 
 - Updated Tokenizers to 0.13.3
 - Added `ByteFallback`, `Fuse`, `Replace`, and `Strip` decoders
