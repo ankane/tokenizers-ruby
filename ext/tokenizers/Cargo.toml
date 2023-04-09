@@ -11,10 +11,10 @@ crate-type = ["cdylib"]
 
 [dependencies]
 magnus = "0.5"
-onig = { version = "6.0", default-features = false }
-serde = { version = "1.0", features = ["rc", "derive"] }
+onig = { version = "6", default-features = false }
+serde = { version = "1", features = ["rc", "derive"] }
 
 [dependencies.tokenizers]
-version = "0.13.3" # also update in from_pretrained.rb
+version = "=0.13.3" # also update in from_pretrained.rb
 default-features = false
 features = ["progressbar", "onig", "esaxx_fast"]
