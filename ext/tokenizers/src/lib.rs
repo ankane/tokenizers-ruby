@@ -1,3 +1,5 @@
+#![allow(clippy::new_ret_no_self)]
+
 extern crate tokenizers as tk;
 
 mod decoders;

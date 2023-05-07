@@ -144,7 +144,7 @@ impl RbTrainer {
             self,
             BpeTrainer,
             initial_alphabet,
-            alphabet.into_iter().map(|c| c).collect()
+            alphabet.into_iter().collect()
         );
     }
 
@@ -223,7 +223,7 @@ impl RbTrainer {
             self,
             UnigramTrainer,
             initial_alphabet,
-            alphabet.into_iter().map(|c| c).collect()
+            alphabet.into_iter().collect()
         );
     }
 
@@ -356,7 +356,7 @@ impl RbTrainer {
             self,
             WordPieceTrainer,
             @set_initial_alphabet,
-            alphabet.into_iter().map(|c| c).collect()
+            alphabet.into_iter().collect()
         );
     }
 
