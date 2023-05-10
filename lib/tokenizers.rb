@@ -1,8 +1,8 @@
 # ext
 begin
-  require_relative "tokenizers/#{RUBY_VERSION.to_f}/tokenizers"
+  require "tokenizers/#{RUBY_VERSION.to_f}/tokenizers"
 rescue LoadError
-  require_relative "tokenizers/tokenizers"
+  require "tokenizers/tokenizers"
 end
 
 # decoders
