@@ -214,7 +214,7 @@ pub struct RbWhitespace {}
 
 impl RbWhitespace {
     pub fn new() -> RbPreTokenizer {
-        Whitespace::default().into()
+        Whitespace.into()
     }
 }
 
