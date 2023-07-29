@@ -1,6 +1,6 @@
-use magnus::{memoize, Error, ExceptionClass, Module};
+use magnus::{prelude::*, value::Lazy, Error, ExceptionClass, Ruby};
 
-use super::module;
+use super::TOKENIZERS;
 
 pub struct RbError {}
 
@@ -11,6 +11,8 @@ impl RbError {
     }
 }
 
+static ERROR: Lazy<ExceptionClass> = Lazy::new(|ruby| ruby.get_inner(&TOKENIZERS).const_get("Error").unwrap());
+
 fn error() -> ExceptionClass {
-    *memoize!(ExceptionClass: module().const_get("Error").unwrap())
+    Ruby::get().unwrap().get_inner(&ERROR)
 }

@@ -1,5 +1,6 @@
 use super::regex::{regex, RbRegex};
 use crate::RbResult;
+use magnus::prelude::*;
 use magnus::{exception, Error, TryConvert, Value};
 use tk::normalizer::SplitDelimiterBehavior;
 use tk::pattern::Pattern;
@@ -13,9 +14,9 @@ pub enum RbPattern<'p> {
 impl TryConvert for RbPattern<'_> {
     fn try_convert(obj: Value) -> RbResult<Self> {
         if obj.is_kind_of(regex()) {
-            Ok(RbPattern::Regex(obj.try_convert()?))
+            Ok(RbPattern::Regex(TryConvert::try_convert(obj)?))
         } else {
-            Ok(RbPattern::Str(obj.try_convert()?))
+            Ok(RbPattern::Str(TryConvert::try_convert(obj)?))
         }
     }
 }
@@ -61,7 +62,7 @@ pub struct RbSplitDelimiterBehavior(pub SplitDelimiterBehavior);
 
 impl TryConvert for RbSplitDelimiterBehavior {
     fn try_convert(obj: Value) -> RbResult<Self> {
-        let s = obj.try_convert::<String>()?;
+        let s = String::try_convert(obj)?;
 
         Ok(Self(match s.as_str() {
             "removed" => Ok(SplitDelimiterBehavior::Removed),

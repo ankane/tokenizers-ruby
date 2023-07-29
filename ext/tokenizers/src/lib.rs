@@ -18,43 +18,29 @@ use error::RbError;
 use tokenizer::RbTokenizer;
 use utils::RbRegex;
 
-use magnus::{define_module, function, memoize, method, prelude::*, Error, RModule};
+use magnus::{function, method, prelude::*, value::Lazy, Error, RModule, Ruby};
 
 type RbResult<T> = Result<T, Error>;
 
-fn module() -> RModule {
-    *memoize!(RModule: define_module("Tokenizers").unwrap())
-}
+static TOKENIZERS: Lazy<RModule> = Lazy::new(|ruby| ruby.class_object().const_get("Tokenizers").unwrap());
 
-fn decoders() -> RModule {
-    *memoize!(RModule: module().const_get("Decoders").unwrap())
-}
+static DECODERS: Lazy<RModule> = Lazy::new(|ruby| ruby.get_inner(&TOKENIZERS).const_get("Decoders").unwrap());
 
-fn models() -> RModule {
-    *memoize!(RModule: module().const_get("Models").unwrap())
-}
+static MODELS: Lazy<RModule> = Lazy::new(|ruby| ruby.get_inner(&TOKENIZERS).const_get("Models").unwrap());
 
-fn normalizers() -> RModule {
-    *memoize!(RModule: module().const_get("Normalizers").unwrap())
-}
+static NORMALIZERS: Lazy<RModule> = Lazy::new(|ruby| ruby.get_inner(&TOKENIZERS).const_get("Normalizers").unwrap());
 
-fn pre_tokenizers() -> RModule {
-    *memoize!(RModule: module().const_get("PreTokenizers").unwrap())
-}
+static PRE_TOKENIZERS: Lazy<RModule> = Lazy::new(|ruby| ruby.get_inner(&TOKENIZERS).const_get("PreTokenizers").unwrap());
 
-fn processors() -> RModule {
-    *memoize!(RModule: module().const_get("Processors").unwrap())
-}
+static PROCESSORS: Lazy<RModule> = Lazy::new(|ruby| ruby.get_inner(&TOKENIZERS).const_get("Processors").unwrap());
 
-fn trainers() -> RModule {
-    *memoize!(RModule: module().const_get("Trainers").unwrap())
-}
+static TRAINERS: Lazy<RModule> = Lazy::new(|ruby| ruby.get_inner(&TOKENIZERS).const_get("Trainers").unwrap());
 
 #[magnus::init]
-fn init() -> RbResult<()> {
-    let module = module();
+fn init(ruby: &Ruby) -> RbResult<()> {
+    let module = ruby.get_inner(&TOKENIZERS);
 
-    let class = module.define_class("Tokenizer", Default::default())?;
+    let class = module.define_class("Tokenizer", ruby.class_object())?;
     class.define_singleton_method("new", function!(RbTokenizer::from_model, 1))?;
     class.define_singleton_method("from_file", function!(RbTokenizer::from_file, 1))?;
     class.define_method(
@@ -88,7 +74,7 @@ fn init() -> RbResult<()> {
     class.define_method("_vocab_size", method!(RbTokenizer::vocab_size, 1))?;
     class.define_method("_to_s", method!(RbTokenizer::to_str, 1))?;
 
-    let class = module.define_class("Encoding", Default::default())?;
+    let class = module.define_class("Encoding", ruby.class_object())?;
     class.define_method("n_sequences", method!(RbEncoding::n_sequences, 0))?;
     class.define_method("ids", method!(RbEncoding::ids, 0))?;
     class.define_method("tokens", method!(RbEncoding::tokens, 0))?;
@@ -113,7 +99,7 @@ fn init() -> RbResult<()> {
     class.define_method("_char_to_token", method!(RbEncoding::char_to_token, 2))?;
     class.define_method("_char_to_word", method!(RbEncoding::char_to_word, 2))?;
 
-    let class = module.define_class("Regex", Default::default())?;
+    let class = module.define_class("Regex", ruby.class_object())?;
     class.define_singleton_method("new", function!(RbRegex::new, 1))?;
 
     let models = module.define_module("Models")?;
@@ -123,12 +109,12 @@ fn init() -> RbResult<()> {
     let normalizers = module.define_module("Normalizers")?;
     let trainers = module.define_module("Trainers")?;
 
-    models::models(&models)?;
-    pre_tokenizers::pre_tokenizers(&pre_tokenizers)?;
-    decoders::decoders(&decoders)?;
-    processors::processors(&processors)?;
-    normalizers::normalizers(&normalizers)?;
-    trainers::trainers(&trainers)?;
+    models::init_models(ruby, &models)?;
+    pre_tokenizers::init_pre_tokenizers(ruby, &pre_tokenizers)?;
+    decoders::init_decoders(ruby, &decoders)?;
+    processors::init_processors(ruby, &processors)?;
+    normalizers::init_normalizers(ruby, &normalizers)?;
+    trainers::init_trainers(ruby, &trainers)?;
 
     Ok(())
 }

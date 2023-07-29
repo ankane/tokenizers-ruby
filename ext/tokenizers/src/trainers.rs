@@ -3,16 +3,16 @@ use std::sync::{Arc, RwLock};
 
 use crate::models::RbModel;
 use crate::tokenizer::RbAddedToken;
-use magnus::typed_data::DataTypeBuilder;
+use magnus::prelude::*;
 use magnus::{
-    exception, function, memoize, method, Class, DataType, DataTypeFunctions, Error, Module, Object,
-    RArray, RClass, RHash, RModule, Symbol, TypedData, Value,
+    data_type_builder, exception, function, method, value::Lazy, Class, DataType, DataTypeFunctions, Error, Module, Object,
+    RArray, RClass, RHash, RModule, Ruby, Symbol, TryConvert, TypedData, Value,
 };
 use serde::{Deserialize, Serialize};
 use tk::models::TrainerWrapper;
 use tk::Trainer;
 
-use super::RbResult;
+use super::{RbResult, TRAINERS};
 
 #[derive(DataTypeFunctions, Clone, Deserialize, Serialize)]
 pub struct RbTrainer {
@@ -112,7 +112,7 @@ impl RbTrainer {
             special_tokens
                 .each()
                 .map(|token| {
-                    if let Ok(content) = token?.try_convert::<String>() {
+                    if let Ok(content) = String::try_convert(token?) {
                         Ok(RbAddedToken::from(content, Some(true)).get_token())
                     } else {
                         todo!()
@@ -199,7 +199,7 @@ impl RbTrainer {
             special_tokens
                 .each()
                 .map(|token| {
-                    if let Ok(content) = token?.try_convert::<String>() {
+                    if let Ok(content) = String::try_convert(token?) {
                         Ok(RbAddedToken::from(content, Some(true)).get_token())
                     } else {
                         todo!()
@@ -270,7 +270,7 @@ impl RbTrainer {
             special_tokens
                 .each()
                 .map(|token| {
-                    if let Ok(content) = token?.try_convert::<String>() {
+                    if let Ok(content) = String::try_convert(token?) {
                         Ok(RbAddedToken::from(content, Some(true)).get_token())
                     } else {
                         todo!()
@@ -324,7 +324,7 @@ impl RbTrainer {
             special_tokens
                 .each()
                 .map(|token| {
-                    if let Ok(content) = token?.try_convert::<String>() {
+                    if let Ok(content) = String::try_convert(token?) {
                         Ok(RbAddedToken::from(content, Some(true)).get_token())
                     } else {
                         todo!()
@@ -397,11 +397,10 @@ impl RbBpeTrainer {
         let value: Value = kwargs.delete(Symbol::new("special_tokens"))?;
         if !value.is_nil() {
             builder = builder.special_tokens(
-                value
-                    .try_convert::<RArray>()?
+                RArray::try_convert(value)?
                     .each()
                     .map(|token| {
-                        if let Ok(content) = token?.try_convert::<String>() {
+                        if let Ok(content) = String::try_convert(token?) {
                             Ok(RbAddedToken::from(content, Some(true)).get_token())
                         } else {
                             todo!()
@@ -413,39 +412,39 @@ impl RbBpeTrainer {
 
         let value: Value = kwargs.delete(Symbol::new("initial_alphabet"))?;
         if !value.is_nil() {
-            let arr = value.try_convert::<Vec<char>>()?;
+            let arr = <Vec<char>>::try_convert(value)?;
             let set: HashSet<char> = HashSet::from_iter(arr);
             builder = builder.initial_alphabet(set);
         }
 
         let value: Value = kwargs.delete(Symbol::new("vocab_size"))?;
         if !value.is_nil() {
-            builder = builder.vocab_size(value.try_convert()?);
+            builder = builder.vocab_size(TryConvert::try_convert(value)?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("min_frequency"))?;
         if !value.is_nil() {
-            builder = builder.min_frequency(value.try_convert()?);
+            builder = builder.min_frequency(TryConvert::try_convert(value)?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("show_progress"))?;
         if !value.is_nil() {
-            builder = builder.show_progress(value.try_convert()?);
+            builder = builder.show_progress(TryConvert::try_convert(value)?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("limit_alphabet"))?;
         if !value.is_nil() {
-            builder = builder.limit_alphabet(value.try_convert()?);
+            builder = builder.limit_alphabet(TryConvert::try_convert(value)?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("continuing_subword_prefix"))?;
         if !value.is_nil() {
-            builder = builder.continuing_subword_prefix(value.try_convert()?);
+            builder = builder.continuing_subword_prefix(TryConvert::try_convert(value)?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("end_of_word_suffix"))?;
         if !value.is_nil() {
-            builder = builder.end_of_word_suffix(value.try_convert()?);
+            builder = builder.end_of_word_suffix(TryConvert::try_convert(value)?);
         }
 
         if !kwargs.is_empty() {
@@ -466,11 +465,10 @@ impl RbUnigramTrainer {
         let value: Value = kwargs.delete(Symbol::new("special_tokens"))?;
         if !value.is_nil() {
             builder.special_tokens(
-                value
-                    .try_convert::<RArray>()?
+                RArray::try_convert(value)?
                     .each()
                     .map(|token| {
-                        if let Ok(content) = token?.try_convert::<String>() {
+                        if let Ok(content) = String::try_convert(token?) {
                             Ok(RbAddedToken::from(content, Some(true)).get_token())
                         } else {
                             todo!()
@@ -482,44 +480,44 @@ impl RbUnigramTrainer {
 
         let value: Value = kwargs.delete(Symbol::new("initial_alphabet"))?;
         if !value.is_nil() {
-            let arr = value.try_convert::<Vec<char>>()?;
+            let arr = <Vec<char>>::try_convert(value)?;
             let set: HashSet<char> = HashSet::from_iter(arr);
             builder.initial_alphabet(set);
         }
 
         let value: Value = kwargs.delete(Symbol::new("vocab_size"))?;
         if !value.is_nil() {
-            builder.vocab_size(value.try_convert()?);
+            builder.vocab_size(TryConvert::try_convert(value)?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("show_progress"))?;
         if !value.is_nil() {
-            builder.show_progress(value.try_convert()?);
+            builder.show_progress(TryConvert::try_convert(value)?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("n_sub_iterations"))?;
         if !value.is_nil() {
-            builder.n_sub_iterations(value.try_convert()?);
+            builder.n_sub_iterations(TryConvert::try_convert(value)?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("unk_token"))?;
         if !value.is_nil() {
-            builder.unk_token(Some(value.try_convert()?));
+            builder.unk_token(Some(TryConvert::try_convert(value)?));
         }
 
         let value: Value = kwargs.delete(Symbol::new("max_piece_length"))?;
         if !value.is_nil() {
-            builder.max_piece_length(value.try_convert()?);
+            builder.max_piece_length(TryConvert::try_convert(value)?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("seed_size"))?;
         if !value.is_nil() {
-            builder.seed_size(value.try_convert()?);
+            builder.seed_size(TryConvert::try_convert(value)?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("shrinking_factor"))?;
         if !value.is_nil() {
-            builder.shrinking_factor(value.try_convert()?);
+            builder.shrinking_factor(TryConvert::try_convert(value)?);
         }
 
         if !kwargs.is_empty() {
@@ -541,11 +539,10 @@ impl RbWordLevelTrainer {
         let value: Value = kwargs.delete(Symbol::new("special_tokens"))?;
         if !value.is_nil() {
             builder.special_tokens(
-                value
-                    .try_convert::<RArray>()?
+                RArray::try_convert(value)?
                     .each()
                     .map(|token| {
-                        if let Ok(content) = token?.try_convert::<String>() {
+                        if let Ok(content) = String::try_convert(token?) {
                             Ok(RbAddedToken::from(content, Some(true)).get_token())
                         } else {
                             todo!()
@@ -557,17 +554,17 @@ impl RbWordLevelTrainer {
 
         let value: Value = kwargs.delete(Symbol::new("vocab_size"))?;
         if !value.is_nil() {
-            builder.vocab_size(value.try_convert()?);
+            builder.vocab_size(TryConvert::try_convert(value)?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("min_frequency"))?;
         if !value.is_nil() {
-            builder.min_frequency(value.try_convert()?);
+            builder.min_frequency(TryConvert::try_convert(value)?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("show_progress"))?;
         if !value.is_nil() {
-            builder.show_progress(value.try_convert()?);
+            builder.show_progress(TryConvert::try_convert(value)?);
         }
 
         Ok(builder.build().expect("WordLevelTrainerBuilder cannot fail").into())
@@ -583,11 +580,10 @@ impl RbWordPieceTrainer {
         let value: Value = kwargs.delete(Symbol::new("special_tokens"))?;
         if !value.is_nil() {
             builder = builder.special_tokens(
-                value
-                    .try_convert::<RArray>()?
+                RArray::try_convert(value)?
                     .each()
                     .map(|token| {
-                        if let Ok(content) = token?.try_convert::<String>() {
+                        if let Ok(content) = String::try_convert(token?) {
                             Ok(RbAddedToken::from(content, Some(true)).get_token())
                         } else {
                             todo!()
@@ -599,39 +595,39 @@ impl RbWordPieceTrainer {
 
         let value: Value = kwargs.delete(Symbol::new("initial_alphabet"))?;
         if !value.is_nil() {
-            let arr = value.try_convert::<Vec<char>>()?;
+            let arr = <Vec<char>>::try_convert(value)?;
             let set: HashSet<char> = HashSet::from_iter(arr);
             builder = builder.initial_alphabet(set);
         }
 
         let value: Value = kwargs.delete(Symbol::new("vocab_size"))?;
         if !value.is_nil() {
-            builder = builder.vocab_size(value.try_convert()?);
+            builder = builder.vocab_size(TryConvert::try_convert(value)?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("min_frequency"))?;
         if !value.is_nil() {
-            builder = builder.min_frequency(value.try_convert()?);
+            builder = builder.min_frequency(TryConvert::try_convert(value)?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("show_progress"))?;
         if !value.is_nil() {
-            builder = builder.show_progress(value.try_convert()?);
+            builder = builder.show_progress(TryConvert::try_convert(value)?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("limit_alphabet"))?;
         if !value.is_nil() {
-            builder = builder.limit_alphabet(value.try_convert()?);
+            builder = builder.limit_alphabet(TryConvert::try_convert(value)?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("continuing_subword_prefix"))?;
         if !value.is_nil() {
-            builder = builder.continuing_subword_prefix(value.try_convert()?);
+            builder = builder.continuing_subword_prefix(TryConvert::try_convert(value)?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("end_of_word_suffix"))?;
         if !value.is_nil() {
-            builder = builder.end_of_word_suffix(value.try_convert()?);
+            builder = builder.end_of_word_suffix(TryConvert::try_convert(value)?);
         }
 
         if !kwargs.is_empty() {
@@ -644,46 +640,52 @@ impl RbWordPieceTrainer {
 }
 
 unsafe impl TypedData for RbTrainer {
-    fn class() -> RClass {
-        *memoize!(RClass: {
-          let class: RClass = crate::trainers().const_get("Trainer").unwrap();
-          class.undef_alloc_func();
-          class
-        })
+    fn class(ruby: &Ruby) -> RClass {
+        static CLASS: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&TRAINERS).const_get("Trainer").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        ruby.get_inner(&CLASS)
     }
 
     fn data_type() -> &'static DataType {
-        memoize!(DataType: DataTypeBuilder::<RbTrainer>::new("Tokenizers::Trainers::Trainer").build())
+        static DATA_TYPE: DataType = data_type_builder!(RbTrainer, "Tokenizers::Trainers::Trainer").build();
+        &DATA_TYPE
     }
 
-    fn class_for(value: &Self) -> RClass {
+    fn class_for(ruby: &Ruby, value: &Self) -> RClass {
+        static BPE_TRAINER: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&TRAINERS).const_get("BpeTrainer").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static UNIGRAM_TRAINER: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&TRAINERS).const_get("UnigramTrainer").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static WORD_LEVEL_TRAINER: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&TRAINERS).const_get("WordLevelTrainer").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static WORD_PIECE_TRAINER: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&TRAINERS).const_get("WordPieceTrainer").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
         match *value.trainer.read().unwrap() {
-            TrainerWrapper::BpeTrainer(_) => *memoize!(RClass: {
-                let class: RClass = crate::trainers().const_get("BpeTrainer").unwrap();
-                class.undef_alloc_func();
-                class
-            }),
-            TrainerWrapper::UnigramTrainer(_) => *memoize!(RClass: {
-                let class: RClass = crate::trainers().const_get("UnigramTrainer").unwrap();
-                class.undef_alloc_func();
-                class
-            }),
-            TrainerWrapper::WordLevelTrainer(_) => *memoize!(RClass: {
-                let class: RClass = crate::trainers().const_get("WordLevelTrainer").unwrap();
-                class.undef_alloc_func();
-                class
-            }),
-            TrainerWrapper::WordPieceTrainer(_) => *memoize!(RClass: {
-                let class: RClass = crate::trainers().const_get("WordPieceTrainer").unwrap();
-                class.undef_alloc_func();
-                class
-            }),
+            TrainerWrapper::BpeTrainer(_) => ruby.get_inner(&BPE_TRAINER),
+            TrainerWrapper::UnigramTrainer(_) => ruby.get_inner(&UNIGRAM_TRAINER),
+            TrainerWrapper::WordLevelTrainer(_) => ruby.get_inner(&WORD_LEVEL_TRAINER),
+            TrainerWrapper::WordPieceTrainer(_) => ruby.get_inner(&WORD_PIECE_TRAINER),
         }
     }
 }
 
-pub fn trainers(module: &RModule) -> RbResult<()> {
-    let trainer = module.define_class("Trainer", Default::default())?;
+pub fn init_trainers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
+    let trainer = module.define_class("Trainer", ruby.class_object())?;
 
     let class = module.define_class("BpeTrainer", trainer)?;
     class.define_singleton_method("_new", function!(RbBpeTrainer::new, 1))?;

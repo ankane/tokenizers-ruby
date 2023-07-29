@@ -1,9 +1,8 @@
 use std::sync::{Arc, RwLock};
 
-use magnus::typed_data::DataTypeBuilder;
 use magnus::{
-    function, memoize, method, Class, DataType, DataTypeFunctions, Module, Object, RArray, RClass, RModule,
-    TypedData,
+    data_type_builder, function, method, value::Lazy, Class, DataType, DataTypeFunctions, Module, Object, RArray, RClass, RModule,
+    Ruby, TryConvert, TypedData,
 };
 use serde::ser::SerializeStruct;
 use serde::{Deserialize, Serialize, Serializer};
@@ -14,7 +13,7 @@ use tk::normalizers::{
 use tk::{NormalizedString, Normalizer};
 
 use super::utils::*;
-use super::{RbError, RbResult};
+use super::{NORMALIZERS, RbError, RbResult};
 
 #[derive(DataTypeFunctions, Clone, Serialize, Deserialize)]
 pub struct RbNormalizer {
@@ -224,7 +223,7 @@ impl RbSequence {
     fn new(normalizers: RArray) -> RbResult<RbNormalizer> {
         let mut sequence = Vec::with_capacity(normalizers.len());
         for n in normalizers.each() {
-            let normalizer: &RbNormalizer = n?.try_convert()?;
+            let normalizer: &RbNormalizer = TryConvert::try_convert(n?)?;
             match &normalizer.normalizer {
                 RbNormalizerTypeWrapper::Sequence(inner) => sequence.extend(inner.iter().cloned()),
                 RbNormalizerTypeWrapper::Single(inner) => sequence.push(inner.clone()),
@@ -327,82 +326,96 @@ impl Normalizer for RbNormalizerWrapper {
 }
 
 unsafe impl TypedData for RbNormalizer {
-    fn class() -> RClass {
-        *memoize!(RClass: {
-          let class: RClass = crate::normalizers().const_get("Normalizer").unwrap();
-          class.undef_alloc_func();
-          class
-        })
+    fn class(ruby: &Ruby) -> RClass {
+        static CLASS: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&NORMALIZERS).const_get("Normalizer").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        ruby.get_inner(&CLASS)
     }
 
     fn data_type() -> &'static DataType {
-        memoize!(DataType: DataTypeBuilder::<RbNormalizer>::new("Tokenizers::Normalizers::Normalizer").build())
+        static DATA_TYPE: DataType = data_type_builder!(RbNormalizer, "Tokenizers::Normalizers::Normalizer").build();
+        &DATA_TYPE
     }
 
-    fn class_for(value: &Self) -> RClass {
+    fn class_for(ruby: &Ruby, value: &Self) -> RClass {
+        static SEQUENCE: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&NORMALIZERS).const_get("Sequence").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static BERT_NORMALIZER: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&NORMALIZERS).const_get("BertNormalizer").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static LOWERCASE: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&NORMALIZERS).const_get("Lowercase").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static NFD: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&NORMALIZERS).const_get("NFD").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static NFC: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&NORMALIZERS).const_get("NFC").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static NFKC: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&NORMALIZERS).const_get("NFKC").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static NFKD: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&NORMALIZERS).const_get("NFKD").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static NMT: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&NORMALIZERS).const_get("Nmt").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static REPLACE: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&NORMALIZERS).const_get("Replace").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static PREPEND: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&NORMALIZERS).const_get("Prepend").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static STRIP: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&NORMALIZERS).const_get("Strip").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static STRIP_ACCENTS: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&NORMALIZERS).const_get("StripAccents").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
         match &value.normalizer {
-            RbNormalizerTypeWrapper::Sequence(_seq) => *memoize!(RClass: {
-                let class: RClass = crate::normalizers().const_get("Sequence").unwrap();
-                class.undef_alloc_func();
-                class
-            }),
+            RbNormalizerTypeWrapper::Sequence(_seq) => ruby.get_inner(&SEQUENCE),
             RbNormalizerTypeWrapper::Single(inner) => match &*inner.read().unwrap() {
                 RbNormalizerWrapper::Wrapped(wrapped) => match &wrapped {
-                    NormalizerWrapper::BertNormalizer(_) => *memoize!(RClass: {
-                        let class: RClass = crate::normalizers().const_get("BertNormalizer").unwrap();
-                        class.undef_alloc_func();
-                        class
-                    }),
-                    NormalizerWrapper::Lowercase(_) => *memoize!(RClass: {
-                        let class: RClass = crate::normalizers().const_get("Lowercase").unwrap();
-                        class.undef_alloc_func();
-                        class
-                    }),
-                    NormalizerWrapper::NFD(_) => *memoize!(RClass: {
-                        let class: RClass = crate::normalizers().const_get("NFD").unwrap();
-                        class.undef_alloc_func();
-                        class
-                    }),
-                    NormalizerWrapper::NFC(_) => *memoize!(RClass: {
-                        let class: RClass = crate::normalizers().const_get("NFC").unwrap();
-                        class.undef_alloc_func();
-                        class
-                    }),
-                    NormalizerWrapper::NFKC(_) => *memoize!(RClass: {
-                        let class: RClass = crate::normalizers().const_get("NFKC").unwrap();
-                        class.undef_alloc_func();
-                        class
-                    }),
-                    NormalizerWrapper::NFKD(_) => *memoize!(RClass: {
-                        let class: RClass = crate::normalizers().const_get("NFKD").unwrap();
-                        class.undef_alloc_func();
-                        class
-                    }),
-                    NormalizerWrapper::Nmt(_) => *memoize!(RClass: {
-                        let class: RClass = crate::normalizers().const_get("Nmt").unwrap();
-                        class.undef_alloc_func();
-                        class
-                    }),
-                    NormalizerWrapper::Replace(_) => *memoize!(RClass: {
-                        let class: RClass = crate::normalizers().const_get("Replace").unwrap();
-                        class.undef_alloc_func();
-                        class
-                    }),
-                    NormalizerWrapper::Prepend(_) => *memoize!(RClass: {
-                        let class: RClass = crate::normalizers().const_get("Prepend").unwrap();
-                        class.undef_alloc_func();
-                        class
-                    }),
-                    NormalizerWrapper::StripNormalizer(_) => *memoize!(RClass: {
-                        let class: RClass = crate::normalizers().const_get("Strip").unwrap();
-                        class.undef_alloc_func();
-                        class
-                    }),
-                    NormalizerWrapper::StripAccents(_) => *memoize!(RClass: {
-                        let class: RClass = crate::normalizers().const_get("StripAccents").unwrap();
-                        class.undef_alloc_func();
-                        class
-                    }),
+                    NormalizerWrapper::BertNormalizer(_) => ruby.get_inner(&BERT_NORMALIZER),
+                    NormalizerWrapper::Lowercase(_) => ruby.get_inner(&LOWERCASE),
+                    NormalizerWrapper::NFD(_) => ruby.get_inner(&NFD),
+                    NormalizerWrapper::NFC(_) => ruby.get_inner(&NFC),
+                    NormalizerWrapper::NFKC(_) => ruby.get_inner(&NFKC),
+                    NormalizerWrapper::NFKD(_) => ruby.get_inner(&NFKD),
+                    NormalizerWrapper::Nmt(_) => ruby.get_inner(&NMT),
+                    NormalizerWrapper::Replace(_) => ruby.get_inner(&REPLACE),
+                    NormalizerWrapper::Prepend(_) => ruby.get_inner(&PREPEND),
+                    NormalizerWrapper::StripNormalizer(_) => ruby.get_inner(&STRIP),
+                    NormalizerWrapper::StripAccents(_) => ruby.get_inner(&STRIP_ACCENTS),
                     _ => todo!(),
                 },
             },
@@ -410,8 +423,8 @@ unsafe impl TypedData for RbNormalizer {
     }
 }
 
-pub fn normalizers(module: &RModule) -> RbResult<()> {
-    let normalizer = module.define_class("Normalizer", Default::default())?;
+pub fn init_normalizers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
+    let normalizer = module.define_class("Normalizer", ruby.class_object())?;
     normalizer.define_method("normalize_str", method!(RbNormalizer::normalize_str, 1))?;
 
     let class = module.define_class("Sequence", normalizer)?;

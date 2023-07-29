@@ -1,9 +1,8 @@
 use std::sync::Arc;
 
-use magnus::typed_data::DataTypeBuilder;
 use magnus::{
-    function, memoize, Class, DataType, DataTypeFunctions, Module, Object, RClass, RModule,
-    TryConvert, TypedData, Value,
+    data_type_builder, function, value::Lazy, Class, DataType, DataTypeFunctions, Module, Object, RClass, RModule,
+    Ruby, TryConvert, TypedData, Value,
 };
 use serde::{Deserialize, Serialize};
 use tk::processors::bert::BertProcessing;
@@ -13,7 +12,7 @@ use tk::processors::template::{SpecialToken, Template};
 use tk::processors::PostProcessorWrapper;
 use tk::{Encoding, PostProcessor};
 
-use super::RbResult;
+use super::{PROCESSORS, RbResult};
 
 #[derive(DataTypeFunctions, Clone, Deserialize, Serialize)]
 pub struct RbPostProcessor {
@@ -53,9 +52,9 @@ impl From<RbSpecialToken> for SpecialToken {
 
 impl TryConvert for RbSpecialToken {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        if let Ok(v) = ob.try_convert::<(String, u32)>() {
+        if let Ok(v) = <(String, u32)>::try_convert(ob) {
             Ok(Self(v.into()))
-        } else if let Ok(v) = ob.try_convert::<(u32, String)>() {
+        } else if let Ok(v) = <(u32, String)>::try_convert(ob) {
             Ok(Self(v.into()))
         } else {
             todo!()
@@ -74,11 +73,11 @@ impl From<RbTemplate> for Template {
 
 impl TryConvert for RbTemplate {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        if let Ok(s) = ob.try_convert::<String>() {
+        if let Ok(s) = String::try_convert(ob) {
             Ok(Self(
                 s.try_into().unwrap(), //.map_err(RbError::from)?,
             ))
-        } else if let Ok(s) = ob.try_convert::<Vec<String>>() {
+        } else if let Ok(s) = <Vec<String>>::try_convert(ob) {
             Ok(Self(
                 s.try_into().unwrap(), //.map_err(RbError::from)?,
             ))
@@ -152,47 +151,53 @@ impl RbTemplateProcessing {
 }
 
 unsafe impl TypedData for RbPostProcessor {
-    fn class() -> RClass {
-        *memoize!(RClass: {
-          let class: RClass = crate::processors().const_get("PostProcessor").unwrap();
-          class.undef_alloc_func();
-          class
-        })
+    fn class(ruby: &Ruby) -> RClass {
+        static CLASS: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&PROCESSORS).const_get("PostProcessor").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        ruby.get_inner(&CLASS)
     }
 
     fn data_type() -> &'static DataType {
-        memoize!(DataType: DataTypeBuilder::<RbPostProcessor>::new("Tokenizers::Processors::PostProcessor").build())
+        static DATA_TYPE: DataType = data_type_builder!(RbPostProcessor, "Tokenizers::Processors::PostProcessor").build();
+        &DATA_TYPE
     }
 
-    fn class_for(value: &Self) -> RClass {
+    fn class_for(ruby: &Ruby, value: &Self) -> RClass {
+        static BERT_PROCESSING: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&PROCESSORS).const_get("BertProcessing").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static BYTE_LEVEL: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&PROCESSORS).const_get("ByteLevel").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static ROBERTA_PROCESSING: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&PROCESSORS).const_get("RobertaProcessing").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static TEMPLATE_PROCESSING: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&PROCESSORS).const_get("TemplateProcessing").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
         match *value.processor {
-            PostProcessorWrapper::Bert(_) => *memoize!(RClass: {
-                let class: RClass = crate::processors().const_get("BertProcessing").unwrap();
-                class.undef_alloc_func();
-                class
-            }),
-            PostProcessorWrapper::ByteLevel(_) => *memoize!(RClass: {
-                let class: RClass = crate::processors().const_get("ByteLevel").unwrap();
-                class.undef_alloc_func();
-                class
-            }),
-            PostProcessorWrapper::Roberta(_) => *memoize!(RClass: {
-                let class: RClass = crate::processors().const_get("RobertaProcessing").unwrap();
-                class.undef_alloc_func();
-                class
-            }),
-            PostProcessorWrapper::Template(_) => *memoize!(RClass: {
-                let class: RClass = crate::processors().const_get("TemplateProcessing").unwrap();
-                class.undef_alloc_func();
-                class
-            }),
+            PostProcessorWrapper::Bert(_) => ruby.get_inner(&BERT_PROCESSING),
+            PostProcessorWrapper::ByteLevel(_) => ruby.get_inner(&BYTE_LEVEL),
+            PostProcessorWrapper::Roberta(_) => ruby.get_inner(&ROBERTA_PROCESSING),
+            PostProcessorWrapper::Template(_) => ruby.get_inner(&TEMPLATE_PROCESSING),
             _ => todo!(),
         }
     }
 }
 
-pub fn processors(module: &RModule) -> RbResult<()> {
-    let post_processor = module.define_class("PostProcessor", Default::default())?;
+pub fn init_processors(ruby: &Ruby, module: &RModule) -> RbResult<()> {
+    let post_processor = module.define_class("PostProcessor", ruby.class_object())?;
 
     let class = module.define_class("BertProcessing", post_processor)?;
     class.define_singleton_method("new", function!(RbBertProcessing::new, 2))?;

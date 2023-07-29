@@ -1,6 +1,6 @@
 use onig::Regex;
-use magnus::{exception, memoize, Error, Module, RClass};
-use crate::{module, RbResult};
+use magnus::{exception, prelude::*, value::Lazy, Error, RClass, Ruby};
+use crate::{RbResult, TOKENIZERS};
 
 #[magnus::wrap(class = "Tokenizers::Regex")]
 pub struct RbRegex {
@@ -17,6 +17,8 @@ impl RbRegex {
     }
 }
 
+static REGEX: Lazy<RClass> = Lazy::new(|ruby| ruby.get_inner(&TOKENIZERS).const_get("Regex").unwrap());
+
 pub fn regex() -> RClass {
-    *memoize!(RClass: module().const_get("Regex").unwrap())
+    Ruby::get().unwrap().get_inner(&REGEX)
 }

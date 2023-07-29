@@ -3,10 +3,10 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, RwLock};
 
 use crate::trainers::RbTrainer;
-use magnus::typed_data::DataTypeBuilder;
+use magnus::prelude::*;
 use magnus::{
-    exception, function, memoize, method, Class, DataType, DataTypeFunctions, Error, Module, Object,
-    RClass, RHash, RModule, Symbol, TypedData, Value,
+    data_type_builder, exception, function, method, value::Lazy, Class, DataType, DataTypeFunctions, Error, Module, Object,
+    RClass, RHash, RModule, Ruby, Symbol, TryConvert, TypedData, Value,
 };
 use serde::{Deserialize, Serialize};
 use tk::models::bpe::{BpeBuilder, Merges, Vocab, BPE};
@@ -16,7 +16,7 @@ use tk::models::wordlevel::WordLevel;
 use tk::models::wordpiece::{WordPiece, WordPieceBuilder};
 use tk::{Model, Token};
 
-use super::{RbError, RbResult};
+use super::{MODELS, RbError, RbResult};
 
 #[derive(DataTypeFunctions, Clone, Serialize, Deserialize)]
 pub struct RbModel {
@@ -73,37 +73,37 @@ impl RbBPE {
     fn with_builder(mut builder: BpeBuilder, kwargs: RHash) -> RbResult<RbModel> {
         let value: Value = kwargs.delete(Symbol::new("cache_capacity"))?;
         if !value.is_nil() {
-            builder = builder.cache_capacity(value.try_convert()?);
+            builder = builder.cache_capacity(TryConvert::try_convert(value)?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("dropout"))?;
         if !value.is_nil() {
-            builder = builder.dropout(value.try_convert()?);
+            builder = builder.dropout(TryConvert::try_convert(value)?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("unk_token"))?;
         if !value.is_nil() {
-            builder = builder.unk_token(value.try_convert()?);
+            builder = builder.unk_token(TryConvert::try_convert(value)?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("continuing_subword_prefix"))?;
         if !value.is_nil() {
-            builder = builder.continuing_subword_prefix(value.try_convert()?);
+            builder = builder.continuing_subword_prefix(TryConvert::try_convert(value)?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("end_of_word_suffix"))?;
         if !value.is_nil() {
-            builder = builder.end_of_word_suffix(value.try_convert()?);
+            builder = builder.end_of_word_suffix(TryConvert::try_convert(value)?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("fuse_unk"))?;
         if !value.is_nil() {
-            builder = builder.fuse_unk(value.try_convert()?);
+            builder = builder.fuse_unk(TryConvert::try_convert(value)?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("byte_fallback"))?;
         if !value.is_nil() {
-            builder = builder.byte_fallback(value.try_convert()?);
+            builder = builder.byte_fallback(TryConvert::try_convert(value)?);
         }
 
         if !kwargs.is_empty() {
@@ -277,17 +277,17 @@ impl RbWordPiece {
     fn with_builder(mut builder: WordPieceBuilder, kwargs: RHash) -> RbResult<RbModel> {
         let value: Value = kwargs.delete(Symbol::new("unk_token"))?;
         if !value.is_nil() {
-            builder = builder.unk_token(value.try_convert()?);
+            builder = builder.unk_token(TryConvert::try_convert(value)?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("max_input_chars_per_word"))?;
         if !value.is_nil() {
-            builder = builder.max_input_chars_per_word(value.try_convert()?);
+            builder = builder.max_input_chars_per_word(TryConvert::try_convert(value)?);
         }
 
         let value: Value = kwargs.delete(Symbol::new("continuing_subword_prefix"))?;
         if !value.is_nil() {
-            builder = builder.continuing_subword_prefix(value.try_convert()?);
+            builder = builder.continuing_subword_prefix(TryConvert::try_convert(value)?);
         }
 
         if !kwargs.is_empty() {
@@ -314,46 +314,52 @@ impl RbWordPiece {
 }
 
 unsafe impl TypedData for RbModel {
-    fn class() -> RClass {
-        *memoize!(RClass: {
-          let class: RClass = crate::models().const_get("Model").unwrap();
-          class.undef_alloc_func();
+    fn class(ruby: &Ruby) -> RClass {
+        static CLASS: Lazy<RClass> = Lazy::new(|ruby| {
+          let class: RClass = ruby.get_inner(&MODELS).const_get("Model").unwrap();
+          class.undef_default_alloc_func();
           class
-        })
+        });
+        ruby.get_inner(&CLASS)
     }
 
     fn data_type() -> &'static DataType {
-        memoize!(DataType: DataTypeBuilder::<RbModel>::new("Tokenizers::Models::Model").build())
+        static DATA_TYPE: DataType = data_type_builder!(RbModel, "Tokenizers::Models::Model").build();
+        &DATA_TYPE
     }
 
-    fn class_for(value: &Self) -> RClass {
+    fn class_for(ruby: &Ruby, value: &Self) -> RClass {
+        static BPE: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&MODELS).const_get("BPE").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static UNIGRAM: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&MODELS).const_get("Unigram").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static WORD_LEVEL: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&MODELS).const_get("WordLevel").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static WORD_PIECE: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&MODELS).const_get("WordPiece").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
         match *value.model.read().unwrap() {
-            ModelWrapper::BPE(_) => *memoize!(RClass: {
-                let class: RClass = crate::models().const_get("BPE").unwrap();
-                class.undef_alloc_func();
-                class
-            }),
-            ModelWrapper::Unigram(_) => *memoize!(RClass: {
-                let class: RClass = crate::models().const_get("Unigram").unwrap();
-                class.undef_alloc_func();
-                class
-            }),
-            ModelWrapper::WordLevel(_) => *memoize!(RClass: {
-                let class: RClass = crate::models().const_get("WordLevel").unwrap();
-                class.undef_alloc_func();
-                class
-            }),
-            ModelWrapper::WordPiece(_) => *memoize!(RClass: {
-                let class: RClass = crate::models().const_get("WordPiece").unwrap();
-                class.undef_alloc_func();
-                class
-            }),
+            ModelWrapper::BPE(_) => ruby.get_inner(&BPE),
+            ModelWrapper::Unigram(_) => ruby.get_inner(&UNIGRAM),
+            ModelWrapper::WordLevel(_) => ruby.get_inner(&WORD_LEVEL),
+            ModelWrapper::WordPiece(_) => ruby.get_inner(&WORD_PIECE),
         }
     }
 }
 
-pub fn models(module: &RModule) -> RbResult<()> {
-    let model = module.define_class("Model", Default::default())?;
+pub fn init_models(ruby: &Ruby, module: &RModule) -> RbResult<()> {
+    let model = module.define_class("Model", ruby.class_object())?;
 
     let class = module.define_class("BPE", model)?;
     class.define_singleton_method("_new", function!(RbBPE::new, 3))?;

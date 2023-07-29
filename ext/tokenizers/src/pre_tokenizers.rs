@@ -1,9 +1,8 @@
 use std::sync::{Arc, RwLock};
 
-use magnus::typed_data::DataTypeBuilder;
 use magnus::{
-    function, memoize, method, Class, DataType, DataTypeFunctions, Module, Object,
-    RArray, RClass, RModule, TypedData,
+    data_type_builder, function, method, value::Lazy, Class, DataType, DataTypeFunctions, Module, Object,
+    RArray, RClass, RModule, Ruby, TryConvert, TypedData,
 };
 
 use serde::ser::SerializeStruct;
@@ -23,7 +22,7 @@ use tk::tokenizer::Offsets;
 use tk::{PreTokenizedString, PreTokenizer};
 
 use super::utils::*;
-use super::{RbError, RbResult};
+use super::{PRE_TOKENIZERS, RbError, RbResult};
 
 #[derive(DataTypeFunctions, Clone, Serialize, Deserialize)]
 pub struct RbPreTokenizer {
@@ -241,7 +240,7 @@ impl RbSequence {
     fn new(pre_tokenizers: RArray) -> RbResult<RbPreTokenizer> {
         let mut sequence = Vec::with_capacity(pre_tokenizers.len());
         for n in pre_tokenizers.each() {
-            let pretokenizer: &RbPreTokenizer = n?.try_convert()?;
+            let pretokenizer: &RbPreTokenizer = TryConvert::try_convert(n?)?;
             match &pretokenizer.pretok {
                 RbPreTokenizerTypeWrapper::Sequence(inner) => {
                     sequence.extend(inner.iter().cloned())
@@ -346,77 +345,90 @@ impl PreTokenizer for RbPreTokenizerWrapper {
 }
 
 unsafe impl TypedData for RbPreTokenizer {
-    fn class() -> RClass {
-        *memoize!(RClass: {
-          let class: RClass = crate::pre_tokenizers().const_get("PreTokenizer").unwrap();
-          class.undef_alloc_func();
-          class
-        })
+    fn class(ruby: &Ruby) -> RClass {
+        static CLASS: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&PRE_TOKENIZERS).const_get("PreTokenizer").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        ruby.get_inner(&CLASS)
     }
 
     fn data_type() -> &'static DataType {
-        memoize!(DataType: DataTypeBuilder::<RbPreTokenizer>::new("Tokenizers::PreTokenizers::PreTokenizer").build())
+        static DATA_TYPE: DataType = data_type_builder!(RbPreTokenizer, "Tokenizers::PreTokenizers::PreTokenizer").build();
+        &DATA_TYPE
     }
 
-    fn class_for(value: &Self) -> RClass {
+    fn class_for(ruby: &Ruby, value: &Self) -> RClass {
+        static SEQUENCE: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&PRE_TOKENIZERS).const_get("Sequence").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static BERT_PRE_TOKENIZER: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&PRE_TOKENIZERS).const_get("BertPreTokenizer").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static BYTE_LEVEL: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&PRE_TOKENIZERS).const_get("ByteLevel").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static CHAR_DELIMITER_SPLIT: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&PRE_TOKENIZERS).const_get("CharDelimiterSplit").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static DIGITS: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&PRE_TOKENIZERS).const_get("Digits").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static METASPACE: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&PRE_TOKENIZERS).const_get("Metaspace").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static PUNCTUATION: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&PRE_TOKENIZERS).const_get("Punctuation").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static SPLIT: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&PRE_TOKENIZERS).const_get("Split").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static UNICODE_SCRIPTS: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&PRE_TOKENIZERS).const_get("UnicodeScripts").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static WHITESPACE: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&PRE_TOKENIZERS).const_get("Whitespace").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static WHITESPACE_SPLIT: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&PRE_TOKENIZERS).const_get("WhitespaceSplit").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
         match &value.pretok {
-            RbPreTokenizerTypeWrapper::Sequence(_seq) => *memoize!(RClass: {
-                let class: RClass = crate::pre_tokenizers().const_get("Sequence").unwrap();
-                class.undef_alloc_func();
-                class
-            }),
+            RbPreTokenizerTypeWrapper::Sequence(_seq) => ruby.get_inner(&SEQUENCE),
             RbPreTokenizerTypeWrapper::Single(inner) => match &*inner.read().unwrap() {
                 RbPreTokenizerWrapper::Wrapped(wrapped) => match &wrapped {
-                    PreTokenizerWrapper::BertPreTokenizer(_) => *memoize!(RClass: {
-                        let class: RClass = crate::pre_tokenizers().const_get("BertPreTokenizer").unwrap();
-                        class.undef_alloc_func();
-                        class
-                    }),
-                    PreTokenizerWrapper::ByteLevel(_) => *memoize!(RClass: {
-                        let class: RClass = crate::pre_tokenizers().const_get("ByteLevel").unwrap();
-                        class.undef_alloc_func();
-                        class
-                    }),
-                    PreTokenizerWrapper::Delimiter(_) => *memoize!(RClass: {
-                        let class: RClass = crate::pre_tokenizers().const_get("CharDelimiterSplit").unwrap();
-                        class.undef_alloc_func();
-                        class
-                    }),
-                    PreTokenizerWrapper::Digits(_) => *memoize!(RClass: {
-                        let class: RClass = crate::pre_tokenizers().const_get("Digits").unwrap();
-                        class.undef_alloc_func();
-                        class
-                    }),
-                    PreTokenizerWrapper::Metaspace(_) => *memoize!(RClass: {
-                        let class: RClass = crate::pre_tokenizers().const_get("Metaspace").unwrap();
-                        class.undef_alloc_func();
-                        class
-                    }),
-                    PreTokenizerWrapper::Punctuation(_) => *memoize!(RClass: {
-                        let class: RClass = crate::pre_tokenizers().const_get("Punctuation").unwrap();
-                        class.undef_alloc_func();
-                        class
-                    }),
-                    PreTokenizerWrapper::Split(_) => *memoize!(RClass: {
-                        let class: RClass = crate::pre_tokenizers().const_get("Split").unwrap();
-                        class.undef_alloc_func();
-                        class
-                    }),
-                    PreTokenizerWrapper::UnicodeScripts(_) => *memoize!(RClass: {
-                        let class: RClass = crate::pre_tokenizers().const_get("UnicodeScripts").unwrap();
-                        class.undef_alloc_func();
-                        class
-                    }),
-                    PreTokenizerWrapper::Whitespace(_) => *memoize!(RClass: {
-                        let class: RClass = crate::pre_tokenizers().const_get("Whitespace").unwrap();
-                        class.undef_alloc_func();
-                        class
-                    }),
-                    PreTokenizerWrapper::WhitespaceSplit(_) => *memoize!(RClass: {
-                        let class: RClass = crate::pre_tokenizers().const_get("WhitespaceSplit").unwrap();
-                        class.undef_alloc_func();
-                        class
-                    }),
+                    PreTokenizerWrapper::BertPreTokenizer(_) => ruby.get_inner(&BERT_PRE_TOKENIZER),
+                    PreTokenizerWrapper::ByteLevel(_) => ruby.get_inner(&BYTE_LEVEL),
+                    PreTokenizerWrapper::Delimiter(_) => ruby.get_inner(&CHAR_DELIMITER_SPLIT),
+                    PreTokenizerWrapper::Digits(_) => ruby.get_inner(&DIGITS),
+                    PreTokenizerWrapper::Metaspace(_) => ruby.get_inner(&METASPACE),
+                    PreTokenizerWrapper::Punctuation(_) => ruby.get_inner(&PUNCTUATION),
+                    PreTokenizerWrapper::Split(_) => ruby.get_inner(&SPLIT),
+                    PreTokenizerWrapper::UnicodeScripts(_) => ruby.get_inner(&UNICODE_SCRIPTS),
+                    PreTokenizerWrapper::Whitespace(_) => ruby.get_inner(&WHITESPACE),
+                    PreTokenizerWrapper::WhitespaceSplit(_) => ruby.get_inner(&WHITESPACE_SPLIT),
                     _ => todo!(),
                 },
             },
@@ -424,8 +436,8 @@ unsafe impl TypedData for RbPreTokenizer {
     }
 }
 
-pub fn pre_tokenizers(module: &RModule) -> RbResult<()> {
-    let pre_tokenizer = module.define_class("PreTokenizer", Default::default())?;
+pub fn init_pre_tokenizers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
+    let pre_tokenizer = module.define_class("PreTokenizer", ruby.class_object())?;
     pre_tokenizer.define_method("pre_tokenize_str", method!(RbPreTokenizer::pre_tokenize_str, 1))?;
 
     let class = module.define_class("Sequence", pre_tokenizer)?;

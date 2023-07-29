@@ -1,9 +1,9 @@
 use std::sync::{Arc, RwLock};
 
-use magnus::typed_data::DataTypeBuilder;
+use magnus::value::Lazy;
 use magnus::{
-    function, memoize, method, Class, DataType, DataTypeFunctions, Module, Object, RClass, RModule,
-    TypedData,
+    data_type_builder, function, method, Class, DataType, DataTypeFunctions, Module, Object, RClass, RModule,
+    Ruby, TypedData,
 };
 use serde::{Deserialize, Serialize};
 use tk::decoders::bpe::BPEDecoder;
@@ -19,7 +19,7 @@ use tk::Decoder;
 use tk::normalizers::replace::Replace;
 
 use super::utils::*;
-use super::{RbError, RbResult};
+use super::{DECODERS, RbError, RbResult};
 
 #[derive(DataTypeFunctions, Clone, Deserialize, Serialize)]
 pub struct RbDecoder {
@@ -260,74 +260,85 @@ impl Decoder for RbDecoderWrapper {
 }
 
 unsafe impl TypedData for RbDecoder {
-    fn class() -> RClass {
-        *memoize!(RClass: {
-          let class: RClass = crate::decoders().const_get("Decoder").unwrap();
-          class.undef_alloc_func();
-          class
-        })
+    fn class(ruby: &Ruby) -> RClass {
+        static CLASS: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&DECODERS).const_get("Decoder").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        ruby.get_inner(&CLASS)
     }
 
     fn data_type() -> &'static DataType {
-        memoize!(DataType: DataTypeBuilder::<RbDecoder>::new("Tokenizers::Decoders::Decoder").build())
+        static DATA_TYPE: DataType = data_type_builder!(RbDecoder, "Tokenizers::Decoders::Decoder").build();
+        &DATA_TYPE
     }
 
-    fn class_for(value: &Self) -> RClass {
+    fn class_for(ruby: &Ruby, value: &Self) -> RClass {
+        static BPE_DECODER: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&DECODERS).const_get("BPEDecoder").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static BYTE_FALLBACK: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&DECODERS).const_get("ByteFallback").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static BYTE_LEVEL: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&DECODERS).const_get("ByteLevel").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static CTC: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&DECODERS).const_get("CTC").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static FUSE: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&DECODERS).const_get("Fuse").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static METASPACE: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&DECODERS).const_get("Metaspace").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static REPLACE: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&DECODERS).const_get("Replace").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static STRIP: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&DECODERS).const_get("Strip").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        static WORD_PIECE: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&DECODERS).const_get("WordPiece").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
         match &value.decoder {
             RbDecoderWrapper::Wrapped(inner) => match *inner.read().unwrap() {
-                DecoderWrapper::BPE(_) => *memoize!(RClass: {
-                    let class: RClass = crate::decoders().const_get("BPEDecoder").unwrap();
-                    class.undef_alloc_func();
-                    class
-                }),
-                DecoderWrapper::ByteFallback(_) => *memoize!(RClass: {
-                    let class: RClass = crate::decoders().const_get("ByteFallback").unwrap();
-                    class.undef_alloc_func();
-                    class
-                }),
-                DecoderWrapper::ByteLevel(_) => *memoize!(RClass: {
-                    let class: RClass = crate::decoders().const_get("ByteLevel").unwrap();
-                    class.undef_alloc_func();
-                    class
-                }),
-                DecoderWrapper::CTC(_) => *memoize!(RClass: {
-                    let class: RClass = crate::decoders().const_get("CTC").unwrap();
-                    class.undef_alloc_func();
-                    class
-                }),
-                DecoderWrapper::Fuse(_) => *memoize!(RClass: {
-                    let class: RClass = crate::decoders().const_get("Fuse").unwrap();
-                    class.undef_alloc_func();
-                    class
-                }),
-                DecoderWrapper::Metaspace(_) => *memoize!(RClass: {
-                    let class: RClass = crate::decoders().const_get("Metaspace").unwrap();
-                    class.undef_alloc_func();
-                    class
-                }),
-                DecoderWrapper::Replace(_) => *memoize!(RClass: {
-                    let class: RClass = crate::decoders().const_get("Replace").unwrap();
-                    class.undef_alloc_func();
-                    class
-                }),
-                DecoderWrapper::Strip(_) => *memoize!(RClass: {
-                    let class: RClass = crate::decoders().const_get("Strip").unwrap();
-                    class.undef_alloc_func();
-                    class
-                }),
-                DecoderWrapper::WordPiece(_) => *memoize!(RClass: {
-                    let class: RClass = crate::decoders().const_get("WordPiece").unwrap();
-                    class.undef_alloc_func();
-                    class
-                }),
+                DecoderWrapper::BPE(_) => ruby.get_inner(&BPE_DECODER),
+                DecoderWrapper::ByteFallback(_) => ruby.get_inner(&BYTE_FALLBACK),
+                DecoderWrapper::ByteLevel(_) => ruby.get_inner(&BYTE_LEVEL),
+                DecoderWrapper::CTC(_) => ruby.get_inner(&CTC),
+                DecoderWrapper::Fuse(_) => ruby.get_inner(&FUSE),
+                DecoderWrapper::Metaspace(_) => ruby.get_inner(&METASPACE),
+                DecoderWrapper::Replace(_) => ruby.get_inner(&REPLACE),
+                DecoderWrapper::Strip(_) => ruby.get_inner(&STRIP),
+                DecoderWrapper::WordPiece(_) => ruby.get_inner(&WORD_PIECE),
                 _ => todo!(),
             },
         }
     }
 }
 
-pub fn decoders(module: &RModule) -> RbResult<()> {
-    let decoder = module.define_class("Decoder", Default::default())?;
+pub fn init_decoders(ruby: &Ruby, module: &RModule) -> RbResult<()> {
+    let decoder = module.define_class("Decoder", ruby.class_object())?;
 
     let class = module.define_class("BPEDecoder", decoder)?;
     class.define_singleton_method("_new", function!(RbBPEDecoder::new, 1))?;

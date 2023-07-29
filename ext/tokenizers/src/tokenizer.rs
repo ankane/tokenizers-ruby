@@ -2,6 +2,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::path::PathBuf;
 
+use magnus::prelude::*;
 use magnus::{exception, Error, RArray, RHash, Symbol, TryConvert, Value};
 use tk::tokenizer::{
     Model, PaddingDirection, PaddingParams, PaddingStrategy,
@@ -78,7 +79,7 @@ struct TextInputSequence<'s>(tk::InputSequence<'s>);
 
 impl<'s> TryConvert for TextInputSequence<'s> {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        Ok(Self(ob.try_convert::<String>()?.into()))
+        Ok(Self(String::try_convert(ob)?.into()))
     }
 }
 
@@ -92,7 +93,7 @@ struct RbArrayStr(Vec<String>);
 
 impl TryConvert for RbArrayStr {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        let seq = ob.try_convert::<Vec<String>>()?;
+        let seq = <Vec<String>>::try_convert(ob)?;
         Ok(Self(seq))
     }
 }
@@ -107,7 +108,7 @@ struct PreTokenizedInputSequence<'s>(tk::InputSequence<'s>);
 
 impl<'s> TryConvert for PreTokenizedInputSequence<'s> {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        if let Ok(seq) = ob.try_convert::<RbArrayStr>() {
+        if let Ok(seq) = RbArrayStr::try_convert(ob) {
             return Ok(Self(seq.into()));
         }
         todo!()
@@ -124,14 +125,14 @@ struct TextEncodeInput<'s>(tk::EncodeInput<'s>);
 
 impl<'s> TryConvert for TextEncodeInput<'s> {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        if let Ok(i) = ob.try_convert::<TextInputSequence>() {
+        if let Ok(i) = TextInputSequence::try_convert(ob) {
             return Ok(Self(i.into()));
         }
-        if let Ok((i1, i2)) = ob.try_convert::<(TextInputSequence, TextInputSequence)>() {
+        if let Ok((i1, i2)) = <(TextInputSequence, TextInputSequence)>::try_convert(ob) {
             return Ok(Self((i1, i2).into()));
         }
         // TODO check if this branch is needed
-        if let Ok(arr) = ob.try_convert::<RArray>() {
+        if let Ok(arr) = RArray::try_convert(ob) {
             if arr.len() == 2 {
                 let first = arr.entry::<TextInputSequence>(0).unwrap();
                 let second = arr.entry::<TextInputSequence>(1).unwrap();
@@ -155,16 +156,16 @@ struct PreTokenizedEncodeInput<'s>(tk::EncodeInput<'s>);
 
 impl<'s> TryConvert for PreTokenizedEncodeInput<'s> {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        if let Ok(i) = ob.try_convert::<PreTokenizedInputSequence>() {
+        if let Ok(i) = PreTokenizedInputSequence::try_convert(ob) {
             return Ok(Self(i.into()));
         }
         if let Ok((i1, i2)) =
-            ob.try_convert::<(PreTokenizedInputSequence, PreTokenizedInputSequence)>()
+            <(PreTokenizedInputSequence, PreTokenizedInputSequence)>::try_convert(ob)
         {
             return Ok(Self((i1, i2).into()));
         }
         // TODO check if this branch is needed
-        if let Ok(arr) = ob.try_convert::<RArray>() {
+        if let Ok(arr) = RArray::try_convert(ob) {
             if arr.len() == 2 {
                 let first = arr.entry::<PreTokenizedInputSequence>(0).unwrap();
                 let second = arr.entry::<PreTokenizedInputSequence>(1).unwrap();
@@ -251,16 +252,16 @@ impl RbTokenizer {
         add_special_tokens: bool,
     ) -> RbResult<RbEncoding> {
         let sequence: tk::InputSequence = if is_pretokenized {
-            sequence.try_convert::<PreTokenizedInputSequence>()?.into()
+            PreTokenizedInputSequence::try_convert(sequence)?.into()
         } else {
-            sequence.try_convert::<TextInputSequence>()?.into()
+            TextInputSequence::try_convert(sequence)?.into()
         };
         let input = match pair {
             Some(pair) => {
                 let pair: tk::InputSequence = if is_pretokenized {
-                    pair.try_convert::<PreTokenizedInputSequence>()?.into()
+                    PreTokenizedInputSequence::try_convert(pair)?.into()
                 } else {
-                    pair.try_convert::<TextInputSequence>()?.into()
+                    TextInputSequence::try_convert(pair)?.into()
                 };
                 tk::EncodeInput::Dual(sequence, pair)
             }
@@ -284,9 +285,9 @@ impl RbTokenizer {
             .each()
             .map(|o| {
                 let input: tk::EncodeInput = if is_pretokenized {
-                    o?.try_convert::<PreTokenizedEncodeInput>()?.into()
+                    PreTokenizedEncodeInput::try_convert(o?)?.into()
                 } else {
-                    o?.try_convert::<TextEncodeInput>()?.into()
+                    TextEncodeInput::try_convert(o?)?.into()
                 };
                 Ok(input)
             })
@@ -353,7 +354,7 @@ impl RbTokenizer {
 
         let value: Value = kwargs.delete(Symbol::new("direction"))?;
         if !value.is_nil() {
-            let dir_str: String = value.try_convert()?;
+            let dir_str = String::try_convert(value)?;
             params.direction = match dir_str.as_str() {
                 "left" => PaddingDirection::Left,
                 "right" => PaddingDirection::Right,
@@ -363,29 +364,29 @@ impl RbTokenizer {
 
         let value: Value = kwargs.delete(Symbol::new("pad_to_multiple_of"))?;
         if !value.is_nil() {
-            params.pad_to_multiple_of = value.try_convert()?;
+            params.pad_to_multiple_of = TryConvert::try_convert(value)?;
         }
 
         let value: Value = kwargs.delete(Symbol::new("pad_id"))?;
         if !value.is_nil() {
-            params.pad_id = value.try_convert()?;
+            params.pad_id = TryConvert::try_convert(value)?;
         }
 
         let value: Value = kwargs.delete(Symbol::new("pad_type_id"))?;
         if !value.is_nil() {
-            params.pad_type_id = value.try_convert()?;
+            params.pad_type_id = TryConvert::try_convert(value)?;
         }
 
         let value: Value = kwargs.delete(Symbol::new("pad_token"))?;
         if !value.is_nil() {
-            params.pad_token = value.try_convert()?;
+            params.pad_token = TryConvert::try_convert(value)?;
         }
 
         let value: Value = kwargs.delete(Symbol::new("length"))?;
         if value.is_nil() {
             params.strategy = PaddingStrategy::BatchLongest;
         } else {
-            params.strategy = PaddingStrategy::Fixed(value.try_convert()?);
+            params.strategy = PaddingStrategy::Fixed(TryConvert::try_convert(value)?);
         }
 
         if !kwargs.is_empty() {
@@ -431,12 +432,12 @@ impl RbTokenizer {
 
         let value: Value = kwargs.delete(Symbol::new("stride"))?;
         if !value.is_nil() {
-            params.stride = value.try_convert()?;
+            params.stride = TryConvert::try_convert(value)?;
         }
 
         let value: Value = kwargs.delete(Symbol::new("strategy"))?;
         if !value.is_nil() {
-            let strategy_str: String = value.try_convert()?;
+            let strategy_str = String::try_convert(value)?;
             params.strategy = match strategy_str.as_str() {
                 "longest_first" => TruncationStrategy::LongestFirst,
                 "only_first" => TruncationStrategy::OnlyFirst,
@@ -447,7 +448,7 @@ impl RbTokenizer {
 
         let value: Value = kwargs.delete(Symbol::new("direction"))?;
         if !value.is_nil() {
-            let dir_str: String = value.try_convert()?;
+            let dir_str = String::try_convert(value)?;
             params.direction = match dir_str.as_str() {
                 "left" => TruncationDirection::Left,
                 "right" => TruncationDirection::Right,
