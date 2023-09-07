@@ -307,14 +307,15 @@ impl RbTokenizer {
     pub fn decode(&self, ids: Vec<u32>, skip_special_tokens: bool) -> RbResult<String> {
         self.tokenizer
             .borrow()
-            .decode(ids, skip_special_tokens)
+            .decode(&ids, skip_special_tokens)
             .map_err(RbError::from)
     }
 
     pub fn decode_batch(&self, sequences: Vec<Vec<u32>>, skip_special_tokens: bool) -> RbResult<Vec<String>> {
+        let slices = sequences.iter().map(|v| &v[..]).collect::<Vec<&[u32]>>();
         self.tokenizer
             .borrow()
-            .decode_batch(sequences, skip_special_tokens)
+            .decode_batch(&slices, skip_special_tokens)
             .map_err(RbError::from)
     }
 
@@ -461,13 +462,18 @@ impl RbTokenizer {
             return Err(Error::new(exception::arg_error(), "unknown keyword"));
         }
 
-        self.tokenizer.borrow_mut().with_truncation(Some(params));
+        if let Err(error_message) = self.tokenizer.borrow_mut().with_truncation(Some(params)) {
+            return Err(Error::new(exception::arg_error(), error_message.to_string()));
+        }
 
         Ok(())
     }
 
     pub fn no_truncation(&self) {
-        self.tokenizer.borrow_mut().with_truncation(None);
+        self.tokenizer
+            .borrow_mut()
+            .with_truncation(None)
+            .expect("Failed to set truncation to `None`! This should never happen");
     }
 
     pub fn truncation(&self) -> RbResult<Option<RHash>> {

@@ -234,13 +234,13 @@ impl RbModel {
 pub struct RbUnigram {}
 
 impl RbUnigram {
-    fn new(vocab: Option<Vec<(String, f64)>>, unk_id: Option<usize>) -> RbResult<RbModel> {
-        match (vocab, unk_id) {
-            (Some(vocab), unk_id) => {
-                let model = Unigram::from(vocab, unk_id).map_err(RbError::from)?;
+    fn new(vocab: Option<Vec<(String, f64)>>, unk_id: Option<usize>, byte_fallback: Option<bool>) -> RbResult<RbModel> {
+        match (vocab, unk_id, byte_fallback) {
+            (Some(vocab), unk_id, byte_fallback) => {
+                let model = Unigram::from(vocab, unk_id, byte_fallback.unwrap_or(false)).map_err(RbError::from)?;
                 Ok(model.into())
             }
-            (None, None) => Ok(Unigram::default().into()),
+            (None, None, _) => Ok(Unigram::default().into()),
             _ => Err(Error::new(exception::arg_error(), "`vocab` and `unk_id` must be both specified")),
         }
     }
@@ -378,7 +378,7 @@ pub fn init_models(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     class.define_method("byte_fallback=", method!(RbModel::bpe_set_byte_fallback, 1))?;
 
     let class = module.define_class("Unigram", model)?;
-    class.define_singleton_method("_new", function!(RbUnigram::new, 2))?;
+    class.define_singleton_method("_new", function!(RbUnigram::new, 3))?;
 
     let class = module.define_class("WordLevel", model)?;
     class.define_singleton_method("_new", function!(RbWordLevel::new, 2))?;
