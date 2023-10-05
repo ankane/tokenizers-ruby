@@ -1,3 +1,7 @@
+## 0.4.1 (unreleased)
+
+- Fixed error loading gem
+
 ## 0.4.0 (2023-07-20)
 
 - Updated Tokenizers to 0.14.0

@@ -38,7 +38,7 @@ static TRAINERS: Lazy<RModule> = Lazy::new(|ruby| ruby.get_inner(&TOKENIZERS).co
 
 #[magnus::init]
 fn init(ruby: &Ruby) -> RbResult<()> {
-    let module = ruby.get_inner(&TOKENIZERS);
+    let module = ruby.define_module("Tokenizers")?;
 
     let class = module.define_class("Tokenizer", ruby.class_object())?;
     class.define_singleton_method("new", function!(RbTokenizer::from_model, 1))?;
