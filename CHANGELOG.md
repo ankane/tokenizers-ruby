@@ -2,7 +2,7 @@
 
 - Fixed error loading gem
 
-## 0.4.0 (2023-07-20)
+## 0.4.0 (2023-09-20)
 
 - Updated Tokenizers to 0.14.0
 - Dropped support for Ruby < 3
