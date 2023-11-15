@@ -11,25 +11,27 @@ module Tokenizers
       require "digest"
       require "fileutils"
       require "json"
+      require "net/http"
       require "open-uri"
 
       cache_dir = ensure_cache_dir
 
-      # string options are headers
       options = {
         open_timeout: 3,
-        read_timeout: 30,
+        read_timeout: 30
+      }
+      headers = {
         "User-Agent" => "tokenizers/#{TOKENIZERS_VERSION}; bindings/Ruby; version/#{VERSION}"
       }
       if auth_token
-        options["Authorization"] = "Bearer #{auth_token}"
+        headers["Authorization"] = "Bearer #{auth_token}"
       end
 
       url = "https://huggingface.co/%s/resolve/%s/tokenizer.json" % [identifier, revision].map { |v| CGI.escape(v) }
 
       path =
         begin
-          cached_path(cache_dir, url, options)
+          cached_path(cache_dir, url, headers, options)
         rescue OpenURI::HTTPError
           raise Error, "Model \"#{identifier}\" on the Hub doesn't have a tokenizer"
         end
@@ -41,7 +43,7 @@ module Tokenizers
 
     # use same storage format as Rust version
     # https://github.com/epwalsh/rust-cached-path
-    def cached_path(cache_dir, url, options)
+    def cached_path(cache_dir, url, headers, options)
       fsum = Digest::SHA256.hexdigest(url)
       meta_paths = Dir[File.join(cache_dir, "#{fsum}.*.meta")]
       meta = meta_paths.map { |f| JSON.parse(File.read(f)) }.max_by { |m| m["creation_time"] }
@@ -50,14 +52,27 @@ module Tokenizers
       if etag
         esum = Digest::SHA256.hexdigest(etag)
         resource_path = File.join(cache_dir, "#{fsum}.#{esum}")
-        options["If-None-Match"] = etag if File.exist?(resource_path)
+        if File.exist?(resource_path)
+          uri = URI(url)
+          req = Net::HTTP::Head.new(uri)
+          headers.each do |k, v|
+            req[k] = v
+          end
+          res = Net::HTTP.start(uri.hostname, uri.port, options.merge(use_ssl: true)) do |http|
+            http.request(req)
+          end
+          if res["etag"] == etag
+            return resource_path
+          end
+        end
       end
 
       options[:content_length_proc] = -> (_) { puts "Downloading..." }
 
       tempfile =
         begin
-          URI.parse(url).open(options)
+          # string options are headers
+          URI.parse(url).open(headers.merge(options))
         rescue OpenURI::HTTPError => e
           if e.message == "304 Not Modified"
             return resource_path

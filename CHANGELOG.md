@@ -1,6 +1,7 @@
 ## 0.4.2 (unreleased)
 
 - Updated Tokenizers to 0.15.0
+- Fixed issue with download caching
 
 ## 0.4.1 (2023-10-05)
 
