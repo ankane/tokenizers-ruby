@@ -69,17 +69,8 @@ module Tokenizers
 
       options[:content_length_proc] = -> (_) { puts "Downloading..." }
 
-      tempfile =
-        begin
-          # string options are headers
-          URI.parse(url).open(headers.merge(options))
-        rescue OpenURI::HTTPError => e
-          if e.message == "304 Not Modified"
-            return resource_path
-          else
-            raise e
-          end
-        end
+      # string options are headers
+      tempfile = URI.parse(url).open(headers.merge(options))
 
       etag = tempfile.meta["etag"]
       esum = Digest::SHA256.hexdigest(etag)
