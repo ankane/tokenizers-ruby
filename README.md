@@ -34,15 +34,51 @@ Decode
 tokenizer.decode(ids)
 ```
 
-Load a tokenizer from files
-
-```ruby
-tokenizer = Tokenizers::CharBPETokenizer.new("vocab.json", "merges.txt")
-```
-
 ## Training
 
-Check out the [Quicktour](https://huggingface.co/docs/tokenizers/quicktour) and equivalent [Ruby code](https://github.com/ankane/tokenizers-ruby/blob/master/test/quicktour_test.rb#L8)
+Create a tokenizer
+
+```ruby
+tokenizer = Tokenizers::Tokenizer.new(Tokenizers::Models::BPE.new(unk_token: "[UNK]"))
+```
+
+Set the pre-tokenizer
+
+```ruby
+tokenizer.pre_tokenizer = Tokenizers::PreTokenizers::Whitespace.new
+```
+
+Train the tokenizer ([example data](https://huggingface.co/docs/tokenizers/quicktour#build-a-tokenizer-from-scratch))
+
+```ruby
+trainer = Tokenizers::Trainers::BpeTrainer.new(special_tokens: ["[UNK]", "[CLS]", "[SEP]", "[PAD]", "[MASK]"])
+tokenizer.train(["wiki.train.raw", "wiki.valid.raw", "wiki.test.raw"], trainer)
+```
+
+Encode
+
+```ruby
+output = tokenizer.encode("Hello, y'all! How are you 😁 ?")
+output.tokens
+```
+
+Save the tokenizer
+
+```ruby
+tokenizer.save("tokenizer.json")
+```
+
+Load a tokenizer
+
+```ruby
+tokenizer = Tokenizers.from_file("tokenizer.json")
+```
+
+Check out the [Quicktour](https://huggingface.co/docs/tokenizers/quicktour) and equivalent [Ruby code](https://github.com/ankane/tokenizers-ruby/blob/master/test/quicktour_test.rb#L8) for more info
+
+## API
+
+This library follows the [Tokenizers Python API](https://huggingface.co/docs/tokenizers/index). You can follow Python tutorials and convert the code to Ruby in many cases. Feel free to open an issue if you run into problems.
 
 ## History
 
