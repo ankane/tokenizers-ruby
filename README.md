@@ -62,13 +62,13 @@ output = tokenizer.encode("Hello, y'all! How are you 😁 ?")
 output.tokens
 ```
 
-Save the tokenizer
+Save the tokenizer to a file
 
 ```ruby
 tokenizer.save("tokenizer.json")
 ```
 
-Load a tokenizer
+Load a tokenizer from a file
 
 ```ruby
 tokenizer = Tokenizers.from_file("tokenizer.json")
