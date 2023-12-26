@@ -6,10 +6,10 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        ruby: [3.2, "3.0"]
+        ruby: [3.3, "3.0"]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/cache@v3
         with:
           path: |
