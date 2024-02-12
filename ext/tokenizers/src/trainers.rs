@@ -77,11 +77,11 @@ impl RbTrainer {
         setter!(self, BpeTrainer, vocab_size, vocab_size);
     }
 
-    fn bpe_trainer_min_frequency(&self) -> u32 {
+    fn bpe_trainer_min_frequency(&self) -> u64 {
         getter!(self, BpeTrainer, min_frequency)
     }
 
-    fn bpe_trainer_set_min_frequency(&self, freq: u32) {
+    fn bpe_trainer_set_min_frequency(&self, freq: u64) {
         setter!(self, BpeTrainer, min_frequency, freq);
     }
 
@@ -235,11 +235,11 @@ impl RbTrainer {
         setter!(self, WordLevelTrainer, vocab_size, vocab_size);
     }
 
-    fn word_level_trainer_min_frequency(&self) -> u32 {
+    fn word_level_trainer_min_frequency(&self) -> u64 {
         getter!(self, WordLevelTrainer, min_frequency)
     }
 
-    fn word_level_trainer_set_min_frequency(&self, freq: u32) {
+    fn word_level_trainer_set_min_frequency(&self, freq: u64) {
         setter!(self, WordLevelTrainer, min_frequency, freq);
     }
 
@@ -289,11 +289,11 @@ impl RbTrainer {
         setter!(self, WordPieceTrainer, @set_vocab_size, vocab_size);
     }
 
-    fn word_piece_trainer_min_frequency(&self) -> u32 {
+    fn word_piece_trainer_min_frequency(&self) -> u64 {
         getter!(self, WordPieceTrainer, min_frequency())
     }
 
-    fn word_piece_trainer_set_min_frequency(&self, freq: u32) {
+    fn word_piece_trainer_set_min_frequency(&self, freq: u64) {
         setter!(self, WordPieceTrainer, @set_min_frequency, freq);
     }
 
