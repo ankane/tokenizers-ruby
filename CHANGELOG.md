@@ -1,6 +1,7 @@
 ## 0.5.0 (unreleased)
 
 - Updated Tokenizers to 0.19.0
+- Dropped support for Ruby < 3.1
 
 ## 0.4.4 (2024-02-27)
 
