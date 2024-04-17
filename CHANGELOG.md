@@ -1,6 +1,6 @@
 ## 0.5.0 (unreleased)
 
-- Updated Tokenizers to 0.19.0
+- Updated Tokenizers to 0.19.1
 - Replaced `add_prefix_space` with `prepend_scheme` and `split` options for `Metaspace` decoder and pre-tokenizer
 - Dropped support for Ruby < 3.1
 
