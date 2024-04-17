@@ -60,15 +60,19 @@ class DecoderTest < Minitest::Test
     assert_instance_of Tokenizers::Decoders::Metaspace, decoder
     assert_kind_of Tokenizers::Decoders::Decoder, decoder
 
-    decoder = Tokenizers::Decoders::Metaspace.new(replacement: "+", add_prefix_space: false)
+    decoder = Tokenizers::Decoders::Metaspace.new(replacement: "+", prepend_scheme: "never", split: false)
 
     assert_equal "+", decoder.replacement
     decoder.replacement = "\u2581"
     assert_equal "\u2581", decoder.replacement
 
-    assert_equal false, decoder.add_prefix_space
-    decoder.add_prefix_space = true
-    assert_equal true, decoder.add_prefix_space
+    assert_equal "never", decoder.prepend_scheme
+    decoder.prepend_scheme = "always"
+    assert_equal "always", decoder.prepend_scheme
+
+    assert_equal false, decoder.split
+    decoder.split = true
+    assert_equal true, decoder.split
   end
 
   def test_replace

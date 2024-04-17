@@ -1,5 +1,6 @@
 use std::sync::{Arc, RwLock};
 
+use crate::pre_tokenizers::from_string;
 use magnus::value::Lazy;
 use magnus::{
     data_type_builder, function, method, Class, DataType, DataTypeFunctions, Module, Object, RClass, RModule,
@@ -11,7 +12,7 @@ use tk::decoders::byte_fallback::ByteFallback;
 use tk::decoders::byte_level::ByteLevel;
 use tk::decoders::ctc::CTC;
 use tk::decoders::fuse::Fuse;
-use tk::decoders::metaspace::Metaspace;
+use tk::decoders::metaspace::{Metaspace, PrependScheme};
 use tk::decoders::strip::Strip;
 use tk::decoders::wordpiece::WordPiece;
 use tk::decoders::DecoderWrapper;
@@ -126,12 +127,29 @@ impl RbDecoder {
         setter!(self, Metaspace, @set_replacement, replacement);
     }
 
-    pub fn metaspace_add_prefix_space(&self) -> bool {
-        getter!(self, Metaspace, add_prefix_space)
+    pub fn metaspace_split(&self) -> bool {
+        getter!(self, Metaspace, get_split())
     }
 
-    pub fn metaspace_set_add_prefix_space(&self, add_prefix_space: bool) {
-        setter!(self, Metaspace, add_prefix_space, add_prefix_space);
+    pub fn metaspace_set_split(&self, split: bool) {
+        setter!(self, Metaspace, @set_split, split);
+    }
+
+    pub fn metaspace_prepend_scheme(&self) -> String {
+        // Assuming Metaspace has a method to get the prepend_scheme as a string
+        let scheme: PrependScheme = getter!(self, Metaspace, get_prepend_scheme());
+        match scheme {
+            PrependScheme::First => "first",
+            PrependScheme::Never => "never",
+            PrependScheme::Always => "always",
+        }
+        .to_string()
+    }
+
+    pub fn metaspace_set_prepend_scheme(&self, prepend_scheme: String) -> RbResult<()> {
+        let scheme = from_string(prepend_scheme)?;
+        setter!(self, Metaspace, @set_prepend_scheme, scheme);
+        Ok(())
     }
 
     pub fn word_piece_cleanup(&self) -> bool {
@@ -194,8 +212,9 @@ impl RbFuse {
 pub struct RbMetaspaceDecoder {}
 
 impl RbMetaspaceDecoder {
-    pub fn new(replacement: char, add_prefix_space: bool) -> RbDecoder {
-        Metaspace::new(replacement, add_prefix_space).into()
+    pub fn new(replacement: char, prepend_scheme: String, split: bool) -> RbResult<RbDecoder> {
+        let prepend_scheme = from_string(prepend_scheme)?;
+        Ok(Metaspace::new(replacement, prepend_scheme, split).into())
     }
 }
 
@@ -364,11 +383,13 @@ pub fn init_decoders(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     class.define_singleton_method("new", function!(RbFuse::new, 0))?;
 
     let class = module.define_class("Metaspace", decoder)?;
-    class.define_singleton_method("_new", function!(RbMetaspaceDecoder::new, 2))?;
-    class.define_method("add_prefix_space", method!(RbDecoder::metaspace_add_prefix_space, 0))?;
-    class.define_method("add_prefix_space=", method!(RbDecoder::metaspace_set_add_prefix_space, 1))?;
+    class.define_singleton_method("_new", function!(RbMetaspaceDecoder::new, 3))?;
+    class.define_method("prepend_scheme", method!(RbDecoder::metaspace_prepend_scheme, 0))?;
+    class.define_method("prepend_scheme=", method!(RbDecoder::metaspace_set_prepend_scheme, 1))?;
     class.define_method("replacement", method!(RbDecoder::metaspace_replacement, 0))?;
     class.define_method("replacement=", method!(RbDecoder::metaspace_set_replacement, 1))?;
+    class.define_method("split", method!(RbDecoder::metaspace_split, 0))?;
+    class.define_method("split=", method!(RbDecoder::metaspace_set_split, 1))?;
 
     let class = module.define_class("Replace", decoder)?;
     class.define_singleton_method("new", function!(RbReplaceDecoder::new, 2))?;

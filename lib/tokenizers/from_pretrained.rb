@@ -1,7 +1,7 @@
 module Tokenizers
   module FromPretrained
     # for user agent
-    TOKENIZERS_VERSION = "0.15.2"
+    TOKENIZERS_VERSION = "0.19.0"
 
     # use Ruby for downloads
     # this avoids the need to vendor OpenSSL on Linux

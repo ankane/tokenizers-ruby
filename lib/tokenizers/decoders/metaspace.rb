@@ -1,8 +1,8 @@
 module Tokenizers
   module Decoders
     class Metaspace
-      def self.new(replacement: "\u2581", add_prefix_space: true)
-        _new(replacement, add_prefix_space)
+      def self.new(replacement: "\u2581", prepend_scheme: "always", split: true)
+        _new(replacement, prepend_scheme, split)
       end
     end
   end

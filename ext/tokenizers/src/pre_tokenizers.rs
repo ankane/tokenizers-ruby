@@ -1,7 +1,7 @@
 use std::sync::{Arc, RwLock};
 
 use magnus::{
-    data_type_builder, function, method, value::Lazy, Class, DataType, DataTypeFunctions, Module, Object,
+    data_type_builder, exception, function, method, value::Lazy, Class, DataType, DataTypeFunctions, Error, Module, Object,
     RArray, RClass, RModule, Ruby, TryConvert, TypedData,
 };
 
@@ -12,7 +12,7 @@ use tk::pre_tokenizers::bert::BertPreTokenizer;
 use tk::pre_tokenizers::byte_level::ByteLevel;
 use tk::pre_tokenizers::delimiter::CharDelimiterSplit;
 use tk::pre_tokenizers::digits::Digits;
-use tk::pre_tokenizers::metaspace::Metaspace;
+use tk::pre_tokenizers::metaspace::{Metaspace, PrependScheme};
 use tk::pre_tokenizers::punctuation::Punctuation;
 use tk::pre_tokenizers::split::Split;
 use tk::pre_tokenizers::unicode_scripts::UnicodeScripts;
@@ -118,20 +118,37 @@ impl RbPreTokenizer {
         setter!(self, Digits, individual_digits, individual_digits);
     }
 
-    fn metaspace_add_prefix_space(&self) -> bool {
-        getter!(self, Metaspace, add_prefix_space)
-    }
-
-    fn metaspace_set_add_prefix_space(&self, add_prefix_space: bool) {
-        setter!(self, Metaspace, add_prefix_space, add_prefix_space);
-    }
-
     fn metaspace_replacement(&self) -> String {
         getter!(self, Metaspace, get_replacement().to_string())
     }
 
     fn metaspace_set_replacement(&self, replacement: char) {
         setter!(self, Metaspace, @set_replacement, replacement);
+    }
+
+    fn metaspace_split(&self) -> bool {
+        getter!(self, Metaspace, get_split())
+    }
+
+    fn metaspace_set_split(&self, split: bool) {
+        setter!(self, Metaspace, @set_split, split);
+    }
+
+    fn metaspace_prepend_scheme(&self) -> String {
+        // Assuming Metaspace has a method to get the prepend_scheme as a string
+        let scheme: PrependScheme = getter!(self, Metaspace, get_prepend_scheme());
+        match scheme {
+            PrependScheme::First => "first",
+            PrependScheme::Never => "never",
+            PrependScheme::Always => "always",
+        }
+        .to_string()
+    }
+
+    fn metaspace_set_prepend_scheme(&self, prepend_scheme: String) -> RbResult<()> {
+        let scheme = from_string(prepend_scheme)?;
+        setter!(self, Metaspace, @set_prepend_scheme, scheme);
+        Ok(())
     }
 }
 
@@ -180,9 +197,11 @@ pub struct RbMetaspace {}
 impl RbMetaspace {
     fn new(
         replacement: char,
-        add_prefix_space: bool,
-    ) -> RbPreTokenizer {
-        Metaspace::new(replacement, add_prefix_space).into()
+        prepend_scheme: String,
+        split: bool,
+    ) -> RbResult<RbPreTokenizer> {
+        let prepend_scheme = from_string(prepend_scheme)?;
+        Ok(Metaspace::new(replacement, prepend_scheme, split).into())
     }
 }
 
@@ -250,6 +269,21 @@ impl RbSequence {
         }
         Ok(RbPreTokenizer::new(RbPreTokenizerTypeWrapper::Sequence(sequence)))
     }
+}
+
+pub(crate) fn from_string(string: String) -> RbResult<PrependScheme> {
+    let scheme = match string.as_str() {
+        "first" => PrependScheme::First,
+        "never" => PrependScheme::Never,
+        "always" => PrependScheme::Always,
+        _ => {
+            return Err(Error::new(exception::arg_error(), format!(
+                "{} is an unknown variant, should be one of ['first', 'never', 'always']",
+                string
+            )));
+        }
+    };
+    Ok(scheme)
 }
 
 #[derive(Clone, Deserialize)]
@@ -465,11 +499,13 @@ pub fn init_pre_tokenizers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     class.define_method("individual_digits=", method!(RbPreTokenizer::digits_set_individual_digits, 1))?;
 
     let class = module.define_class("Metaspace", pre_tokenizer)?;
-    class.define_singleton_method("_new", function!(RbMetaspace::new, 2))?;
-    class.define_method("add_prefix_space", method!(RbPreTokenizer::metaspace_add_prefix_space, 0))?;
-    class.define_method("add_prefix_space=", method!(RbPreTokenizer::metaspace_set_add_prefix_space, 1))?;
+    class.define_singleton_method("_new", function!(RbMetaspace::new, 3))?;
+    class.define_method("prepend_scheme", method!(RbPreTokenizer::metaspace_prepend_scheme, 0))?;
+    class.define_method("prepend_scheme=", method!(RbPreTokenizer::metaspace_set_prepend_scheme, 1))?;
     class.define_method("replacement", method!(RbPreTokenizer::metaspace_replacement, 0))?;
     class.define_method("replacement=", method!(RbPreTokenizer::metaspace_set_replacement, 1))?;
+    class.define_method("split", method!(RbPreTokenizer::metaspace_split, 0))?;
+    class.define_method("split=", method!(RbPreTokenizer::metaspace_set_split, 1))?;
 
     let class = module.define_class("Punctuation", pre_tokenizer)?;
     class.define_singleton_method("_new", function!(RbPunctuation::new, 1))?;

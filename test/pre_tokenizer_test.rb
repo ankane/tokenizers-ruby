@@ -59,15 +59,19 @@ class PreTokenizerTest < Minitest::Test
     assert_instance_of Tokenizers::PreTokenizers::Metaspace, pre_tokenizer
     assert_kind_of Tokenizers::PreTokenizers::PreTokenizer, pre_tokenizer
 
-    pre_tokenizer = Tokenizers::PreTokenizers::Metaspace.new(replacement: 'c', add_prefix_space: false)
+    pre_tokenizer = Tokenizers::PreTokenizers::Metaspace.new(replacement: 'c', prepend_scheme: "never", split: false)
 
     assert_equal 'c', pre_tokenizer.replacement
     pre_tokenizer.replacement = 'd'
     assert_equal 'd', pre_tokenizer.replacement
 
-    assert_equal false, pre_tokenizer.add_prefix_space
-    pre_tokenizer.add_prefix_space = true
-    assert_equal true, pre_tokenizer.add_prefix_space
+    assert_equal "never", pre_tokenizer.prepend_scheme
+    pre_tokenizer.prepend_scheme = "always"
+    assert_equal "always", pre_tokenizer.prepend_scheme
+
+    assert_equal false, pre_tokenizer.split
+    pre_tokenizer.split = true
+    assert_equal true, pre_tokenizer.split
   end
 
   def test_punctuation
