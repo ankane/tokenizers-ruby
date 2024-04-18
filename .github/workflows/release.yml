@@ -1,46 +1,44 @@
 name: release
 on: workflow_dispatch
 jobs:
+  ci-data:
+    runs-on: ubuntu-latest
+    outputs:
+      result: ${{ steps.fetch.outputs.result }}
+    steps:
+      - id: fetch
+        uses: oxidize-rb/actions/fetch-ci-data@v1
+        with:
+          # Windows builds seem to compile properly, so may be worth enabling
+          supported-ruby-platforms: |
+            exclude:
+              - x64-mingw32
+              - x64-mingw-ucrt
   release:
+    needs: ci-data
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - platform: x86_64-linux
-            target: x86_64-unknown-linux-gnu
-          - platform: x86_64-linux-musl
-            target: x86_64-unknown-linux-musl
-          - platform: aarch64-linux
-            target: aarch64-unknown-linux-gnu
-          - platform: x86_64-darwin
-            target: x86_64-apple-darwin
-            # Rust uses external command to strip symbols and debuginfo on Mac
-            # Do not do for arm64 since it interferes with code signing
-            # and codesign binary is not present to re-sign
-            setup: sudo ln -s /opt/osxcross/target/bin/x86_64-apple-darwin-strip /usr/local/bin/strip
-          - platform: arm64-darwin
-            target: aarch64-apple-darwin
-          # - platform: x64-mingw-ucrt
-          #   target: x86_64-pc-windows-gnu
-          # - platform: x64-mingw32
-          #   target: x86_64-pc-windows-gnu
+        platform: ${{ fromJSON(needs.ci-data.outputs.result).supported-ruby-platforms }}
     runs-on: ubuntu-latest
     name: ${{ matrix.platform }}
     steps:
+      - uses: oxidize-rb/actions/setup-ruby-and-rust@v1
+        with:
+          ruby-version: 3.3
+          bundler-cache: true
+          cargo-cache: true
       - uses: actions/checkout@v4
       - run: |
           cargo install --locked --git https://github.com/ankane/cargo-3pl
           git clone https://github.com/ankane/3pl-source.git
-          cargo 3pl --target ${{ matrix.target }} --require-files --source 3pl-source > LICENSE-THIRD-PARTY.txt
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 3.2
+          rust_target="$(ruby -rrb_sys -e 'puts RbSys::ToolchainInfo.new("${{ matrix.platform }}").rust_target')"
+          cargo 3pl --target $rust_target --require-files --source 3pl-source > LICENSE-THIRD-PARTY.txt
       - uses: oxidize-rb/actions/cross-gem@v1
         id: cross-gem
         with:
           platform: ${{ matrix.platform }}
           ruby-versions: "3.3,3.2,3.1"
-          # pre-script: ${{ matrix.setup }}
       - uses: actions/upload-artifact@v3
         with:
           name: cross-gem

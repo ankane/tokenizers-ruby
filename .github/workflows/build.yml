@@ -10,17 +10,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            tmp
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - uses: ruby/setup-ruby@v1
+      - uses: oxidize-rb/actions/setup-ruby-and-rust@v1
         with:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
+          cargo-cache: true
       - run: bundle exec rake compile
       - run: bundle exec rake download:files
       - run: bundle exec rake test
