@@ -20,7 +20,7 @@ RbSys::ToolchainInfo.supported_ruby_platforms.each do |platform|
   task "native:#{platform}" do
     sh "bundle", "exec", "rb-sys-dock", "--ruby-versions", "3.1,3.2,3.3", "--platform", platform, "--build"
   end
-end
+end unless File.file?("/etc/rubybashrc") # inside rb-sys container already
 
 task :remove_ext do
   path = "lib/tokenizers/tokenizers.bundle"

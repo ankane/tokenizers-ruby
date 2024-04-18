@@ -1,5 +1,10 @@
 name: release
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+  # TODO: remove
+  push:
+    branches:
+      - rb-sys-updates
 jobs:
   ci-data:
     runs-on: ubuntu-latest
@@ -23,16 +28,16 @@ jobs:
     runs-on: ubuntu-latest
     name: ${{ matrix.platform }}
     steps:
+      - uses: actions/checkout@v4
       - uses: oxidize-rb/actions/setup-ruby-and-rust@v1
         with:
           ruby-version: 3.3
           bundler-cache: true
           cargo-cache: true
-      - uses: actions/checkout@v4
       - run: |
           cargo install --locked --git https://github.com/ankane/cargo-3pl
           git clone https://github.com/ankane/3pl-source.git
-          rust_target="$(ruby -rrb_sys -e 'puts RbSys::ToolchainInfo.new("${{ matrix.platform }}").rust_target')"
+          rust_target="$(bundle exec ruby -rrb_sys -e 'puts RbSys::ToolchainInfo.new("${{ matrix.platform }}").rust_target')"
           cargo 3pl --target $rust_target --require-files --source 3pl-source > LICENSE-THIRD-PARTY.txt
       - uses: oxidize-rb/actions/cross-gem@v1
         id: cross-gem
