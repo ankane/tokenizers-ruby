@@ -59,13 +59,18 @@ jobs:
         platform: [x86_64-darwin]
     steps:
       - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.3
       - uses: actions/download-artifact@v3
         with:
           name: cross-gem-${{ matrix.platform }}
       - name: Test
         run: |
-          gem install --no-document --force ${{ steps.download.outputs.artifacts }}
-          ruby -rtokenizers -e 'print Tokenizers.from_pretrained("bert-base-cased").encode("I can feel the magic, can you?").tokens'
+          echo "::group::Install gem"
+          gem install --no-document --verbose tokenizers-*.gem
+          echo "::endgroup::"
+          ruby -rtokenizers -e 'print Tokenizers.from_pretrained("bert-base-cased").encode("Standing on the moon, I see a shadow on the sun").tokens'
 
   test-windows:
     needs: release
@@ -75,16 +80,19 @@ jobs:
         platform: [x64-mingw-ucrt]
     steps:
       - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.3
       - uses: actions/download-artifact@v3
         with:
           name: cross-gem-${{ matrix.platform }}
-      - uses: actions/setup-ruby@v1
-        with:
-          ruby-version: 3.3
       - name: Test
+        shell: bash
         run: |
-          gem install --no-document --force ${{ steps.download.outputs.artifacts }}
-          ruby -rtokenizers -e 'print Tokenizers.from_pretrained("bert-base-cased").encode("I can feel the magic, can you?").tokens'
+          echo "::group::Install gem"
+          gem install --no-document --verbose tokenizers-*.gem
+          echo "::endgroup::"
+          ruby -rtokenizers -e 'print Tokenizers.from_pretrained("bert-base-cased").encode("Between the dawn and the dark of night").tokens'
 
   test-linux:
     needs: release
@@ -98,7 +106,6 @@ jobs:
           - aarch64-linux
           - aarch64-linux-musl
     runs-on: ubuntu-latest
-    name: Test ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-qemu-action@v2
@@ -106,20 +113,27 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: cross-gem-${{ matrix.platform }}
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.3
       - name: Test
         run: |
-          docker_platform="$(bundle exec ruby -rrb_sys -e 'puts RbSys::ToolchainInfo.new("${{ matrix.platform }}").docker_platform')"
-          if [[ "${{ matrix.platform }}" == *-musl ]]; then
-            base_image="alpine:latest"
-            install_cmd="apk add --no-cache ruby"
-          else
-            base_image="${{ matrix.platform }}"
-            install_cmd="apt-get update && apt-get install -y ruby"
+          gem install rb_sys --version 0.9.94
+          docker_platform="$(ruby -rrb_sys -e 'puts RbSys::ToolchainInfo.new("${{ matrix.platform }}").docker_platform')"
+          gem_path="$(find . -name "tokenizers-*.gem" | head -n 1)"
+          if [ ! -f "$gem_path" ]; then
+            echo "Tokenizers gem not found at $gem_path"
+            exit 1
           fi
-          docker buildx build --platform $docker_platform -t test-${{ matrix.platform }} - <<EOF
+          if [[ "${{ matrix.platform }}" == *-musl ]]; then
+            base_image="ruby:3-alpine"
+          else
+            base_image="ruby:3-slim"
+          fi
+          cat > Dockerfile.test <<EOF
           FROM $base_image
-          RUN $install_cmd
-          COPY *.gem /tmp/
-          RUN gem install /tmp/*.gem
-          RUN ruby -rtokenizers -e 'print Tokenizers.from_pretrained("bert-base-cased").encode("I can feel the magic, can you?").tokens'
+          COPY $gem_path /tmp/tokenizers.gem
+          RUN gem install --no-document --verbose /tmp/tokenizers.gem
+          RUN ruby -rtokenizers -e 'print Tokenizers.from_pretrained("bert-base-cased").encode("What a long strange trip its been").tokens'
           EOF
+          docker buildx build --platform $docker_platform -t test-${{ matrix.platform }} -f Dockerfile.test .
