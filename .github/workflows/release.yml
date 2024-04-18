@@ -2,10 +2,6 @@ name: release
 
 on:
   workflow_dispatch:
-  # TODO: remove
-  push:
-    branches:
-      - rb-sys-updates
 
 jobs:
   ci-data:
