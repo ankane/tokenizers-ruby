@@ -1,10 +1,12 @@
 name: release
+
 on:
   workflow_dispatch:
   # TODO: remove
   push:
     branches:
       - rb-sys-updates
+
 jobs:
   ci-data:
     runs-on: ubuntu-latest
@@ -14,11 +16,10 @@ jobs:
       - id: fetch
         uses: oxidize-rb/actions/fetch-ci-data@v1
         with:
-          # Windows builds seem to compile properly, so may be worth enabling
           supported-ruby-platforms: |
             exclude:
               - x64-mingw32
-              - x64-mingw-ucrt
+
   release:
     needs: ci-data
     strategy:
@@ -46,5 +47,80 @@ jobs:
           ruby-versions: "3.3,3.2,3.1"
       - uses: actions/upload-artifact@v3
         with:
-          name: cross-gem
+          name: cross-gem-${{ matrix.platform }}
           path: ${{ steps.cross-gem.outputs.gem-path }}
+
+  test-macos:
+    needs: release
+    runs-on: macos-latest
+    name: Test macOS
+    strategy:
+      matrix:
+        platform: [x86_64-darwin]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v3
+        with:
+          name: cross-gem-${{ matrix.platform }}
+      - name: Test
+        run: |
+          gem install --no-document --force ${{ steps.download.outputs.artifacts }}
+          ruby -rtokenizers -e 'print Tokenizers.from_pretrained("bert-base-cased").encode("I can feel the magic, can you?").tokens'
+
+  test-windows:
+    needs: release
+    runs-on: windows-latest
+    name: Test Windows
+    strategy:
+      matrix:
+        platform: [x64-mingw-ucrt]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v3
+        with:
+          name: cross-gem-${{ matrix.platform }}
+      - uses: actions/setup-ruby@v1
+        with:
+          ruby-version: 3.3
+      - name: Test
+        run: |
+          gem install --no-document --force ${{ steps.download.outputs.artifacts }}
+          ruby -rtokenizers -e 'print Tokenizers.from_pretrained("bert-base-cased").encode("I can feel the magic, can you?").tokens'
+
+  test-linux:
+    needs: release
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - arm-linux
+          - x86_64-linux
+          - x86_64-linux-musl
+          - aarch64-linux
+          - aarch64-linux-musl
+    runs-on: ubuntu-latest
+    name: Test ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v2
+      - uses: docker/setup-buildx-action@v2
+      - uses: actions/download-artifact@v3
+        with:
+          name: cross-gem-${{ matrix.platform }}
+      - name: Test
+        run: |
+          docker_platform="$(bundle exec ruby -rrb_sys -e 'puts RbSys::ToolchainInfo.new("${{ matrix.platform }}").docker_platform')"
+          if [[ "${{ matrix.platform }}" == *-musl ]]; then
+            base_image="alpine:latest"
+            install_cmd="apk add --no-cache ruby"
+          else
+            base_image="${{ matrix.platform }}"
+            install_cmd="apt-get update && apt-get install -y ruby"
+          fi
+          docker buildx build --platform $docker_platform -t test-${{ matrix.platform }} - <<EOF
+          FROM $base_image
+          RUN $install_cmd
+          COPY *.gem /tmp/
+          RUN gem install /tmp/*.gem
+          RUN ruby -rtokenizers -e 'print Tokenizers.from_pretrained("bert-base-cased").encode("I can feel the magic, can you?").tokens'
+          EOF
