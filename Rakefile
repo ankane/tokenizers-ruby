@@ -1,6 +1,7 @@
 require "bundler/gem_tasks"
 require "rake/testtask"
-require "rake/extensiontask"
+require "rb_sys"
+require "rb_sys/extensiontask"
 
 task default: :test
 Rake::TestTask.new do |t|
@@ -8,24 +9,16 @@ Rake::TestTask.new do |t|
   t.pattern = "test/**/*_test.rb"
 end
 
-platforms = [
-  "x86_64-linux",
-  "x86_64-linux-musl",
-  "aarch64-linux",
-  "x86_64-darwin",
-  "arm64-darwin",
-  "x64-mingw-ucrt",
-  "x64-mingw32"
-]
-
 gemspec = Bundler.load_gemspec("tokenizers.gemspec")
-Rake::ExtensionTask.new("tokenizers", gemspec) do |ext|
+RbSys::ExtensionTask.new("tokenizers", gemspec) do |ext|
   ext.lib_dir = "lib/tokenizers"
-  ext.cross_compile = true
-  ext.cross_platform = platforms
-  ext.cross_compiling do |spec|
-    spec.dependencies.reject! { |dep| dep.name == "rb_sys" }
-    spec.files.reject! { |file| File.fnmatch?("ext/*", file, File::FNM_EXTGLOB) }
+end
+
+# For local cross-compilation
+RbSys::ToolchainInfo.supported_ruby_platforms.each do |platform|
+  desc "Build native extension for #{platform}"
+  task "native:#{platform}" do
+    sh "bundle", "exec", "rb-sys-dock", "--ruby-versions", "3.1,3.2,3.3", "--platform", platform, "--build"
   end
 end
 
