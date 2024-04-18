@@ -35,7 +35,8 @@ jobs:
           ruby-version: 3.3
           bundler-cache: true
           cargo-cache: true
-      - run: |
+      - if: ${{ matrix.platform != 'x64-mingw-ucrt' }}
+        run: |
           cargo install --locked --git https://github.com/ankane/cargo-3pl
           git clone https://github.com/ankane/3pl-source.git
           rust_target="$(bundle exec ruby -rrb_sys -e 'puts RbSys::ToolchainInfo.new("${{ matrix.platform }}").rust_target')"
@@ -53,7 +54,6 @@ jobs:
   test-macos:
     needs: release
     runs-on: macos-latest
-    name: Test macOS
     strategy:
       matrix:
         platform: [x86_64-darwin]
@@ -70,7 +70,6 @@ jobs:
   test-windows:
     needs: release
     runs-on: windows-latest
-    name: Test Windows
     strategy:
       matrix:
         platform: [x64-mingw-ucrt]
