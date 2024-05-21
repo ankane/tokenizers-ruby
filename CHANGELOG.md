@@ -1,4 +1,4 @@
-## 0.5.0 (unreleased)
+## 0.5.0 (2024-05-21)
 
 - Updated Tokenizers to 0.19.1
 - Replaced `add_prefix_space` with `prepend_scheme` and `split` options for `Metaspace` decoder and pre-tokenizer
