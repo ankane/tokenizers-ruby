@@ -67,7 +67,7 @@ module Tokenizers
         end
       end
 
-      options[:content_length_proc] = -> (_) { puts "Downloading..." }
+      options[:content_length_proc] = ->(_) { puts "Downloading..." }
 
       # string options are headers
       tempfile = URI.parse(url).open(headers.merge(options))
