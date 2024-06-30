@@ -222,8 +222,8 @@ pub struct RbSequence {}
 impl RbSequence {
     fn new(normalizers: RArray) -> RbResult<RbNormalizer> {
         let mut sequence = Vec::with_capacity(normalizers.len());
-        for n in normalizers.each() {
-            let normalizer: &RbNormalizer = TryConvert::try_convert(n?)?;
+        for n in normalizers.into_iter() {
+            let normalizer: &RbNormalizer = TryConvert::try_convert(n)?;
             match &normalizer.normalizer {
                 RbNormalizerTypeWrapper::Sequence(inner) => sequence.extend(inner.iter().cloned()),
                 RbNormalizerTypeWrapper::Single(inner) => sequence.push(inner.clone()),

@@ -258,8 +258,8 @@ pub struct RbSequence {}
 impl RbSequence {
     fn new(pre_tokenizers: RArray) -> RbResult<RbPreTokenizer> {
         let mut sequence = Vec::with_capacity(pre_tokenizers.len());
-        for n in pre_tokenizers.each() {
-            let pretokenizer: &RbPreTokenizer = TryConvert::try_convert(n?)?;
+        for n in pre_tokenizers.into_iter() {
+            let pretokenizer: &RbPreTokenizer = TryConvert::try_convert(n)?;
             match &pretokenizer.pretok {
                 RbPreTokenizerTypeWrapper::Sequence(inner) => {
                     sequence.extend(inner.iter().cloned())

@@ -282,12 +282,12 @@ impl RbTokenizer {
         add_special_tokens: bool,
     ) -> RbResult<RArray> {
         let input: Vec<tk::EncodeInput> = input
-            .each()
+            .into_iter()
             .map(|o| {
                 let input: tk::EncodeInput = if is_pretokenized {
-                    PreTokenizedEncodeInput::try_convert(o?)?.into()
+                    PreTokenizedEncodeInput::try_convert(o)?.into()
                 } else {
-                    TextEncodeInput::try_convert(o?)?.into()
+                    TextEncodeInput::try_convert(o)?.into()
                 };
                 Ok(input)
             })

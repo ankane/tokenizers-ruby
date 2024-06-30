@@ -110,9 +110,9 @@ impl RbTrainer {
             BpeTrainer,
             special_tokens,
             special_tokens
-                .each()
+                .into_iter()
                 .map(|token| {
-                    if let Ok(content) = String::try_convert(token?) {
+                    if let Ok(content) = String::try_convert(token) {
                         Ok(RbAddedToken::from(content, Some(true)).get_token())
                     } else {
                         todo!()
@@ -197,9 +197,9 @@ impl RbTrainer {
             UnigramTrainer,
             special_tokens,
             special_tokens
-                .each()
+                .into_iter()
                 .map(|token| {
-                    if let Ok(content) = String::try_convert(token?) {
+                    if let Ok(content) = String::try_convert(token) {
                         Ok(RbAddedToken::from(content, Some(true)).get_token())
                     } else {
                         todo!()
@@ -268,9 +268,9 @@ impl RbTrainer {
             WordLevelTrainer,
             special_tokens,
             special_tokens
-                .each()
+                .into_iter()
                 .map(|token| {
-                    if let Ok(content) = String::try_convert(token?) {
+                    if let Ok(content) = String::try_convert(token) {
                         Ok(RbAddedToken::from(content, Some(true)).get_token())
                     } else {
                         todo!()
@@ -322,9 +322,9 @@ impl RbTrainer {
             WordPieceTrainer,
             @set_special_tokens,
             special_tokens
-                .each()
+                .into_iter()
                 .map(|token| {
-                    if let Ok(content) = String::try_convert(token?) {
+                    if let Ok(content) = String::try_convert(token) {
                         Ok(RbAddedToken::from(content, Some(true)).get_token())
                     } else {
                         todo!()
@@ -398,9 +398,9 @@ impl RbBpeTrainer {
         if !value.is_nil() {
             builder = builder.special_tokens(
                 RArray::try_convert(value)?
-                    .each()
+                    .into_iter()
                     .map(|token| {
-                        if let Ok(content) = String::try_convert(token?) {
+                        if let Ok(content) = String::try_convert(token) {
                             Ok(RbAddedToken::from(content, Some(true)).get_token())
                         } else {
                             todo!()
@@ -466,9 +466,9 @@ impl RbUnigramTrainer {
         if !value.is_nil() {
             builder.special_tokens(
                 RArray::try_convert(value)?
-                    .each()
+                    .into_iter()
                     .map(|token| {
-                        if let Ok(content) = String::try_convert(token?) {
+                        if let Ok(content) = String::try_convert(token) {
                             Ok(RbAddedToken::from(content, Some(true)).get_token())
                         } else {
                             todo!()
@@ -540,9 +540,9 @@ impl RbWordLevelTrainer {
         if !value.is_nil() {
             builder.special_tokens(
                 RArray::try_convert(value)?
-                    .each()
+                    .into_iter()
                     .map(|token| {
-                        if let Ok(content) = String::try_convert(token?) {
+                        if let Ok(content) = String::try_convert(token) {
                             Ok(RbAddedToken::from(content, Some(true)).get_token())
                         } else {
                             todo!()
@@ -581,9 +581,9 @@ impl RbWordPieceTrainer {
         if !value.is_nil() {
             builder = builder.special_tokens(
                 RArray::try_convert(value)?
-                    .each()
+                    .into_iter()
                     .map(|token| {
-                        if let Ok(content) = String::try_convert(token?) {
+                        if let Ok(content) = String::try_convert(token) {
                             Ok(RbAddedToken::from(content, Some(true)).get_token())
                         } else {
                             todo!()
