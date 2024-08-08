@@ -320,25 +320,25 @@ impl RbTokenizer {
     }
 
     pub fn set_decoder(&self, decoder: Option<&RbDecoder>) {
-        self.tokenizer.borrow_mut().with_decoder(decoder.map(|d| d.clone()));
+        self.tokenizer.borrow_mut().with_decoder(decoder.cloned());
     }
 
     pub fn set_pre_tokenizer(&self, pretok: Option<&RbPreTokenizer>) {
         self.tokenizer
             .borrow_mut()
-            .with_pre_tokenizer(pretok.map(|pre| pre.clone()));
+            .with_pre_tokenizer(pretok.cloned());
     }
 
     pub fn set_post_processor(&self, processor: Option<&RbPostProcessor>) {
         self.tokenizer
             .borrow_mut()
-            .with_post_processor(processor.map(|p| p.clone()));
+            .with_post_processor(processor.cloned());
     }
 
     pub fn set_normalizer(&self, normalizer: Option<&RbNormalizer>) {
         self.tokenizer
             .borrow_mut()
-            .with_normalizer(normalizer.map(|norm| norm.clone()));
+            .with_normalizer(normalizer.cloned());
     }
 
     pub fn token_to_id(&self, token: String) -> Option<u32> {
