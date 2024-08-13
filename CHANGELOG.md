@@ -1,4 +1,4 @@
-## 0.6.0 (unreleased)
+## 0.5.1 (2024-08-13)
 
 - Updated Tokenizers to 0.20.0
 - Added precompiled gem for Linux ARM MUSL
