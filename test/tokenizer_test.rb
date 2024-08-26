@@ -225,9 +225,15 @@ class TokenizerTest < Minitest::Test
     assert_equal 2, tokenizer.num_special_tokens_to_add(false)
   end
 
-  def test_decoder
+  def test_getters
     tokenizer = Tokenizers.from_pretrained("bert-base-cased")
+
+    assert_kind_of Tokenizers::Models::WordPiece, tokenizer.model
     assert_kind_of Tokenizers::Decoders::WordPiece, tokenizer.decoder
+    assert_kind_of Tokenizers::PreTokenizers::BertPreTokenizer, tokenizer.pre_tokenizer
+    assert_kind_of Tokenizers::Processors::TemplateProcessing, tokenizer.post_processor
+    assert_kind_of Tokenizers::Normalizers::BertNormalizer, tokenizer.normalizer
+
     assert_equal "Ruby", tokenizer.decoder.decode(["Ruby"])
   end
 end

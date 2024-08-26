@@ -1,7 +1,8 @@
 ## 0.5.2 (unreleased)
 
 - Added `from_str` method to `Tokenizer`
-- Added `decoder` method to `Tokenizer`
+- Added `model` and `model=` methods to `Tokenizer`
+- Added `decoder`, `pre_tokenizer`, `post_processor`, and `normalizer` methods to `Tokenizer`
 - Added `decode` method to `Decoder`
 
 ## 0.5.1 (2024-08-13)

@@ -55,13 +55,18 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("_encode_batch", method!(RbTokenizer::encode_batch, 3))?;
     class.define_method("_decode", method!(RbTokenizer::decode, 2))?;
     class.define_method("_decode_batch", method!(RbTokenizer::decode_batch, 2))?;
+    class.define_method("model", method!(RbTokenizer::get_model, 0))?;
+    class.define_method("model=", method!(RbTokenizer::set_model,1))?;
     class.define_method("decoder", method!(RbTokenizer::get_decoder, 0))?;
     class.define_method("decoder=", method!(RbTokenizer::set_decoder, 1))?;
+    class.define_method("pre_tokenizer", method!(RbTokenizer::get_pre_tokenizer, 0))?;
     class.define_method("pre_tokenizer=", method!(RbTokenizer::set_pre_tokenizer, 1))?;
+    class.define_method("post_processor", method!(RbTokenizer::get_post_processor, 0))?;
     class.define_method(
         "post_processor=",
         method!(RbTokenizer::set_post_processor, 1),
     )?;
+    class.define_method("normalizer", method!(RbTokenizer::get_normalizer, 0))?;
     class.define_method("normalizer=", method!(RbTokenizer::set_normalizer, 1))?;
     class.define_method("token_to_id", method!(RbTokenizer::token_to_id, 1))?;
     class.define_method("id_to_token", method!(RbTokenizer::id_to_token, 1))?;

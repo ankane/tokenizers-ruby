@@ -328,6 +328,14 @@ impl RbTokenizer {
             .map_err(RbError::from)
     }
 
+    pub fn get_model(&self) -> RbModel {
+        self.tokenizer.borrow().get_model().clone()
+    }
+
+    pub fn set_model(&self, model: &RbModel) {
+        self.tokenizer.borrow_mut().with_model(model.clone());
+    }
+
     pub fn get_decoder(&self) -> Option<RbDecoder> {
         self.tokenizer.borrow().get_decoder().cloned()
     }
@@ -336,16 +344,28 @@ impl RbTokenizer {
         self.tokenizer.borrow_mut().with_decoder(decoder.cloned());
     }
 
+    pub fn get_pre_tokenizer(&self) -> Option<RbPreTokenizer> {
+        self.tokenizer.borrow().get_pre_tokenizer().cloned()
+    }
+
     pub fn set_pre_tokenizer(&self, pretok: Option<&RbPreTokenizer>) {
         self.tokenizer
             .borrow_mut()
             .with_pre_tokenizer(pretok.cloned());
     }
 
+    pub fn get_post_processor(&self) -> Option<RbPostProcessor> {
+        self.tokenizer.borrow().get_post_processor().cloned()
+    }
+
     pub fn set_post_processor(&self, processor: Option<&RbPostProcessor>) {
         self.tokenizer
             .borrow_mut()
             .with_post_processor(processor.cloned());
+    }
+
+    pub fn get_normalizer(&self) -> Option<RbNormalizer> {
+        self.tokenizer.borrow().get_normalizer().cloned()
     }
 
     pub fn set_normalizer(&self, normalizer: Option<&RbNormalizer>) {
