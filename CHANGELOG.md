@@ -1,4 +1,4 @@
-## 0.5.2 (unreleased)
+## 0.5.2 (2024-08-26)
 
 - Added `from_str` method to `Tokenizer`
 - Added `model` and `model=` methods to `Tokenizer`
