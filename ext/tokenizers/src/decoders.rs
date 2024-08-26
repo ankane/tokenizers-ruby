@@ -34,6 +34,12 @@ impl Decoder for RbDecoder {
     }
 }
 
+impl RbDecoder {
+    pub fn decode(&self, tokens: Vec<String>) -> RbResult<String> {
+        self.decoder.decode(tokens).map_err(RbError::from)
+    }
+}
+
 macro_rules! getter {
     ($self: ident, $variant: ident, $($name: tt)+) => {{
         let decoder = &$self.decoder;
@@ -358,6 +364,7 @@ unsafe impl TypedData for RbDecoder {
 
 pub fn init_decoders(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     let decoder = module.define_class("Decoder", ruby.class_object())?;
+    decoder.define_method("decode", method!(RbDecoder::decode, 1))?;
 
     let class = module.define_class("BPEDecoder", decoder)?;
     class.define_singleton_method("_new", function!(RbBPEDecoder::new, 1))?;

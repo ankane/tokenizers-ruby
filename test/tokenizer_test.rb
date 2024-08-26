@@ -228,5 +228,6 @@ class TokenizerTest < Minitest::Test
   def test_decoder
     tokenizer = Tokenizers.from_pretrained("bert-base-cased")
     assert_kind_of Tokenizers::Decoders::WordPiece, tokenizer.decoder
+    assert_equal "Ruby", tokenizer.decoder.decode(["Ruby"])
   end
 end
