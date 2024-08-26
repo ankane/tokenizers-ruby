@@ -1,6 +1,7 @@
 ## 0.5.2 (unreleased)
 
 - Added `from_str` method to `Tokenizer`
+- Added `decoder` method to `Tokenizer`
 
 ## 0.5.1 (2024-08-13)
 

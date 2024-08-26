@@ -224,4 +224,9 @@ class TokenizerTest < Minitest::Test
     assert_equal 3, tokenizer.num_special_tokens_to_add(true)
     assert_equal 2, tokenizer.num_special_tokens_to_add(false)
   end
+
+  def test_decoder
+    tokenizer = Tokenizers.from_pretrained("bert-base-cased")
+    assert_kind_of Tokenizers::Decoders::WordPiece, tokenizer.decoder
+  end
 end

@@ -55,6 +55,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("_encode_batch", method!(RbTokenizer::encode_batch, 3))?;
     class.define_method("_decode", method!(RbTokenizer::decode, 2))?;
     class.define_method("_decode_batch", method!(RbTokenizer::decode_batch, 2))?;
+    class.define_method("decoder", method!(RbTokenizer::get_decoder, 0))?;
     class.define_method("decoder=", method!(RbTokenizer::set_decoder, 1))?;
     class.define_method("pre_tokenizer=", method!(RbTokenizer::set_pre_tokenizer, 1))?;
     class.define_method(

@@ -328,6 +328,10 @@ impl RbTokenizer {
             .map_err(RbError::from)
     }
 
+    pub fn get_decoder(&self) -> Option<RbDecoder> {
+        self.tokenizer.borrow().get_decoder().cloned()
+    }
+
     pub fn set_decoder(&self, decoder: Option<&RbDecoder>) {
         self.tokenizer.borrow_mut().with_decoder(decoder.cloned());
     }
