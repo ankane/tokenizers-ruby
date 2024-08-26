@@ -1,9 +1,10 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::path::PathBuf;
+use std::str::FromStr;
 
 use magnus::prelude::*;
-use magnus::{exception, Error, RArray, RHash, Symbol, TryConvert, Value};
+use magnus::{exception, Error, RArray, RHash, RString, Symbol, TryConvert, Value};
 use tk::tokenizer::{
     Model, PaddingDirection, PaddingParams, PaddingStrategy,
     TruncationDirection, TruncationParams, TruncationStrategy, TokenizerImpl
@@ -201,6 +202,14 @@ impl RbTokenizer {
 
     pub fn from_model(model: &RbModel) -> Self {
         RbTokenizer::new(TokenizerImpl::new(model.clone()))
+    }
+
+    pub fn from_str(json: RString) -> RbResult<Self> {
+        Tokenizer::from_str(unsafe { json.as_str()? })
+            .map(|v| RbTokenizer {
+                tokenizer: RefCell::new(v),
+            })
+            .map_err(RbError::from)
     }
 
     pub fn from_file(path: PathBuf) -> RbResult<Self> {

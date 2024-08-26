@@ -42,6 +42,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
 
     let class = module.define_class("Tokenizer", ruby.class_object())?;
     class.define_singleton_method("new", function!(RbTokenizer::from_model, 1))?;
+    class.define_singleton_method("from_str", function!(RbTokenizer::from_str, 1))?;
     class.define_singleton_method("from_file", function!(RbTokenizer::from_file, 1))?;
     class.define_method(
         "add_special_tokens",
