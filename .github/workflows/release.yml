@@ -24,8 +24,6 @@ jobs:
             target: aarch64-apple-darwin
           - platform: x64-mingw-ucrt
             target: x86_64-pc-windows-gnu
-          # - platform: x64-mingw32
-          #   target: x86_64-pc-windows-gnu
     runs-on: ubuntu-latest
     name: ${{ matrix.platform }}
     steps:
