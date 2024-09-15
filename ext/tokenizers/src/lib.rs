@@ -15,7 +15,7 @@ mod utils;
 
 use encoding::RbEncoding;
 use error::RbError;
-use tokenizer::RbTokenizer;
+use tokenizer::{RbAddedToken, RbTokenizer};
 use utils::RbRegex;
 
 use magnus::{function, method, prelude::*, value::Lazy, Error, RModule, Ruby};
@@ -108,6 +108,10 @@ fn init(ruby: &Ruby) -> RbResult<()> {
 
     let class = module.define_class("Regex", ruby.class_object())?;
     class.define_singleton_method("new", function!(RbRegex::new, 1))?;
+
+    let class = module.define_class("AddedToken", ruby.class_object())?;
+    class.define_singleton_method("_new", function!(RbAddedToken::new, 2))?;
+    class.define_method("content", method!(RbAddedToken::get_content, 0))?;
 
     let models = module.define_module("Models")?;
     let pre_tokenizers = module.define_module("PreTokenizers")?;

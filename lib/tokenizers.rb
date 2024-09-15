@@ -42,6 +42,7 @@ require_relative "tokenizers/trainers/word_level_trainer"
 require_relative "tokenizers/trainers/word_piece_trainer"
 
 # other
+require_relative "tokenizers/added_token"
 require_relative "tokenizers/char_bpe_tokenizer"
 require_relative "tokenizers/encoding"
 require_relative "tokenizers/from_pretrained"

@@ -22,9 +22,10 @@ use super::processors::RbPostProcessor;
 use super::trainers::RbTrainer;
 use super::{RbError, RbResult};
 
+#[magnus::wrap(class = "Tokenizers::AddedToken")]
 pub struct RbAddedToken {
     pub content: String,
-    pub is_special_token: bool,
+    pub special: bool,
     pub single_word: Option<bool>,
     pub lstrip: Option<bool>,
     pub rstrip: Option<bool>,
@@ -32,10 +33,10 @@ pub struct RbAddedToken {
 }
 
 impl RbAddedToken {
-    pub fn from<S: Into<String>>(content: S, is_special_token: Option<bool>) -> Self {
+    pub fn from<S: Into<String>>(content: S, special: Option<bool>) -> Self {
         Self {
             content: content.into(),
-            is_special_token: is_special_token.unwrap_or(false),
+            special: special.unwrap_or(false),
             single_word: None,
             lstrip: None,
             rstrip: None,
@@ -44,7 +45,7 @@ impl RbAddedToken {
     }
 
     pub fn get_token(&self) -> tk::tokenizer::AddedToken {
-        let mut token = tk::AddedToken::from(&self.content, self.is_special_token);
+        let mut token = tk::AddedToken::from(&self.content, self.special);
 
         if let Some(sw) = self.single_word {
             token = token.single_word(sw);
@@ -71,8 +72,50 @@ impl From<tk::AddedToken> for RbAddedToken {
             lstrip: Some(token.lstrip),
             rstrip: Some(token.rstrip),
             normalized: Some(token.normalized),
-            is_special_token: !token.normalized,
+            special: !token.normalized,
         }
+    }
+}
+
+impl RbAddedToken {
+    pub fn new(content: Option<String>, kwargs: RHash) -> RbResult<Self> {
+        let mut token = RbAddedToken::from(content.unwrap_or("".to_string()), None);
+
+        let value: Value = kwargs.delete(Symbol::new("single_word"))?;
+        if !value.is_nil() {
+            token.single_word = TryConvert::try_convert(value)?;
+        }
+
+        let value: Value = kwargs.delete(Symbol::new("lstrip"))?;
+        if !value.is_nil() {
+            token.lstrip = TryConvert::try_convert(value)?;
+        }
+
+        let value: Value = kwargs.delete(Symbol::new("rstrip"))?;
+        if !value.is_nil() {
+            token.rstrip = TryConvert::try_convert(value)?;
+        }
+
+        let value: Value = kwargs.delete(Symbol::new("normalized"))?;
+        if !value.is_nil() {
+            token.normalized = TryConvert::try_convert(value)?;
+        }
+
+        let value: Value = kwargs.delete(Symbol::new("special"))?;
+        if !value.is_nil() {
+            token.special = TryConvert::try_convert(value)?;
+        }
+
+        if !kwargs.is_empty() {
+            // TODO improve message
+            return Err(Error::new(exception::arg_error(), "unknown keyword"));
+        }
+
+        Ok(token)
+    }
+
+    pub fn get_content(&self) -> String {
+        self.content.to_string()
     }
 }
 

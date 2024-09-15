@@ -1,5 +1,6 @@
 ## 0.5.3 (unreleased)
 
+- Added `AddedToken` class
 - Added precompiled gem for Windows
 
 ## 0.5.2 (2024-08-26)
