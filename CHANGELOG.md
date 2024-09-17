@@ -1,4 +1,4 @@
-## 0.5.3 (unreleased)
+## 0.5.3 (2024-09-17)
 
 - Added `AddedToken` class
 - Added precompiled gem for Windows
