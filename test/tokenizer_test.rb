@@ -225,6 +225,12 @@ class TokenizerTest < Minitest::Test
     assert_equal 2, tokenizer.num_special_tokens_to_add(false)
   end
 
+  def test_added_tokens_decoder
+    tokenizer = Tokenizers.from_pretrained("bert-base-cased")
+    assert_equal 5, tokenizer.added_tokens_decoder.size
+    assert_equal "[UNK]", tokenizer.added_tokens_decoder[100].content
+  end
+
   def test_getters
     tokenizer = Tokenizers.from_pretrained("bert-base-cased")
 

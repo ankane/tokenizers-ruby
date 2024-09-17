@@ -79,6 +79,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("num_special_tokens_to_add", method!(RbTokenizer::num_special_tokens_to_add, 1))?;
     class.define_method("_vocab", method!(RbTokenizer::vocab, 1))?;
     class.define_method("_vocab_size", method!(RbTokenizer::vocab_size, 1))?;
+    class.define_method("added_tokens_decoder", method!(RbTokenizer::get_added_tokens_decoder, 0))?;
     class.define_method("_to_s", method!(RbTokenizer::to_str, 1))?;
 
     let class = module.define_class("Encoding", ruby.class_object())?;
@@ -112,6 +113,11 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     let class = module.define_class("AddedToken", ruby.class_object())?;
     class.define_singleton_method("_new", function!(RbAddedToken::new, 2))?;
     class.define_method("content", method!(RbAddedToken::get_content, 0))?;
+    class.define_method("rstrip", method!(RbAddedToken::get_rstrip, 0))?;
+    class.define_method("lstrip", method!(RbAddedToken::get_lstrip, 0))?;
+    class.define_method("single_word", method!(RbAddedToken::get_single_word, 0))?;
+    class.define_method("normalized", method!(RbAddedToken::get_normalized, 0))?;
+    class.define_method("special", method!(RbAddedToken::get_special, 0))?;
 
     let models = module.define_module("Models")?;
     let pre_tokenizers = module.define_module("PreTokenizers")?;

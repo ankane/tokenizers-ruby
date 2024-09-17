@@ -117,6 +117,26 @@ impl RbAddedToken {
     pub fn get_content(&self) -> String {
         self.content.to_string()
     }
+
+    pub fn get_rstrip(&self) -> bool {
+        self.get_token().rstrip
+    }
+
+    pub fn get_lstrip(&self) -> bool {
+        self.get_token().lstrip
+    }
+
+    pub fn get_single_word(&self) -> bool {
+        self.get_token().single_word
+    }
+
+    pub fn get_normalized(&self) -> bool {
+        self.get_token().normalized
+    }
+
+    pub fn get_special(&self) -> bool {
+        self.get_token().special
+    }
 }
 
 struct TextInputSequence<'s>(tk::InputSequence<'s>);
@@ -578,5 +598,15 @@ impl RbTokenizer {
 
     pub fn vocab_size(&self, with_added_tokens: bool) -> usize {
         self.tokenizer.borrow().get_vocab_size(with_added_tokens)
+    }
+
+    pub fn get_added_tokens_decoder(&self) -> RbResult<RHash> {
+        let sorted_map = RHash::new();
+
+        for (key, value) in self.tokenizer.borrow().get_added_tokens_decoder() {
+            sorted_map.aset::<u32, RbAddedToken>(key, value.into())?;
+        }
+
+        Ok(sorted_map)
     }
 }
