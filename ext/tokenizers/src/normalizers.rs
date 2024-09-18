@@ -8,7 +8,7 @@ use serde::ser::SerializeStruct;
 use serde::{Deserialize, Serialize, Serializer};
 use tk::normalizers::{
     BertNormalizer, Lowercase, Nmt, NormalizerWrapper, Replace, Prepend, Strip, StripAccents,
-    NFC, NFD, NFKC, NFKD,
+    NFC, NFD, NFKC, NFKD, Precompiled
 };
 use tk::{NormalizedString, Normalizer};
 
@@ -182,6 +182,21 @@ pub struct RbNmt {}
 impl RbNmt {
     pub fn new() -> RbNormalizer {
         Nmt.into()
+    }
+}
+
+pub struct RbPrecompiled {}
+
+impl RbPrecompiled {
+    pub fn new(precompiled_charsmap: Vec<u8>) -> RbResult<RbNormalizer> {
+        Precompiled::from(&precompiled_charsmap)
+            .map_err(|e| {
+                RbError::new_err(format!(
+                    "Error while attempting to build Precompiled normalizer: {}",
+                    e
+                ))
+            })
+            .map(|v| v.into())
     }
 }
 
@@ -381,6 +396,11 @@ unsafe impl TypedData for RbNormalizer {
             class.undef_default_alloc_func();
             class
         });
+        static PRECOMPILED: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&NORMALIZERS).const_get("Precompiled").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
         static REPLACE: Lazy<RClass> = Lazy::new(|ruby| {
             let class: RClass = ruby.get_inner(&NORMALIZERS).const_get("Replace").unwrap();
             class.undef_default_alloc_func();
@@ -412,6 +432,7 @@ unsafe impl TypedData for RbNormalizer {
                     NormalizerWrapper::NFKC(_) => ruby.get_inner(&NFKC),
                     NormalizerWrapper::NFKD(_) => ruby.get_inner(&NFKD),
                     NormalizerWrapper::Nmt(_) => ruby.get_inner(&NMT),
+                    NormalizerWrapper::Precompiled(_) => ruby.get_inner(&PRECOMPILED),
                     NormalizerWrapper::Replace(_) => ruby.get_inner(&REPLACE),
                     NormalizerWrapper::Prepend(_) => ruby.get_inner(&PREPEND),
                     NormalizerWrapper::StripNormalizer(_) => ruby.get_inner(&STRIP),
@@ -458,6 +479,9 @@ pub fn init_normalizers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
 
     let class = module.define_class("Nmt", normalizer)?;
     class.define_singleton_method("new", function!(RbNmt::new, 0))?;
+
+    let class = module.define_class("Precompiled", normalizer)?;
+    class.define_singleton_method("new", function!(RbPrecompiled::new, 1))?;
 
     let class = module.define_class("Replace", normalizer)?;
     class.define_singleton_method("new", function!(RbReplace::new, 2))?;
