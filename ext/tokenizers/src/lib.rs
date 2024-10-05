@@ -80,7 +80,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("_vocab", method!(RbTokenizer::vocab, 1))?;
     class.define_method("_vocab_size", method!(RbTokenizer::vocab_size, 1))?;
     class.define_method("added_tokens_decoder", method!(RbTokenizer::get_added_tokens_decoder, 0))?;
-    class.define_method("_to_s", method!(RbTokenizer::to_str, 1))?;
+    class.define_method("to_s", method!(RbTokenizer::to_str, -1))?;
 
     let class = module.define_class("Encoding", ruby.class_object())?;
     class.define_method("n_sequences", method!(RbEncoding::n_sequences, 0))?;

@@ -5,6 +5,7 @@ use std::str::FromStr;
 
 use magnus::prelude::*;
 use magnus::{exception, Error, RArray, RHash, RString, Symbol, TryConvert, Value};
+use magnus::scan_args::{get_kwargs, scan_args};
 use tk::tokenizer::{
     Model, PaddingDirection, PaddingParams, PaddingStrategy,
     TruncationDirection, TruncationParams, TruncationStrategy, TokenizerImpl
@@ -283,7 +284,12 @@ impl RbTokenizer {
             .map_err(RbError::from)
     }
 
-    pub fn to_str(&self, pretty: bool) -> RbResult<String> {
+    pub fn to_str(&self, args: &[Value]) -> RbResult<String> {
+        let args = scan_args::<(), (), (), (), RHash, ()>(args)?;
+        let kw = get_kwargs::<_, (), (Option<bool>,), ()>(args.keywords, &[], &["pretty"])?;
+        let (pretty,) = kw.optional;
+        let pretty = pretty.unwrap_or_else(|| false);
+
         self.tokenizer.borrow().to_string(pretty).map_err(RbError::from)
     }
 

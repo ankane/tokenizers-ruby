@@ -2,10 +2,6 @@ module Tokenizers
   class Tokenizer
     extend FromPretrained
 
-    def to_s(pretty: false)
-      _to_s(pretty)
-    end
-
     def save(path, pretty: false)
       _save(path, pretty)
     end
