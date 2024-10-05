@@ -5,8 +5,9 @@ use crate::models::RbModel;
 use crate::tokenizer::RbAddedToken;
 use magnus::prelude::*;
 use magnus::{
-    data_type_builder, exception, function, method, value::Lazy, Class, DataType, DataTypeFunctions, Error, Module, Object,
-    RArray, RClass, RHash, RModule, Ruby, Symbol, TryConvert, TypedData, Value,
+    data_type_builder, exception, function, method, value::Lazy, Class, DataType,
+    DataTypeFunctions, Error, Module, Object, RArray, RClass, RHash, RModule, Ruby, Symbol,
+    TryConvert, TypedData, Value,
 };
 use serde::{Deserialize, Serialize};
 use tk::models::TrainerWrapper;
@@ -68,7 +69,6 @@ macro_rules! setter {
 }
 
 impl RbTrainer {
-
     fn bpe_trainer_vocab_size(&self) -> usize {
         getter!(self, BpeTrainer, vocab_size)
     }
@@ -525,7 +525,9 @@ impl RbUnigramTrainer {
             return Err(Error::new(exception::arg_error(), "unknown keyword"));
         }
 
-        let trainer = builder.build().map_err(|_| { Error::new(exception::arg_error(), "Cannot build UnigramTrainer") })?;
+        let trainer = builder
+            .build()
+            .map_err(|_| Error::new(exception::arg_error(), "Cannot build UnigramTrainer"))?;
         Ok(trainer.into())
     }
 }
@@ -567,7 +569,10 @@ impl RbWordLevelTrainer {
             builder.show_progress(TryConvert::try_convert(value)?);
         }
 
-        Ok(builder.build().expect("WordLevelTrainerBuilder cannot fail").into())
+        Ok(builder
+            .build()
+            .expect("WordLevelTrainerBuilder cannot fail")
+            .into())
     }
 }
 
@@ -650,7 +655,8 @@ unsafe impl TypedData for RbTrainer {
     }
 
     fn data_type() -> &'static DataType {
-        static DATA_TYPE: DataType = data_type_builder!(RbTrainer, "Tokenizers::Trainers::Trainer").build();
+        static DATA_TYPE: DataType =
+            data_type_builder!(RbTrainer, "Tokenizers::Trainers::Trainer").build();
         &DATA_TYPE
     }
 
@@ -661,17 +667,26 @@ unsafe impl TypedData for RbTrainer {
             class
         });
         static UNIGRAM_TRAINER: Lazy<RClass> = Lazy::new(|ruby| {
-            let class: RClass = ruby.get_inner(&TRAINERS).const_get("UnigramTrainer").unwrap();
+            let class: RClass = ruby
+                .get_inner(&TRAINERS)
+                .const_get("UnigramTrainer")
+                .unwrap();
             class.undef_default_alloc_func();
             class
         });
         static WORD_LEVEL_TRAINER: Lazy<RClass> = Lazy::new(|ruby| {
-            let class: RClass = ruby.get_inner(&TRAINERS).const_get("WordLevelTrainer").unwrap();
+            let class: RClass = ruby
+                .get_inner(&TRAINERS)
+                .const_get("WordLevelTrainer")
+                .unwrap();
             class.undef_default_alloc_func();
             class
         });
         static WORD_PIECE_TRAINER: Lazy<RClass> = Lazy::new(|ruby| {
-            let class: RClass = ruby.get_inner(&TRAINERS).const_get("WordPieceTrainer").unwrap();
+            let class: RClass = ruby
+                .get_inner(&TRAINERS)
+                .const_get("WordPieceTrainer")
+                .unwrap();
             class.undef_default_alloc_func();
             class
         });
@@ -690,62 +705,206 @@ pub fn init_trainers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     let class = module.define_class("BpeTrainer", trainer)?;
     class.define_singleton_method("_new", function!(RbBpeTrainer::new, 1))?;
     class.define_method("vocab_size", method!(RbTrainer::bpe_trainer_vocab_size, 0))?;
-    class.define_method("vocab_size=", method!(RbTrainer::bpe_trainer_set_vocab_size, 1))?;
-    class.define_method("min_frequency", method!(RbTrainer::bpe_trainer_min_frequency, 0))?;
-    class.define_method("min_frequency=", method!(RbTrainer::bpe_trainer_set_min_frequency, 1))?;
-    class.define_method("show_progress", method!(RbTrainer::bpe_trainer_show_progress, 0))?;
-    class.define_method("show_progress=", method!(RbTrainer::bpe_trainer_set_show_progress, 1))?;
-    class.define_method("special_tokens", method!(RbTrainer::bpe_trainer_special_tokens, 0))?;
-    class.define_method("special_tokens=", method!(RbTrainer::bpe_trainer_set_special_tokens, 1))?;
-    class.define_method("limit_alphabet", method!(RbTrainer::bpe_trainer_limit_alphabet, 0))?;
-    class.define_method("limit_alphabet=", method!(RbTrainer::bpe_trainer_set_limit_alphabet, 1))?;
-    class.define_method("initial_alphabet", method!(RbTrainer::bpe_trainer_initial_alphabet, 0))?;
-    class.define_method("initial_alphabet=", method!(RbTrainer::bpe_trainer_set_initial_alphabet, 1))?;
-    class.define_method("continuing_subword_prefix", method!(RbTrainer::bpe_trainer_continuing_subword_prefix, 0))?;
-    class.define_method("continuing_subword_prefix=", method!(RbTrainer::bpe_trainer_set_continuing_subword_prefix, 1))?;
-    class.define_method("end_of_word_suffix", method!(RbTrainer::bpe_trainer_end_of_word_suffix, 0))?;
-    class.define_method("end_of_word_suffix=", method!(RbTrainer::bpe_trainer_set_end_of_word_suffix, 1))?;
+    class.define_method(
+        "vocab_size=",
+        method!(RbTrainer::bpe_trainer_set_vocab_size, 1),
+    )?;
+    class.define_method(
+        "min_frequency",
+        method!(RbTrainer::bpe_trainer_min_frequency, 0),
+    )?;
+    class.define_method(
+        "min_frequency=",
+        method!(RbTrainer::bpe_trainer_set_min_frequency, 1),
+    )?;
+    class.define_method(
+        "show_progress",
+        method!(RbTrainer::bpe_trainer_show_progress, 0),
+    )?;
+    class.define_method(
+        "show_progress=",
+        method!(RbTrainer::bpe_trainer_set_show_progress, 1),
+    )?;
+    class.define_method(
+        "special_tokens",
+        method!(RbTrainer::bpe_trainer_special_tokens, 0),
+    )?;
+    class.define_method(
+        "special_tokens=",
+        method!(RbTrainer::bpe_trainer_set_special_tokens, 1),
+    )?;
+    class.define_method(
+        "limit_alphabet",
+        method!(RbTrainer::bpe_trainer_limit_alphabet, 0),
+    )?;
+    class.define_method(
+        "limit_alphabet=",
+        method!(RbTrainer::bpe_trainer_set_limit_alphabet, 1),
+    )?;
+    class.define_method(
+        "initial_alphabet",
+        method!(RbTrainer::bpe_trainer_initial_alphabet, 0),
+    )?;
+    class.define_method(
+        "initial_alphabet=",
+        method!(RbTrainer::bpe_trainer_set_initial_alphabet, 1),
+    )?;
+    class.define_method(
+        "continuing_subword_prefix",
+        method!(RbTrainer::bpe_trainer_continuing_subword_prefix, 0),
+    )?;
+    class.define_method(
+        "continuing_subword_prefix=",
+        method!(RbTrainer::bpe_trainer_set_continuing_subword_prefix, 1),
+    )?;
+    class.define_method(
+        "end_of_word_suffix",
+        method!(RbTrainer::bpe_trainer_end_of_word_suffix, 0),
+    )?;
+    class.define_method(
+        "end_of_word_suffix=",
+        method!(RbTrainer::bpe_trainer_set_end_of_word_suffix, 1),
+    )?;
 
     let class = module.define_class("UnigramTrainer", trainer)?;
     class.define_singleton_method("_new", function!(RbUnigramTrainer::new, 1))?;
-    class.define_method("vocab_size", method!(RbTrainer::unigram_trainer_vocab_size, 0))?;
-    class.define_method("vocab_size=", method!(RbTrainer::unigram_trainer_set_vocab_size, 1))?;
-    class.define_method("show_progress", method!(RbTrainer::unigram_trainer_show_progress, 0))?;
-    class.define_method("show_progress=", method!(RbTrainer::unigram_trainer_set_show_progress, 1))?;
-    class.define_method("special_tokens", method!(RbTrainer::unigram_trainer_special_tokens, 0))?;
-    class.define_method("special_tokens=", method!(RbTrainer::unigram_trainer_set_special_tokens, 1))?;
-    class.define_method("initial_alphabet", method!(RbTrainer::unigram_trainer_initial_alphabet, 0))?;
-    class.define_method("initial_alphabet=", method!(RbTrainer::unigram_trainer_set_initial_alphabet, 1))?;
+    class.define_method(
+        "vocab_size",
+        method!(RbTrainer::unigram_trainer_vocab_size, 0),
+    )?;
+    class.define_method(
+        "vocab_size=",
+        method!(RbTrainer::unigram_trainer_set_vocab_size, 1),
+    )?;
+    class.define_method(
+        "show_progress",
+        method!(RbTrainer::unigram_trainer_show_progress, 0),
+    )?;
+    class.define_method(
+        "show_progress=",
+        method!(RbTrainer::unigram_trainer_set_show_progress, 1),
+    )?;
+    class.define_method(
+        "special_tokens",
+        method!(RbTrainer::unigram_trainer_special_tokens, 0),
+    )?;
+    class.define_method(
+        "special_tokens=",
+        method!(RbTrainer::unigram_trainer_set_special_tokens, 1),
+    )?;
+    class.define_method(
+        "initial_alphabet",
+        method!(RbTrainer::unigram_trainer_initial_alphabet, 0),
+    )?;
+    class.define_method(
+        "initial_alphabet=",
+        method!(RbTrainer::unigram_trainer_set_initial_alphabet, 1),
+    )?;
 
     let class = module.define_class("WordLevelTrainer", trainer)?;
     class.define_singleton_method("_new", function!(RbWordLevelTrainer::new, 1))?;
-    class.define_method("vocab_size", method!(RbTrainer::word_level_trainer_vocab_size, 0))?;
-    class.define_method("vocab_size=", method!(RbTrainer::word_level_trainer_set_vocab_size, 1))?;
-    class.define_method("min_frequency", method!(RbTrainer::word_level_trainer_min_frequency, 0))?;
-    class.define_method("min_frequency=", method!(RbTrainer::word_level_trainer_set_min_frequency, 1))?;
-    class.define_method("show_progress", method!(RbTrainer::word_level_trainer_show_progress, 0))?;
-    class.define_method("show_progress=", method!(RbTrainer::word_level_trainer_set_show_progress, 1))?;
-    class.define_method("special_tokens", method!(RbTrainer::word_level_trainer_special_tokens, 0))?;
-    class.define_method("special_tokens=", method!(RbTrainer::word_level_trainer_set_special_tokens, 1))?;
+    class.define_method(
+        "vocab_size",
+        method!(RbTrainer::word_level_trainer_vocab_size, 0),
+    )?;
+    class.define_method(
+        "vocab_size=",
+        method!(RbTrainer::word_level_trainer_set_vocab_size, 1),
+    )?;
+    class.define_method(
+        "min_frequency",
+        method!(RbTrainer::word_level_trainer_min_frequency, 0),
+    )?;
+    class.define_method(
+        "min_frequency=",
+        method!(RbTrainer::word_level_trainer_set_min_frequency, 1),
+    )?;
+    class.define_method(
+        "show_progress",
+        method!(RbTrainer::word_level_trainer_show_progress, 0),
+    )?;
+    class.define_method(
+        "show_progress=",
+        method!(RbTrainer::word_level_trainer_set_show_progress, 1),
+    )?;
+    class.define_method(
+        "special_tokens",
+        method!(RbTrainer::word_level_trainer_special_tokens, 0),
+    )?;
+    class.define_method(
+        "special_tokens=",
+        method!(RbTrainer::word_level_trainer_set_special_tokens, 1),
+    )?;
 
     let class = module.define_class("WordPieceTrainer", trainer)?;
     class.define_singleton_method("_new", function!(RbWordPieceTrainer::new, 1))?;
-    class.define_method("vocab_size", method!(RbTrainer::word_piece_trainer_vocab_size, 0))?;
-    class.define_method("vocab_size=", method!(RbTrainer::word_piece_trainer_set_vocab_size, 1))?;
-    class.define_method("min_frequency", method!(RbTrainer::word_piece_trainer_min_frequency, 0))?;
-    class.define_method("min_frequency=", method!(RbTrainer::word_piece_trainer_set_min_frequency, 1))?;
-    class.define_method("show_progress", method!(RbTrainer::word_piece_trainer_show_progress, 0))?;
-    class.define_method("show_progress=", method!(RbTrainer::word_piece_trainer_set_show_progress, 1))?;
-    class.define_method("special_tokens", method!(RbTrainer::word_piece_trainer_special_tokens, 0))?;
-    class.define_method("special_tokens=", method!(RbTrainer::word_piece_trainer_set_special_tokens, 1))?;
-    class.define_method("limit_alphabet", method!(RbTrainer::word_piece_trainer_limit_alphabet, 0))?;
-    class.define_method("limit_alphabet=", method!(RbTrainer::word_piece_trainer_set_limit_alphabet, 1))?;
-    class.define_method("initial_alphabet", method!(RbTrainer::word_piece_trainer_initial_alphabet, 0))?;
-    class.define_method("initial_alphabet=", method!(RbTrainer::word_piece_trainer_set_initial_alphabet, 1))?;
-    class.define_method("continuing_subword_prefix", method!(RbTrainer::word_piece_trainer_continuing_subword_prefix, 0))?;
-    class.define_method("continuing_subword_prefix=", method!(RbTrainer::word_piece_trainer_set_continuing_subword_prefix, 1))?;
-    class.define_method("end_of_word_suffix", method!(RbTrainer::word_piece_trainer_end_of_word_suffix, 0))?;
-    class.define_method("end_of_word_suffix=", method!(RbTrainer::word_piece_trainer_set_end_of_word_suffix, 1))?;
+    class.define_method(
+        "vocab_size",
+        method!(RbTrainer::word_piece_trainer_vocab_size, 0),
+    )?;
+    class.define_method(
+        "vocab_size=",
+        method!(RbTrainer::word_piece_trainer_set_vocab_size, 1),
+    )?;
+    class.define_method(
+        "min_frequency",
+        method!(RbTrainer::word_piece_trainer_min_frequency, 0),
+    )?;
+    class.define_method(
+        "min_frequency=",
+        method!(RbTrainer::word_piece_trainer_set_min_frequency, 1),
+    )?;
+    class.define_method(
+        "show_progress",
+        method!(RbTrainer::word_piece_trainer_show_progress, 0),
+    )?;
+    class.define_method(
+        "show_progress=",
+        method!(RbTrainer::word_piece_trainer_set_show_progress, 1),
+    )?;
+    class.define_method(
+        "special_tokens",
+        method!(RbTrainer::word_piece_trainer_special_tokens, 0),
+    )?;
+    class.define_method(
+        "special_tokens=",
+        method!(RbTrainer::word_piece_trainer_set_special_tokens, 1),
+    )?;
+    class.define_method(
+        "limit_alphabet",
+        method!(RbTrainer::word_piece_trainer_limit_alphabet, 0),
+    )?;
+    class.define_method(
+        "limit_alphabet=",
+        method!(RbTrainer::word_piece_trainer_set_limit_alphabet, 1),
+    )?;
+    class.define_method(
+        "initial_alphabet",
+        method!(RbTrainer::word_piece_trainer_initial_alphabet, 0),
+    )?;
+    class.define_method(
+        "initial_alphabet=",
+        method!(RbTrainer::word_piece_trainer_set_initial_alphabet, 1),
+    )?;
+    class.define_method(
+        "continuing_subword_prefix",
+        method!(RbTrainer::word_piece_trainer_continuing_subword_prefix, 0),
+    )?;
+    class.define_method(
+        "continuing_subword_prefix=",
+        method!(
+            RbTrainer::word_piece_trainer_set_continuing_subword_prefix,
+            1
+        ),
+    )?;
+    class.define_method(
+        "end_of_word_suffix",
+        method!(RbTrainer::word_piece_trainer_end_of_word_suffix, 0),
+    )?;
+    class.define_method(
+        "end_of_word_suffix=",
+        method!(RbTrainer::word_piece_trainer_set_end_of_word_suffix, 1),
+    )?;
 
     Ok(())
 }

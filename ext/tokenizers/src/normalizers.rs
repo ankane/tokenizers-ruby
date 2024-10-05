@@ -1,19 +1,19 @@
 use std::sync::{Arc, RwLock};
 
 use magnus::{
-    data_type_builder, function, method, value::Lazy, Class, DataType, DataTypeFunctions, Module, Object, RArray, RClass, RModule,
-    Ruby, TryConvert, TypedData,
+    data_type_builder, function, method, value::Lazy, Class, DataType, DataTypeFunctions, Module,
+    Object, RArray, RClass, RModule, Ruby, TryConvert, TypedData,
 };
 use serde::ser::SerializeStruct;
 use serde::{Deserialize, Serialize, Serializer};
 use tk::normalizers::{
-    BertNormalizer, Lowercase, Nmt, NormalizerWrapper, Replace, Prepend, Strip, StripAccents,
-    NFC, NFD, NFKC, NFKD, Precompiled
+    BertNormalizer, Lowercase, Nmt, NormalizerWrapper, Precompiled, Prepend, Replace, Strip,
+    StripAccents, NFC, NFD, NFKC, NFKD,
 };
 use tk::{NormalizedString, Normalizer};
 
 use super::utils::*;
-use super::{NORMALIZERS, RbError, RbResult};
+use super::{RbError, RbResult, NORMALIZERS};
 
 #[derive(DataTypeFunctions, Clone, Serialize, Deserialize)]
 pub struct RbNormalizer {
@@ -28,7 +28,9 @@ impl RbNormalizer {
 
     pub fn normalize_str(&self, sequence: String) -> RbResult<String> {
         let mut normalized = NormalizedString::from(sequence);
-        self.normalizer.normalize(&mut normalized).map_err(RbError::from)?;
+        self.normalizer
+            .normalize(&mut normalized)
+            .map_err(RbError::from)?;
         Ok(normalized.get().to_owned())
     }
 }
@@ -43,7 +45,8 @@ macro_rules! getter {
     ($self: ident, $variant: ident, $name: ident) => {{
         if let RbNormalizerTypeWrapper::Single(ref norm) = &$self.normalizer {
             let wrapper = norm.read().unwrap();
-            if let RbNormalizerWrapper::Wrapped(NormalizerWrapper::$variant(o)) = (*wrapper).clone() {
+            if let RbNormalizerWrapper::Wrapped(NormalizerWrapper::$variant(o)) = (*wrapper).clone()
+            {
                 o.$name
             } else {
                 unreachable!()
@@ -66,7 +69,6 @@ macro_rules! setter {
 }
 
 impl RbNormalizer {
-
     fn bert_clean_text(&self) -> bool {
         getter!(self, BertNormalizer, clean_text)
     }
@@ -132,7 +134,12 @@ impl RbNormalizer {
 pub struct RbBertNormalizer {}
 
 impl RbBertNormalizer {
-    pub fn new(clean_text: bool, handle_chinese_chars: bool, strip_accents: Option<bool>, lowercase: bool) -> RbNormalizer {
+    pub fn new(
+        clean_text: bool,
+        handle_chinese_chars: bool,
+        strip_accents: Option<bool>,
+        lowercase: bool,
+    ) -> RbNormalizer {
         BertNormalizer::new(clean_text, handle_chinese_chars, strip_accents, lowercase).into()
     }
 }
@@ -204,7 +211,9 @@ pub struct RbReplace {}
 
 impl RbReplace {
     pub fn new(pattern: RbPattern, content: String) -> RbResult<RbNormalizer> {
-        Replace::new(pattern, content).map(|v| v.into()).map_err(RbError::from)
+        Replace::new(pattern, content)
+            .map(|v| v.into())
+            .map_err(RbError::from)
     }
 }
 
@@ -244,7 +253,9 @@ impl RbSequence {
                 RbNormalizerTypeWrapper::Single(inner) => sequence.push(inner.clone()),
             }
         }
-        Ok(RbNormalizer::new(RbNormalizerTypeWrapper::Sequence(sequence)))
+        Ok(RbNormalizer::new(RbNormalizerTypeWrapper::Sequence(
+            sequence,
+        )))
     }
 }
 
@@ -343,7 +354,10 @@ impl Normalizer for RbNormalizerWrapper {
 unsafe impl TypedData for RbNormalizer {
     fn class(ruby: &Ruby) -> RClass {
         static CLASS: Lazy<RClass> = Lazy::new(|ruby| {
-            let class: RClass = ruby.get_inner(&NORMALIZERS).const_get("Normalizer").unwrap();
+            let class: RClass = ruby
+                .get_inner(&NORMALIZERS)
+                .const_get("Normalizer")
+                .unwrap();
             class.undef_default_alloc_func();
             class
         });
@@ -351,7 +365,8 @@ unsafe impl TypedData for RbNormalizer {
     }
 
     fn data_type() -> &'static DataType {
-        static DATA_TYPE: DataType = data_type_builder!(RbNormalizer, "Tokenizers::Normalizers::Normalizer").build();
+        static DATA_TYPE: DataType =
+            data_type_builder!(RbNormalizer, "Tokenizers::Normalizers::Normalizer").build();
         &DATA_TYPE
     }
 
@@ -362,7 +377,10 @@ unsafe impl TypedData for RbNormalizer {
             class
         });
         static BERT_NORMALIZER: Lazy<RClass> = Lazy::new(|ruby| {
-            let class: RClass = ruby.get_inner(&NORMALIZERS).const_get("BertNormalizer").unwrap();
+            let class: RClass = ruby
+                .get_inner(&NORMALIZERS)
+                .const_get("BertNormalizer")
+                .unwrap();
             class.undef_default_alloc_func();
             class
         });
@@ -397,7 +415,10 @@ unsafe impl TypedData for RbNormalizer {
             class
         });
         static PRECOMPILED: Lazy<RClass> = Lazy::new(|ruby| {
-            let class: RClass = ruby.get_inner(&NORMALIZERS).const_get("Precompiled").unwrap();
+            let class: RClass = ruby
+                .get_inner(&NORMALIZERS)
+                .const_get("Precompiled")
+                .unwrap();
             class.undef_default_alloc_func();
             class
         });
@@ -417,7 +438,10 @@ unsafe impl TypedData for RbNormalizer {
             class
         });
         static STRIP_ACCENTS: Lazy<RClass> = Lazy::new(|ruby| {
-            let class: RClass = ruby.get_inner(&NORMALIZERS).const_get("StripAccents").unwrap();
+            let class: RClass = ruby
+                .get_inner(&NORMALIZERS)
+                .const_get("StripAccents")
+                .unwrap();
             class.undef_default_alloc_func();
             class
         });
@@ -455,10 +479,22 @@ pub fn init_normalizers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     class.define_singleton_method("_new", function!(RbBertNormalizer::new, 4))?;
     class.define_method("clean_text", method!(RbNormalizer::bert_clean_text, 0))?;
     class.define_method("clean_text=", method!(RbNormalizer::bert_set_clean_text, 1))?;
-    class.define_method("handle_chinese_chars", method!(RbNormalizer::bert_handle_chinese_chars, 0))?;
-    class.define_method("handle_chinese_chars=", method!(RbNormalizer::bert_set_handle_chinese_chars, 1))?;
-    class.define_method("strip_accents", method!(RbNormalizer::bert_strip_accents, 0))?;
-    class.define_method("strip_accents=", method!(RbNormalizer::bert_set_strip_accents, 1))?;
+    class.define_method(
+        "handle_chinese_chars",
+        method!(RbNormalizer::bert_handle_chinese_chars, 0),
+    )?;
+    class.define_method(
+        "handle_chinese_chars=",
+        method!(RbNormalizer::bert_set_handle_chinese_chars, 1),
+    )?;
+    class.define_method(
+        "strip_accents",
+        method!(RbNormalizer::bert_strip_accents, 0),
+    )?;
+    class.define_method(
+        "strip_accents=",
+        method!(RbNormalizer::bert_set_strip_accents, 1),
+    )?;
     class.define_method("lowercase", method!(RbNormalizer::bert_lowercase, 0))?;
     class.define_method("lowercase=", method!(RbNormalizer::bert_set_lowercase, 1))?;
 

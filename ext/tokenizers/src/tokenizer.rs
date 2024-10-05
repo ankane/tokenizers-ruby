@@ -6,8 +6,8 @@ use std::str::FromStr;
 use magnus::prelude::*;
 use magnus::{exception, Error, RArray, RHash, RString, Symbol, TryConvert, Value};
 use tk::tokenizer::{
-    Model, PaddingDirection, PaddingParams, PaddingStrategy,
-    TruncationDirection, TruncationParams, TruncationStrategy, TokenizerImpl
+    Model, PaddingDirection, PaddingParams, PaddingStrategy, TokenizerImpl, TruncationDirection,
+    TruncationParams, TruncationStrategy,
 };
 use tk::AddedToken;
 
@@ -284,7 +284,10 @@ impl RbTokenizer {
     }
 
     pub fn to_str(&self, pretty: bool) -> RbResult<String> {
-        self.tokenizer.borrow().to_string(pretty).map_err(RbError::from)
+        self.tokenizer
+            .borrow()
+            .to_string(pretty)
+            .map_err(RbError::from)
     }
 
     pub fn add_special_tokens(&self, tokens: Vec<String>) -> usize {
@@ -383,7 +386,11 @@ impl RbTokenizer {
             .map_err(RbError::from)
     }
 
-    pub fn decode_batch(&self, sequences: Vec<Vec<u32>>, skip_special_tokens: bool) -> RbResult<Vec<String>> {
+    pub fn decode_batch(
+        &self,
+        sequences: Vec<Vec<u32>>,
+        skip_special_tokens: bool,
+    ) -> RbResult<Vec<String>> {
         let slices = sequences.iter().map(|v| &v[..]).collect::<Vec<&[u32]>>();
         self.tokenizer
             .borrow()
@@ -455,7 +462,12 @@ impl RbTokenizer {
             params.direction = match dir_str.as_str() {
                 "left" => PaddingDirection::Left,
                 "right" => PaddingDirection::Right,
-                _ => return Err(Error::new(exception::arg_error(), "The direction value must be 'left' or 'right'")),
+                _ => {
+                    return Err(Error::new(
+                        exception::arg_error(),
+                        "The direction value must be 'left' or 'right'",
+                    ))
+                }
             }
         }
 
@@ -501,24 +513,27 @@ impl RbTokenizer {
     }
 
     pub fn padding(&self) -> RbResult<Option<RHash>> {
-        self.tokenizer.borrow().get_padding().map_or(Ok(None), |params| {
-            let ret_hash = RHash::new();
+        self.tokenizer
+            .borrow()
+            .get_padding()
+            .map_or(Ok(None), |params| {
+                let ret_hash = RHash::new();
 
-            ret_hash.aset(
-                "length",
-                match params.strategy {
-                    tk::PaddingStrategy::BatchLongest => None,
-                    tk::PaddingStrategy::Fixed(size) => Some(size),
-                },
-            )?;
-            ret_hash.aset("pad_to_multiple_of", params.pad_to_multiple_of)?;
-            ret_hash.aset("pad_id", params.pad_id)?;
-            ret_hash.aset("pad_token", &*params.pad_token)?;
-            ret_hash.aset("pad_type_id", params.pad_type_id)?;
-            ret_hash.aset("direction", params.direction.as_ref())?;
+                ret_hash.aset(
+                    "length",
+                    match params.strategy {
+                        tk::PaddingStrategy::BatchLongest => None,
+                        tk::PaddingStrategy::Fixed(size) => Some(size),
+                    },
+                )?;
+                ret_hash.aset("pad_to_multiple_of", params.pad_to_multiple_of)?;
+                ret_hash.aset("pad_id", params.pad_id)?;
+                ret_hash.aset("pad_token", &*params.pad_token)?;
+                ret_hash.aset("pad_type_id", params.pad_type_id)?;
+                ret_hash.aset("direction", params.direction.as_ref())?;
 
-            Ok(Some(ret_hash))
-        })
+                Ok(Some(ret_hash))
+            })
     }
 
     pub fn enable_truncation(&self, max_length: usize, kwargs: RHash) -> RbResult<()> {
@@ -539,7 +554,10 @@ impl RbTokenizer {
                 "longest_first" => TruncationStrategy::LongestFirst,
                 "only_first" => TruncationStrategy::OnlyFirst,
                 "only_second" => TruncationStrategy::OnlySecond,
-                _ => return Err(Error::new(exception::arg_error(), "The strategy value must be 'longest_first', 'only_first', or 'only_second'")),
+                _ => return Err(Error::new(
+                    exception::arg_error(),
+                    "The strategy value must be 'longest_first', 'only_first', or 'only_second'",
+                )),
             }
         }
 
@@ -549,7 +567,12 @@ impl RbTokenizer {
             params.direction = match dir_str.as_str() {
                 "left" => TruncationDirection::Left,
                 "right" => TruncationDirection::Right,
-                _ => return Err(Error::new(exception::arg_error(), "The direction value must be 'left' or 'right'")),
+                _ => {
+                    return Err(Error::new(
+                        exception::arg_error(),
+                        "The direction value must be 'left' or 'right'",
+                    ))
+                }
             }
         }
 
@@ -559,7 +582,10 @@ impl RbTokenizer {
         }
 
         if let Err(error_message) = self.tokenizer.borrow_mut().with_truncation(Some(params)) {
-            return Err(Error::new(exception::arg_error(), error_message.to_string()));
+            return Err(Error::new(
+                exception::arg_error(),
+                error_message.to_string(),
+            ));
         }
 
         Ok(())
@@ -573,16 +599,19 @@ impl RbTokenizer {
     }
 
     pub fn truncation(&self) -> RbResult<Option<RHash>> {
-        self.tokenizer.borrow().get_truncation().map_or(Ok(None), |params| {
-            let ret_hash = RHash::new();
+        self.tokenizer
+            .borrow()
+            .get_truncation()
+            .map_or(Ok(None), |params| {
+                let ret_hash = RHash::new();
 
-            ret_hash.aset("max_length", params.max_length)?;
-            ret_hash.aset("stride", params.stride)?;
-            ret_hash.aset("strategy", params.strategy.as_ref())?;
-            ret_hash.aset("direction", params.direction.as_ref())?;
+                ret_hash.aset("max_length", params.max_length)?;
+                ret_hash.aset("stride", params.stride)?;
+                ret_hash.aset("strategy", params.strategy.as_ref())?;
+                ret_hash.aset("direction", params.direction.as_ref())?;
 
-            Ok(Some(ret_hash))
-        })
+                Ok(Some(ret_hash))
+            })
     }
 
     pub fn num_special_tokens_to_add(&self, is_pair: bool) -> usize {

@@ -3,8 +3,8 @@ use std::sync::{Arc, RwLock};
 use crate::pre_tokenizers::from_string;
 use magnus::value::Lazy;
 use magnus::{
-    data_type_builder, function, method, Class, DataType, DataTypeFunctions, Module, Object, RClass, RModule,
-    Ruby, TypedData,
+    data_type_builder, function, method, Class, DataType, DataTypeFunctions, Module, Object,
+    RClass, RModule, Ruby, TypedData,
 };
 use serde::{Deserialize, Serialize};
 use tk::decoders::bpe::BPEDecoder;
@@ -16,11 +16,11 @@ use tk::decoders::metaspace::{Metaspace, PrependScheme};
 use tk::decoders::strip::Strip;
 use tk::decoders::wordpiece::WordPiece;
 use tk::decoders::DecoderWrapper;
-use tk::Decoder;
 use tk::normalizers::replace::Replace;
+use tk::Decoder;
 
 use super::utils::*;
-use super::{DECODERS, RbError, RbResult};
+use super::{RbError, RbResult, DECODERS};
 
 #[derive(DataTypeFunctions, Clone, Deserialize, Serialize)]
 pub struct RbDecoder {
@@ -228,7 +228,9 @@ pub struct RbReplaceDecoder {}
 
 impl RbReplaceDecoder {
     pub fn new(pattern: RbPattern, content: String) -> RbResult<RbDecoder> {
-        Replace::new(pattern, content).map(|v| v.into()).map_err(RbError::from)
+        Replace::new(pattern, content)
+            .map(|v| v.into())
+            .map_err(RbError::from)
     }
 }
 
@@ -295,7 +297,8 @@ unsafe impl TypedData for RbDecoder {
     }
 
     fn data_type() -> &'static DataType {
-        static DATA_TYPE: DataType = data_type_builder!(RbDecoder, "Tokenizers::Decoders::Decoder").build();
+        static DATA_TYPE: DataType =
+            data_type_builder!(RbDecoder, "Tokenizers::Decoders::Decoder").build();
         &DATA_TYPE
     }
 
@@ -383,18 +386,33 @@ pub fn init_decoders(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     class.define_method("cleanup=", method!(RbDecoder::ctc_set_cleanup, 1))?;
     class.define_method("pad_token", method!(RbDecoder::ctc_pad_token, 0))?;
     class.define_method("pad_token=", method!(RbDecoder::ctc_set_pad_token, 1))?;
-    class.define_method("word_delimiter_token", method!(RbDecoder::ctc_word_delimiter_token, 0))?;
-    class.define_method("word_delimiter_token=", method!(RbDecoder::ctc_set_word_delimiter_token, 1))?;
+    class.define_method(
+        "word_delimiter_token",
+        method!(RbDecoder::ctc_word_delimiter_token, 0),
+    )?;
+    class.define_method(
+        "word_delimiter_token=",
+        method!(RbDecoder::ctc_set_word_delimiter_token, 1),
+    )?;
 
     let class = module.define_class("Fuse", decoder)?;
     class.define_singleton_method("new", function!(RbFuse::new, 0))?;
 
     let class = module.define_class("Metaspace", decoder)?;
     class.define_singleton_method("_new", function!(RbMetaspaceDecoder::new, 3))?;
-    class.define_method("prepend_scheme", method!(RbDecoder::metaspace_prepend_scheme, 0))?;
-    class.define_method("prepend_scheme=", method!(RbDecoder::metaspace_set_prepend_scheme, 1))?;
+    class.define_method(
+        "prepend_scheme",
+        method!(RbDecoder::metaspace_prepend_scheme, 0),
+    )?;
+    class.define_method(
+        "prepend_scheme=",
+        method!(RbDecoder::metaspace_set_prepend_scheme, 1),
+    )?;
     class.define_method("replacement", method!(RbDecoder::metaspace_replacement, 0))?;
-    class.define_method("replacement=", method!(RbDecoder::metaspace_set_replacement, 1))?;
+    class.define_method(
+        "replacement=",
+        method!(RbDecoder::metaspace_set_replacement, 1),
+    )?;
     class.define_method("split", method!(RbDecoder::metaspace_split, 0))?;
     class.define_method("split=", method!(RbDecoder::metaspace_set_split, 1))?;
 

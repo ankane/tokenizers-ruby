@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
 use magnus::{
-    data_type_builder, function, value::Lazy, Class, DataType, DataTypeFunctions, Module, Object, RClass, RModule,
-    Ruby, TryConvert, TypedData, Value,
+    data_type_builder, function, value::Lazy, Class, DataType, DataTypeFunctions, Module, Object,
+    RClass, RModule, Ruby, TryConvert, TypedData, Value,
 };
 use serde::{Deserialize, Serialize};
 use tk::processors::bert::BertProcessing;
@@ -12,7 +12,7 @@ use tk::processors::template::{SpecialToken, Template};
 use tk::processors::PostProcessorWrapper;
 use tk::{Encoding, PostProcessor};
 
-use super::{PROCESSORS, RbResult};
+use super::{RbResult, PROCESSORS};
 
 #[derive(DataTypeFunctions, Clone, Deserialize, Serialize)]
 pub struct RbPostProcessor {
@@ -106,7 +106,6 @@ impl RbByteLevel {
         }
         RbPostProcessor::new(Arc::new(byte_level.into()))
     }
-
 }
 
 pub struct RbRobertaProcessing {}
@@ -117,7 +116,7 @@ impl RbRobertaProcessing {
         cls: (String, u32),
         trim_offsets: bool,
         add_prefix_space: bool,
-    ) ->  RbPostProcessor {
+    ) -> RbPostProcessor {
         let proc = RobertaProcessing::new(sep, cls)
             .trim_offsets(trim_offsets)
             .add_prefix_space(add_prefix_space);
@@ -153,7 +152,10 @@ impl RbTemplateProcessing {
 unsafe impl TypedData for RbPostProcessor {
     fn class(ruby: &Ruby) -> RClass {
         static CLASS: Lazy<RClass> = Lazy::new(|ruby| {
-            let class: RClass = ruby.get_inner(&PROCESSORS).const_get("PostProcessor").unwrap();
+            let class: RClass = ruby
+                .get_inner(&PROCESSORS)
+                .const_get("PostProcessor")
+                .unwrap();
             class.undef_default_alloc_func();
             class
         });
@@ -161,13 +163,17 @@ unsafe impl TypedData for RbPostProcessor {
     }
 
     fn data_type() -> &'static DataType {
-        static DATA_TYPE: DataType = data_type_builder!(RbPostProcessor, "Tokenizers::Processors::PostProcessor").build();
+        static DATA_TYPE: DataType =
+            data_type_builder!(RbPostProcessor, "Tokenizers::Processors::PostProcessor").build();
         &DATA_TYPE
     }
 
     fn class_for(ruby: &Ruby, value: &Self) -> RClass {
         static BERT_PROCESSING: Lazy<RClass> = Lazy::new(|ruby| {
-            let class: RClass = ruby.get_inner(&PROCESSORS).const_get("BertProcessing").unwrap();
+            let class: RClass = ruby
+                .get_inner(&PROCESSORS)
+                .const_get("BertProcessing")
+                .unwrap();
             class.undef_default_alloc_func();
             class
         });
@@ -177,12 +183,18 @@ unsafe impl TypedData for RbPostProcessor {
             class
         });
         static ROBERTA_PROCESSING: Lazy<RClass> = Lazy::new(|ruby| {
-            let class: RClass = ruby.get_inner(&PROCESSORS).const_get("RobertaProcessing").unwrap();
+            let class: RClass = ruby
+                .get_inner(&PROCESSORS)
+                .const_get("RobertaProcessing")
+                .unwrap();
             class.undef_default_alloc_func();
             class
         });
         static TEMPLATE_PROCESSING: Lazy<RClass> = Lazy::new(|ruby| {
-            let class: RClass = ruby.get_inner(&PROCESSORS).const_get("TemplateProcessing").unwrap();
+            let class: RClass = ruby
+                .get_inner(&PROCESSORS)
+                .const_get("TemplateProcessing")
+                .unwrap();
             class.undef_default_alloc_func();
             class
         });

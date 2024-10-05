@@ -5,18 +5,19 @@ use std::sync::{Arc, RwLock};
 use crate::trainers::RbTrainer;
 use magnus::prelude::*;
 use magnus::{
-    data_type_builder, exception, function, method, value::Lazy, Class, DataType, DataTypeFunctions, Error, Module, Object,
-    RClass, RHash, RModule, Ruby, Symbol, TryConvert, TypedData, Value,
+    data_type_builder, exception, function, method, value::Lazy, Class, DataType,
+    DataTypeFunctions, Error, Module, Object, RClass, RHash, RModule, Ruby, Symbol, TryConvert,
+    TypedData, Value,
 };
 use serde::{Deserialize, Serialize};
 use tk::models::bpe::{BpeBuilder, Merges, Vocab, BPE};
-use tk::models::ModelWrapper;
 use tk::models::unigram::Unigram;
 use tk::models::wordlevel::WordLevel;
 use tk::models::wordpiece::{WordPiece, WordPieceBuilder};
+use tk::models::ModelWrapper;
 use tk::{Model, Token};
 
-use super::{MODELS, RbError, RbResult};
+use super::{RbError, RbResult, MODELS};
 
 #[derive(DataTypeFunctions, Clone, Serialize, Deserialize)]
 pub struct RbModel {
@@ -187,7 +188,12 @@ impl RbModel {
     }
 
     pub fn bpe_set_continuing_subword_prefix(&self, continuing_subword_prefix: Option<String>) {
-        setter!(self, BPE, continuing_subword_prefix, continuing_subword_prefix);
+        setter!(
+            self,
+            BPE,
+            continuing_subword_prefix,
+            continuing_subword_prefix
+        );
     }
 
     pub fn bpe_end_of_word_suffix(&self) -> Option<String> {
@@ -219,7 +225,12 @@ impl RbModel {
     }
 
     pub fn word_piece_set_continuing_subword_prefix(&self, continuing_subword_prefix: String) {
-        setter!(self, WordPiece, continuing_subword_prefix, continuing_subword_prefix);
+        setter!(
+            self,
+            WordPiece,
+            continuing_subword_prefix,
+            continuing_subword_prefix
+        );
     }
 
     pub fn word_piece_max_input_chars_per_word(&self) -> usize {
@@ -227,21 +238,34 @@ impl RbModel {
     }
 
     pub fn word_piece_set_max_input_chars_per_word(&self, max_input_chars_per_word: usize) {
-        setter!(self, WordPiece, max_input_chars_per_word, max_input_chars_per_word);
+        setter!(
+            self,
+            WordPiece,
+            max_input_chars_per_word,
+            max_input_chars_per_word
+        );
     }
 }
 
 pub struct RbUnigram {}
 
 impl RbUnigram {
-    fn new(vocab: Option<Vec<(String, f64)>>, unk_id: Option<usize>, byte_fallback: Option<bool>) -> RbResult<RbModel> {
+    fn new(
+        vocab: Option<Vec<(String, f64)>>,
+        unk_id: Option<usize>,
+        byte_fallback: Option<bool>,
+    ) -> RbResult<RbModel> {
         match (vocab, unk_id, byte_fallback) {
             (Some(vocab), unk_id, byte_fallback) => {
-                let model = Unigram::from(vocab, unk_id, byte_fallback.unwrap_or(false)).map_err(RbError::from)?;
+                let model = Unigram::from(vocab, unk_id, byte_fallback.unwrap_or(false))
+                    .map_err(RbError::from)?;
                 Ok(model.into())
             }
             (None, None, _) => Ok(Unigram::default().into()),
-            _ => Err(Error::new(exception::arg_error(), "`vocab` and `unk_id` must be both specified")),
+            _ => Err(Error::new(
+                exception::arg_error(),
+                "`vocab` and `unk_id` must be both specified",
+            )),
         }
     }
 }
@@ -249,7 +273,10 @@ impl RbUnigram {
 pub struct RbWordLevel {}
 
 impl RbWordLevel {
-    pub fn new(vocab: Option<HashMap<String, u32>>, unk_token: Option<String>) -> RbResult<RbModel> {
+    pub fn new(
+        vocab: Option<HashMap<String, u32>>,
+        unk_token: Option<String>,
+    ) -> RbResult<RbModel> {
         let mut builder = WordLevel::builder();
         if let Some(vocab) = vocab {
             builder = builder.vocab(vocab);
@@ -316,15 +343,16 @@ impl RbWordPiece {
 unsafe impl TypedData for RbModel {
     fn class(ruby: &Ruby) -> RClass {
         static CLASS: Lazy<RClass> = Lazy::new(|ruby| {
-          let class: RClass = ruby.get_inner(&MODELS).const_get("Model").unwrap();
-          class.undef_default_alloc_func();
-          class
+            let class: RClass = ruby.get_inner(&MODELS).const_get("Model").unwrap();
+            class.undef_default_alloc_func();
+            class
         });
         ruby.get_inner(&CLASS)
     }
 
     fn data_type() -> &'static DataType {
-        static DATA_TYPE: DataType = data_type_builder!(RbModel, "Tokenizers::Models::Model").build();
+        static DATA_TYPE: DataType =
+            data_type_builder!(RbModel, "Tokenizers::Models::Model").build();
         &DATA_TYPE
     }
 
@@ -368,10 +396,22 @@ pub fn init_models(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     class.define_method("dropout=", method!(RbModel::bpe_set_dropout, 1))?;
     class.define_method("unk_token", method!(RbModel::bpe_unk_token, 0))?;
     class.define_method("unk_token=", method!(RbModel::bpe_set_unk_token, 1))?;
-    class.define_method("continuing_subword_prefix", method!(RbModel::bpe_continuing_subword_prefix, 0))?;
-    class.define_method("continuing_subword_prefix=", method!(RbModel::bpe_set_continuing_subword_prefix, 1))?;
-    class.define_method("end_of_word_suffix", method!(RbModel::bpe_end_of_word_suffix, 0))?;
-    class.define_method("end_of_word_suffix=", method!(RbModel::bpe_set_end_of_word_suffix, 1))?;
+    class.define_method(
+        "continuing_subword_prefix",
+        method!(RbModel::bpe_continuing_subword_prefix, 0),
+    )?;
+    class.define_method(
+        "continuing_subword_prefix=",
+        method!(RbModel::bpe_set_continuing_subword_prefix, 1),
+    )?;
+    class.define_method(
+        "end_of_word_suffix",
+        method!(RbModel::bpe_end_of_word_suffix, 0),
+    )?;
+    class.define_method(
+        "end_of_word_suffix=",
+        method!(RbModel::bpe_set_end_of_word_suffix, 1),
+    )?;
     class.define_method("fuse_unk", method!(RbModel::bpe_fuse_unk, 0))?;
     class.define_method("fuse_unk=", method!(RbModel::bpe_set_fuse_unk, 1))?;
     class.define_method("byte_fallback", method!(RbModel::bpe_byte_fallback, 0))?;
@@ -392,10 +432,22 @@ pub fn init_models(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     class.define_singleton_method("_from_file", function!(RbWordPiece::from_file, 2))?;
     class.define_method("unk_token", method!(RbModel::word_piece_unk_token, 0))?;
     class.define_method("unk_token=", method!(RbModel::word_piece_set_unk_token, 1))?;
-    class.define_method("continuing_subword_prefix", method!(RbModel::word_piece_continuing_subword_prefix, 0))?;
-    class.define_method("continuing_subword_prefix=", method!(RbModel::word_piece_set_continuing_subword_prefix, 1))?;
-    class.define_method("max_input_chars_per_word", method!(RbModel::word_piece_max_input_chars_per_word, 0))?;
-    class.define_method("max_input_chars_per_word=", method!(RbModel::word_piece_set_max_input_chars_per_word, 1))?;
+    class.define_method(
+        "continuing_subword_prefix",
+        method!(RbModel::word_piece_continuing_subword_prefix, 0),
+    )?;
+    class.define_method(
+        "continuing_subword_prefix=",
+        method!(RbModel::word_piece_set_continuing_subword_prefix, 1),
+    )?;
+    class.define_method(
+        "max_input_chars_per_word",
+        method!(RbModel::word_piece_max_input_chars_per_word, 0),
+    )?;
+    class.define_method(
+        "max_input_chars_per_word=",
+        method!(RbModel::word_piece_set_max_input_chars_per_word, 1),
+    )?;
 
     Ok(())
 }

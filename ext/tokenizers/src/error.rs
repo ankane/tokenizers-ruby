@@ -15,7 +15,8 @@ impl RbError {
     }
 }
 
-static ERROR: Lazy<ExceptionClass> = Lazy::new(|ruby| ruby.get_inner(&TOKENIZERS).const_get("Error").unwrap());
+static ERROR: Lazy<ExceptionClass> =
+    Lazy::new(|ruby| ruby.get_inner(&TOKENIZERS).const_get("Error").unwrap());
 
 fn error() -> ExceptionClass {
     Ruby::get().unwrap().get_inner(&ERROR)

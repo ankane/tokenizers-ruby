@@ -22,19 +22,32 @@ use magnus::{function, method, prelude::*, value::Lazy, Error, RModule, Ruby};
 
 type RbResult<T> = Result<T, Error>;
 
-static TOKENIZERS: Lazy<RModule> = Lazy::new(|ruby| ruby.class_object().const_get("Tokenizers").unwrap());
+static TOKENIZERS: Lazy<RModule> =
+    Lazy::new(|ruby| ruby.class_object().const_get("Tokenizers").unwrap());
 
-static DECODERS: Lazy<RModule> = Lazy::new(|ruby| ruby.get_inner(&TOKENIZERS).const_get("Decoders").unwrap());
+static DECODERS: Lazy<RModule> =
+    Lazy::new(|ruby| ruby.get_inner(&TOKENIZERS).const_get("Decoders").unwrap());
 
-static MODELS: Lazy<RModule> = Lazy::new(|ruby| ruby.get_inner(&TOKENIZERS).const_get("Models").unwrap());
+static MODELS: Lazy<RModule> =
+    Lazy::new(|ruby| ruby.get_inner(&TOKENIZERS).const_get("Models").unwrap());
 
-static NORMALIZERS: Lazy<RModule> = Lazy::new(|ruby| ruby.get_inner(&TOKENIZERS).const_get("Normalizers").unwrap());
+static NORMALIZERS: Lazy<RModule> = Lazy::new(|ruby| {
+    ruby.get_inner(&TOKENIZERS)
+        .const_get("Normalizers")
+        .unwrap()
+});
 
-static PRE_TOKENIZERS: Lazy<RModule> = Lazy::new(|ruby| ruby.get_inner(&TOKENIZERS).const_get("PreTokenizers").unwrap());
+static PRE_TOKENIZERS: Lazy<RModule> = Lazy::new(|ruby| {
+    ruby.get_inner(&TOKENIZERS)
+        .const_get("PreTokenizers")
+        .unwrap()
+});
 
-static PROCESSORS: Lazy<RModule> = Lazy::new(|ruby| ruby.get_inner(&TOKENIZERS).const_get("Processors").unwrap());
+static PROCESSORS: Lazy<RModule> =
+    Lazy::new(|ruby| ruby.get_inner(&TOKENIZERS).const_get("Processors").unwrap());
 
-static TRAINERS: Lazy<RModule> = Lazy::new(|ruby| ruby.get_inner(&TOKENIZERS).const_get("Trainers").unwrap());
+static TRAINERS: Lazy<RModule> =
+    Lazy::new(|ruby| ruby.get_inner(&TOKENIZERS).const_get("Trainers").unwrap());
 
 #[magnus::init]
 fn init(ruby: &Ruby) -> RbResult<()> {
@@ -56,12 +69,15 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("_decode", method!(RbTokenizer::decode, 2))?;
     class.define_method("_decode_batch", method!(RbTokenizer::decode_batch, 2))?;
     class.define_method("model", method!(RbTokenizer::get_model, 0))?;
-    class.define_method("model=", method!(RbTokenizer::set_model,1))?;
+    class.define_method("model=", method!(RbTokenizer::set_model, 1))?;
     class.define_method("decoder", method!(RbTokenizer::get_decoder, 0))?;
     class.define_method("decoder=", method!(RbTokenizer::set_decoder, 1))?;
     class.define_method("pre_tokenizer", method!(RbTokenizer::get_pre_tokenizer, 0))?;
     class.define_method("pre_tokenizer=", method!(RbTokenizer::set_pre_tokenizer, 1))?;
-    class.define_method("post_processor", method!(RbTokenizer::get_post_processor, 0))?;
+    class.define_method(
+        "post_processor",
+        method!(RbTokenizer::get_post_processor, 0),
+    )?;
     class.define_method(
         "post_processor=",
         method!(RbTokenizer::set_post_processor, 1),
@@ -73,13 +89,22 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("_enable_padding", method!(RbTokenizer::enable_padding, 1))?;
     class.define_method("padding", method!(RbTokenizer::padding, 0))?;
     class.define_method("no_padding", method!(RbTokenizer::no_padding, 0))?;
-    class.define_method("_enable_truncation", method!(RbTokenizer::enable_truncation, 2))?;
+    class.define_method(
+        "_enable_truncation",
+        method!(RbTokenizer::enable_truncation, 2),
+    )?;
     class.define_method("truncation", method!(RbTokenizer::truncation, 0))?;
     class.define_method("no_truncation", method!(RbTokenizer::no_truncation, 0))?;
-    class.define_method("num_special_tokens_to_add", method!(RbTokenizer::num_special_tokens_to_add, 1))?;
+    class.define_method(
+        "num_special_tokens_to_add",
+        method!(RbTokenizer::num_special_tokens_to_add, 1),
+    )?;
     class.define_method("_vocab", method!(RbTokenizer::vocab, 1))?;
     class.define_method("_vocab_size", method!(RbTokenizer::vocab_size, 1))?;
-    class.define_method("added_tokens_decoder", method!(RbTokenizer::get_added_tokens_decoder, 0))?;
+    class.define_method(
+        "added_tokens_decoder",
+        method!(RbTokenizer::get_added_tokens_decoder, 0),
+    )?;
     class.define_method("_to_s", method!(RbTokenizer::to_str, 1))?;
 
     let class = module.define_class("Encoding", ruby.class_object())?;

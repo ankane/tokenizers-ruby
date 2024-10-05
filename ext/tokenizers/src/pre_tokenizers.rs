@@ -1,8 +1,8 @@
 use std::sync::{Arc, RwLock};
 
 use magnus::{
-    data_type_builder, exception, function, method, value::Lazy, Class, DataType, DataTypeFunctions, Error, Module, Object,
-    RArray, RClass, RModule, Ruby, TryConvert, TypedData,
+    data_type_builder, exception, function, method, value::Lazy, Class, DataType,
+    DataTypeFunctions, Error, Module, Object, RArray, RClass, RModule, Ruby, TryConvert, TypedData,
 };
 
 use serde::ser::SerializeStruct;
@@ -22,7 +22,7 @@ use tk::tokenizer::Offsets;
 use tk::{PreTokenizedString, PreTokenizer};
 
 use super::utils::*;
-use super::{PRE_TOKENIZERS, RbError, RbResult};
+use super::{RbError, RbResult, PRE_TOKENIZERS};
 
 #[derive(DataTypeFunctions, Clone, Serialize, Deserialize)]
 pub struct RbPreTokenizer {
@@ -34,7 +34,9 @@ impl RbPreTokenizer {
     fn pre_tokenize_str(&self, s: String) -> RbResult<Vec<(String, Offsets)>> {
         let mut pretokenized = tk::tokenizer::PreTokenizedString::from(s);
 
-        self.pretok.pre_tokenize(&mut pretokenized).map_err(RbError::from)?;
+        self.pretok
+            .pre_tokenize(&mut pretokenized)
+            .map_err(RbError::from)?;
 
         Ok(pretokenized
             .get_splits(tk::OffsetReferential::Original, tk::OffsetType::Char)
@@ -195,11 +197,7 @@ impl RbDigits {
 pub struct RbMetaspace {}
 
 impl RbMetaspace {
-    fn new(
-        replacement: char,
-        prepend_scheme: String,
-        split: bool,
-    ) -> RbResult<RbPreTokenizer> {
+    fn new(replacement: char, prepend_scheme: String, split: bool) -> RbResult<RbPreTokenizer> {
         let prepend_scheme = from_string(prepend_scheme)?;
         Ok(Metaspace::new(replacement, prepend_scheme, split).into())
     }
@@ -216,8 +214,14 @@ impl RbPunctuation {
 pub struct RbSplit {}
 
 impl RbSplit {
-    pub fn new(pattern: RbPattern, behavior: RbSplitDelimiterBehavior, invert: bool) -> RbResult<RbPreTokenizer> {
-        Split::new(pattern, behavior.into(), invert).map(|v| v.into()).map_err(RbError::from)
+    pub fn new(
+        pattern: RbPattern,
+        behavior: RbSplitDelimiterBehavior,
+        invert: bool,
+    ) -> RbResult<RbPreTokenizer> {
+        Split::new(pattern, behavior.into(), invert)
+            .map(|v| v.into())
+            .map_err(RbError::from)
     }
 }
 
@@ -267,7 +271,9 @@ impl RbSequence {
                 RbPreTokenizerTypeWrapper::Single(inner) => sequence.push(inner.clone()),
             }
         }
-        Ok(RbPreTokenizer::new(RbPreTokenizerTypeWrapper::Sequence(sequence)))
+        Ok(RbPreTokenizer::new(RbPreTokenizerTypeWrapper::Sequence(
+            sequence,
+        )))
     }
 }
 
@@ -277,10 +283,13 @@ pub(crate) fn from_string(string: String) -> RbResult<PrependScheme> {
         "never" => PrependScheme::Never,
         "always" => PrependScheme::Always,
         _ => {
-            return Err(Error::new(exception::arg_error(), format!(
-                "{} is an unknown variant, should be one of ['first', 'never', 'always']",
-                string
-            )));
+            return Err(Error::new(
+                exception::arg_error(),
+                format!(
+                    "{} is an unknown variant, should be one of ['first', 'never', 'always']",
+                    string
+                ),
+            ));
         }
     };
     Ok(scheme)
@@ -381,7 +390,10 @@ impl PreTokenizer for RbPreTokenizerWrapper {
 unsafe impl TypedData for RbPreTokenizer {
     fn class(ruby: &Ruby) -> RClass {
         static CLASS: Lazy<RClass> = Lazy::new(|ruby| {
-            let class: RClass = ruby.get_inner(&PRE_TOKENIZERS).const_get("PreTokenizer").unwrap();
+            let class: RClass = ruby
+                .get_inner(&PRE_TOKENIZERS)
+                .const_get("PreTokenizer")
+                .unwrap();
             class.undef_default_alloc_func();
             class
         });
@@ -389,28 +401,41 @@ unsafe impl TypedData for RbPreTokenizer {
     }
 
     fn data_type() -> &'static DataType {
-        static DATA_TYPE: DataType = data_type_builder!(RbPreTokenizer, "Tokenizers::PreTokenizers::PreTokenizer").build();
+        static DATA_TYPE: DataType =
+            data_type_builder!(RbPreTokenizer, "Tokenizers::PreTokenizers::PreTokenizer").build();
         &DATA_TYPE
     }
 
     fn class_for(ruby: &Ruby, value: &Self) -> RClass {
         static SEQUENCE: Lazy<RClass> = Lazy::new(|ruby| {
-            let class: RClass = ruby.get_inner(&PRE_TOKENIZERS).const_get("Sequence").unwrap();
+            let class: RClass = ruby
+                .get_inner(&PRE_TOKENIZERS)
+                .const_get("Sequence")
+                .unwrap();
             class.undef_default_alloc_func();
             class
         });
         static BERT_PRE_TOKENIZER: Lazy<RClass> = Lazy::new(|ruby| {
-            let class: RClass = ruby.get_inner(&PRE_TOKENIZERS).const_get("BertPreTokenizer").unwrap();
+            let class: RClass = ruby
+                .get_inner(&PRE_TOKENIZERS)
+                .const_get("BertPreTokenizer")
+                .unwrap();
             class.undef_default_alloc_func();
             class
         });
         static BYTE_LEVEL: Lazy<RClass> = Lazy::new(|ruby| {
-            let class: RClass = ruby.get_inner(&PRE_TOKENIZERS).const_get("ByteLevel").unwrap();
+            let class: RClass = ruby
+                .get_inner(&PRE_TOKENIZERS)
+                .const_get("ByteLevel")
+                .unwrap();
             class.undef_default_alloc_func();
             class
         });
         static CHAR_DELIMITER_SPLIT: Lazy<RClass> = Lazy::new(|ruby| {
-            let class: RClass = ruby.get_inner(&PRE_TOKENIZERS).const_get("CharDelimiterSplit").unwrap();
+            let class: RClass = ruby
+                .get_inner(&PRE_TOKENIZERS)
+                .const_get("CharDelimiterSplit")
+                .unwrap();
             class.undef_default_alloc_func();
             class
         });
@@ -420,12 +445,18 @@ unsafe impl TypedData for RbPreTokenizer {
             class
         });
         static METASPACE: Lazy<RClass> = Lazy::new(|ruby| {
-            let class: RClass = ruby.get_inner(&PRE_TOKENIZERS).const_get("Metaspace").unwrap();
+            let class: RClass = ruby
+                .get_inner(&PRE_TOKENIZERS)
+                .const_get("Metaspace")
+                .unwrap();
             class.undef_default_alloc_func();
             class
         });
         static PUNCTUATION: Lazy<RClass> = Lazy::new(|ruby| {
-            let class: RClass = ruby.get_inner(&PRE_TOKENIZERS).const_get("Punctuation").unwrap();
+            let class: RClass = ruby
+                .get_inner(&PRE_TOKENIZERS)
+                .const_get("Punctuation")
+                .unwrap();
             class.undef_default_alloc_func();
             class
         });
@@ -435,17 +466,26 @@ unsafe impl TypedData for RbPreTokenizer {
             class
         });
         static UNICODE_SCRIPTS: Lazy<RClass> = Lazy::new(|ruby| {
-            let class: RClass = ruby.get_inner(&PRE_TOKENIZERS).const_get("UnicodeScripts").unwrap();
+            let class: RClass = ruby
+                .get_inner(&PRE_TOKENIZERS)
+                .const_get("UnicodeScripts")
+                .unwrap();
             class.undef_default_alloc_func();
             class
         });
         static WHITESPACE: Lazy<RClass> = Lazy::new(|ruby| {
-            let class: RClass = ruby.get_inner(&PRE_TOKENIZERS).const_get("Whitespace").unwrap();
+            let class: RClass = ruby
+                .get_inner(&PRE_TOKENIZERS)
+                .const_get("Whitespace")
+                .unwrap();
             class.undef_default_alloc_func();
             class
         });
         static WHITESPACE_SPLIT: Lazy<RClass> = Lazy::new(|ruby| {
-            let class: RClass = ruby.get_inner(&PRE_TOKENIZERS).const_get("WhitespaceSplit").unwrap();
+            let class: RClass = ruby
+                .get_inner(&PRE_TOKENIZERS)
+                .const_get("WhitespaceSplit")
+                .unwrap();
             class.undef_default_alloc_func();
             class
         });
@@ -472,7 +512,10 @@ unsafe impl TypedData for RbPreTokenizer {
 
 pub fn init_pre_tokenizers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     let pre_tokenizer = module.define_class("PreTokenizer", ruby.class_object())?;
-    pre_tokenizer.define_method("pre_tokenize_str", method!(RbPreTokenizer::pre_tokenize_str, 1))?;
+    pre_tokenizer.define_method(
+        "pre_tokenize_str",
+        method!(RbPreTokenizer::pre_tokenize_str, 1),
+    )?;
 
     let class = module.define_class("Sequence", pre_tokenizer)?;
     class.define_singleton_method("new", function!(RbSequence::new, 1))?;
@@ -483,27 +526,63 @@ pub fn init_pre_tokenizers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     let class = module.define_class("ByteLevel", pre_tokenizer)?;
     class.define_singleton_method("_new", function!(RbByteLevel::new, 2))?;
     class.define_singleton_method("alphabet", function!(RbByteLevel::alphabet, 0))?;
-    class.define_method("add_prefix_space", method!(RbPreTokenizer::byte_level_add_prefix_space, 0))?;
-    class.define_method("add_prefix_space=", method!(RbPreTokenizer::byte_level_set_add_prefix_space, 1))?;
-    class.define_method("use_regex", method!(RbPreTokenizer::byte_level_use_regex, 0))?;
-    class.define_method("use_regex=", method!(RbPreTokenizer::byte_level_set_use_regex, 1))?;
+    class.define_method(
+        "add_prefix_space",
+        method!(RbPreTokenizer::byte_level_add_prefix_space, 0),
+    )?;
+    class.define_method(
+        "add_prefix_space=",
+        method!(RbPreTokenizer::byte_level_set_add_prefix_space, 1),
+    )?;
+    class.define_method(
+        "use_regex",
+        method!(RbPreTokenizer::byte_level_use_regex, 0),
+    )?;
+    class.define_method(
+        "use_regex=",
+        method!(RbPreTokenizer::byte_level_set_use_regex, 1),
+    )?;
 
     let class = module.define_class("CharDelimiterSplit", pre_tokenizer)?;
     class.define_singleton_method("new", function!(RbCharDelimiterSplit::new, 1))?;
-    class.define_method("delimiter", method!(RbPreTokenizer::char_delimiter_split_delimiter, 0))?;
-    class.define_method("delimiter=", method!(RbPreTokenizer::char_delimiter_split_set_delimiter, 1))?;
+    class.define_method(
+        "delimiter",
+        method!(RbPreTokenizer::char_delimiter_split_delimiter, 0),
+    )?;
+    class.define_method(
+        "delimiter=",
+        method!(RbPreTokenizer::char_delimiter_split_set_delimiter, 1),
+    )?;
 
     let class = module.define_class("Digits", pre_tokenizer)?;
     class.define_singleton_method("_new", function!(RbDigits::new, 1))?;
-    class.define_method("individual_digits", method!(RbPreTokenizer::digits_individual_digits, 0))?;
-    class.define_method("individual_digits=", method!(RbPreTokenizer::digits_set_individual_digits, 1))?;
+    class.define_method(
+        "individual_digits",
+        method!(RbPreTokenizer::digits_individual_digits, 0),
+    )?;
+    class.define_method(
+        "individual_digits=",
+        method!(RbPreTokenizer::digits_set_individual_digits, 1),
+    )?;
 
     let class = module.define_class("Metaspace", pre_tokenizer)?;
     class.define_singleton_method("_new", function!(RbMetaspace::new, 3))?;
-    class.define_method("prepend_scheme", method!(RbPreTokenizer::metaspace_prepend_scheme, 0))?;
-    class.define_method("prepend_scheme=", method!(RbPreTokenizer::metaspace_set_prepend_scheme, 1))?;
-    class.define_method("replacement", method!(RbPreTokenizer::metaspace_replacement, 0))?;
-    class.define_method("replacement=", method!(RbPreTokenizer::metaspace_set_replacement, 1))?;
+    class.define_method(
+        "prepend_scheme",
+        method!(RbPreTokenizer::metaspace_prepend_scheme, 0),
+    )?;
+    class.define_method(
+        "prepend_scheme=",
+        method!(RbPreTokenizer::metaspace_set_prepend_scheme, 1),
+    )?;
+    class.define_method(
+        "replacement",
+        method!(RbPreTokenizer::metaspace_replacement, 0),
+    )?;
+    class.define_method(
+        "replacement=",
+        method!(RbPreTokenizer::metaspace_set_replacement, 1),
+    )?;
     class.define_method("split", method!(RbPreTokenizer::metaspace_split, 0))?;
     class.define_method("split=", method!(RbPreTokenizer::metaspace_set_split, 1))?;
 
