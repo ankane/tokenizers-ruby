@@ -103,7 +103,7 @@ impl RbNormalizer {
     }
 
     fn bert_set_lowercase(&self, lowercase: bool) {
-        setter!(self, BertNormalizer, lowercase, lowercase)
+        setter!(self, BertNormalizer, lowercase, lowercase);
     }
 
     fn prepend_prepend(&self) -> String {
@@ -111,7 +111,7 @@ impl RbNormalizer {
     }
 
     fn prepend_set_prepend(&self, prepend: String) {
-        setter!(self, Prepend, prepend, prepend)
+        setter!(self, Prepend, prepend, prepend);
     }
 
     fn strip_left(&self) -> bool {
@@ -119,7 +119,7 @@ impl RbNormalizer {
     }
 
     fn strip_set_left(&self, left: bool) {
-        setter!(self, StripNormalizer, strip_left, left)
+        setter!(self, StripNormalizer, strip_left, left);
     }
 
     fn strip_right(&self) -> bool {
@@ -127,7 +127,7 @@ impl RbNormalizer {
     }
 
     fn strip_set_right(&self, right: bool) {
-        setter!(self, StripNormalizer, strip_right, right)
+        setter!(self, StripNormalizer, strip_right, right);
     }
 }
 
@@ -246,7 +246,7 @@ pub struct RbSequence {}
 impl RbSequence {
     fn new(normalizers: RArray) -> RbResult<RbNormalizer> {
         let mut sequence = Vec::with_capacity(normalizers.len());
-        for n in normalizers.into_iter() {
+        for n in normalizers {
             let normalizer: &RbNormalizer = TryConvert::try_convert(n)?;
             match &normalizer.normalizer {
                 RbNormalizerTypeWrapper::Sequence(inner) => sequence.extend(inner.iter().cloned()),

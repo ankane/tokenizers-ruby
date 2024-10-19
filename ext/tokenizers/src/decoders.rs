@@ -106,7 +106,7 @@ impl RbDecoder {
     }
 
     fn strip_set_content(&self, content: char) {
-        setter!(self, Strip, content, content)
+        setter!(self, Strip, content, content);
     }
 
     fn strip_start(&self) -> usize {
@@ -114,7 +114,7 @@ impl RbDecoder {
     }
 
     fn strip_set_start(&self, start: usize) {
-        setter!(self, Strip, start, start)
+        setter!(self, Strip, start, start);
     }
 
     fn strip_stop(&self) -> usize {
@@ -122,7 +122,7 @@ impl RbDecoder {
     }
 
     fn strip_set_stop(&self, stop: usize) {
-        setter!(self, Strip, stop, stop)
+        setter!(self, Strip, stop, stop);
     }
 
     pub fn metaspace_replacement(&self) -> char {
