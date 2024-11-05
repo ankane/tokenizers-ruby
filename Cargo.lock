@@ -729,14 +729,14 @@ dependencies = [
  "magnus",
  "onig",
  "serde",
- "tokenizers 0.20.2",
+ "tokenizers 0.20.3",
 ]
 
 [[package]]
 name = "tokenizers"
-version = "0.20.2"
+version = "0.20.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fef9821871de9277bd7d8a7568e798e775db7eede56e290b4b03f1dfb9ac6769"
+checksum = "67b67c92f6d705e2a1d106fb0b28c696f9074901a9c656ee5d9f5de204c39bf7"
 dependencies = [
  "aho-corasick",
  "derive_builder",
