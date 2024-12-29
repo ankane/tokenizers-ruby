@@ -1,4 +1,4 @@
-## 0.5.4 (unreleased)
+## 0.5.4 (2024-12-28)
 
 - Updated Tokenizers to 0.21.0
 - Added support for Ruby 3.4
