@@ -34,12 +34,12 @@ jobs:
           cargo 3pl --target ${{ matrix.target }} --require-files --source 3pl-source > LICENSE-THIRD-PARTY.txt
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 3.2
+          ruby-version: 3.3
       - uses: oxidize-rb/actions/cross-gem@v1
         id: cross-gem
         with:
           platform: ${{ matrix.platform }}
-          ruby-versions: "3.3,3.2,3.1"
+          ruby-versions: "3.4,3.3.5,3.2,3.1"
           # pre-script: ${{ matrix.setup }}
       - uses: actions/upload-artifact@v3
         with:
