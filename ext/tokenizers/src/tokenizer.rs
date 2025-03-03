@@ -141,7 +141,7 @@ impl RbAddedToken {
 
 struct TextInputSequence<'s>(tk::InputSequence<'s>);
 
-impl<'s> TryConvert for TextInputSequence<'s> {
+impl TryConvert for TextInputSequence<'_> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         Ok(Self(String::try_convert(ob)?.into()))
     }
@@ -170,7 +170,7 @@ impl From<RbArrayStr> for tk::InputSequence<'_> {
 
 struct PreTokenizedInputSequence<'s>(tk::InputSequence<'s>);
 
-impl<'s> TryConvert for PreTokenizedInputSequence<'s> {
+impl TryConvert for PreTokenizedInputSequence<'_> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         if let Ok(seq) = RbArrayStr::try_convert(ob) {
             return Ok(Self(seq.into()));
@@ -187,7 +187,7 @@ impl<'s> From<PreTokenizedInputSequence<'s>> for tk::InputSequence<'s> {
 
 struct TextEncodeInput<'s>(tk::EncodeInput<'s>);
 
-impl<'s> TryConvert for TextEncodeInput<'s> {
+impl TryConvert for TextEncodeInput<'_> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         if let Ok(i) = TextInputSequence::try_convert(ob) {
             return Ok(Self(i.into()));
@@ -218,7 +218,7 @@ impl<'s> From<TextEncodeInput<'s>> for tk::tokenizer::EncodeInput<'s> {
 
 struct PreTokenizedEncodeInput<'s>(tk::EncodeInput<'s>);
 
-impl<'s> TryConvert for PreTokenizedEncodeInput<'s> {
+impl TryConvert for PreTokenizedEncodeInput<'_> {
     fn try_convert(ob: Value) -> RbResult<Self> {
         if let Ok(i) = PreTokenizedInputSequence::try_convert(ob) {
             return Ok(Self(i.into()));
