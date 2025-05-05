@@ -1,4 +1,4 @@
-## 0.5.5 (unreleased)
+## 0.5.5 (2025-05-04)
 
 - Updated Tokenizers to 0.21.1
 
