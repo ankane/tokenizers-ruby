@@ -1,15 +1,16 @@
 module Tokenizers
   module Trainers
     class UnigramTrainer
-      def self.new(vocab_size: 8000,
-                   show_progress: true,
-                   special_tokens: [],
-                   initial_alphabet: [],
-                   shrinking_factor: 0.75,
-                   unk_token: nil,
-                   max_piece_length: 16,
-                   n_sub_iterations: 2)
-
+      def self.new(
+        vocab_size: 8000,
+        show_progress: true,
+        special_tokens: [],
+        initial_alphabet: [],
+        shrinking_factor: 0.75,
+        unk_token: nil,
+        max_piece_length: 16,
+        n_sub_iterations: 2
+      )
         _new({
           vocab_size: vocab_size,
           show_progress: show_progress,
