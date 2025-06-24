@@ -11,11 +11,12 @@ publish = false
 crate-type = ["cdylib"]
 
 [dependencies]
+ahash = { version = "0.8.11", features = ["serde"] }
 magnus = "0.7"
 onig = { version = "6", default-features = false }
 serde = { version = "1", features = ["rc", "derive"] }
 
 [dependencies.tokenizers]
-version = "=0.21.1" # also update in from_pretrained.rb
+version = "=0.21.2" # also update in from_pretrained.rb
 default-features = false
 features = ["progressbar", "onig", "esaxx_fast"]

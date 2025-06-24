@@ -3,6 +3,7 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, RwLock};
 
 use crate::trainers::RbTrainer;
+use ahash::AHashMap;
 use magnus::prelude::*;
 use magnus::{
     data_type_builder, exception, function, method, value::Lazy, Class, DataType,
@@ -10,7 +11,7 @@ use magnus::{
     TypedData, Value,
 };
 use serde::{Deserialize, Serialize};
-use tk::models::bpe::{BpeBuilder, Merges, Vocab, BPE};
+use tk::models::bpe::{BpeBuilder, Merges, BPE};
 use tk::models::unigram::Unigram;
 use tk::models::wordlevel::WordLevel;
 use tk::models::wordpiece::{WordPiece, WordPieceBuilder};
@@ -115,9 +116,14 @@ impl RbBPE {
         builder.build().map(|v| v.into()).map_err(RbError::from)
     }
 
-    pub fn new(vocab: Option<Vocab>, merges: Option<Merges>, kwargs: RHash) -> RbResult<RbModel> {
+    pub fn new(
+        vocab: Option<HashMap<String, u32>>,
+        merges: Option<Merges>,
+        kwargs: RHash,
+    ) -> RbResult<RbModel> {
         let mut builder = BPE::builder();
         if let (Some(vocab), Some(merges)) = (vocab, merges) {
+            let vocab: AHashMap<_, _> = vocab.into_iter().collect();
             builder = builder.vocab_and_merges(vocab, merges);
         }
         RbBPE::with_builder(builder, kwargs)
@@ -125,7 +131,7 @@ impl RbBPE {
 
     pub fn from_file(vocab: String, merges: String, kwargs: RHash) -> RbResult<RbModel> {
         let (vocab, merges) = BPE::read_file(&vocab, &merges).map_err(RbError::from)?;
-
+        let vocab = vocab.into_iter().collect();
         RbBPE::new(Some(vocab), Some(merges), kwargs)
     }
 }
@@ -279,7 +285,7 @@ impl RbWordLevel {
     ) -> RbResult<RbModel> {
         let mut builder = WordLevel::builder();
         if let Some(vocab) = vocab {
-            builder = builder.vocab(vocab);
+            builder = builder.vocab(vocab.into_iter().collect());
         }
         if let Some(unk_token) = unk_token {
             builder = builder.unk_token(unk_token);
@@ -287,13 +293,15 @@ impl RbWordLevel {
         builder.build().map(|v| v.into()).map_err(RbError::from)
     }
 
-    pub fn read_file(vocab: String) -> RbResult<Vocab> {
-        WordLevel::read_file(&vocab).map_err(RbError::from)
+    pub fn read_file(vocab: String) -> RbResult<HashMap<String, u32>> {
+        let vocab = WordLevel::read_file(&vocab).map_err(RbError::from)?;
+        let vocab: HashMap<_, _> = vocab.into_iter().collect();
+        Ok(vocab)
     }
 
     pub fn from_file(vocab: String, unk_token: Option<String>) -> RbResult<RbModel> {
         let vocab = WordLevel::read_file(&vocab).map_err(RbError::from)?;
-
+        let vocab = vocab.into_iter().collect();
         RbWordLevel::new(Some(vocab), unk_token)
     }
 }
@@ -328,6 +336,7 @@ impl RbWordPiece {
     pub fn new(vocab: Option<HashMap<String, u32>>, kwargs: RHash) -> RbResult<RbModel> {
         let mut builder = WordPiece::builder();
         if let Some(vocab) = vocab {
+            let vocab: AHashMap<_, _> = vocab.into_iter().collect();
             builder = builder.vocab(vocab);
         }
         RbWordPiece::with_builder(builder, kwargs)
@@ -336,7 +345,7 @@ impl RbWordPiece {
     pub fn from_file(vocab: String, kwargs: RHash) -> RbResult<RbModel> {
         let vocab = WordPiece::read_file(&vocab).map_err(RbError::from)?;
 
-        RbWordPiece::new(Some(vocab), kwargs)
+        RbWordPiece::new(Some(vocab.into_iter().collect()), kwargs)
     }
 }
 

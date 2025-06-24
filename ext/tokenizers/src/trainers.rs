@@ -1,4 +1,3 @@
-use std::collections::HashSet;
 use std::sync::{Arc, RwLock};
 
 use crate::models::RbModel;
@@ -412,9 +411,13 @@ impl RbBpeTrainer {
 
         let value: Value = kwargs.delete(Symbol::new("initial_alphabet"))?;
         if !value.is_nil() {
-            let arr = <Vec<char>>::try_convert(value)?;
-            let set: HashSet<char> = HashSet::from_iter(arr);
-            builder = builder.initial_alphabet(set);
+            let alphabet = Vec::<String>::try_convert(value)?;
+            builder = builder.initial_alphabet(
+                alphabet
+                    .into_iter()
+                    .filter_map(|s| s.chars().next())
+                    .collect(),
+            );
         }
 
         let value: Value = kwargs.delete(Symbol::new("vocab_size"))?;
@@ -480,9 +483,13 @@ impl RbUnigramTrainer {
 
         let value: Value = kwargs.delete(Symbol::new("initial_alphabet"))?;
         if !value.is_nil() {
-            let arr = <Vec<char>>::try_convert(value)?;
-            let set: HashSet<char> = HashSet::from_iter(arr);
-            builder.initial_alphabet(set);
+            let alphabet = Vec::<String>::try_convert(value)?;
+            builder.initial_alphabet(
+                alphabet
+                    .into_iter()
+                    .filter_map(|s| s.chars().next())
+                    .collect(),
+            );
         }
 
         let value: Value = kwargs.delete(Symbol::new("vocab_size"))?;
@@ -600,9 +607,13 @@ impl RbWordPieceTrainer {
 
         let value: Value = kwargs.delete(Symbol::new("initial_alphabet"))?;
         if !value.is_nil() {
-            let arr = <Vec<char>>::try_convert(value)?;
-            let set: HashSet<char> = HashSet::from_iter(arr);
-            builder = builder.initial_alphabet(set);
+            let alphabet = Vec::<String>::try_convert(value)?;
+            builder = builder.initial_alphabet(
+                alphabet
+                    .into_iter()
+                    .filter_map(|s| s.chars().next())
+                    .collect(),
+            );
         }
 
         let value: Value = kwargs.delete(Symbol::new("vocab_size"))?;
