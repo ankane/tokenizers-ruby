@@ -286,8 +286,7 @@ pub(crate) fn from_string(string: String) -> RbResult<PrependScheme> {
             return Err(Error::new(
                 exception::arg_error(),
                 format!(
-                    "{} is an unknown variant, should be one of ['first', 'never', 'always']",
-                    string
+                    "{string} is an unknown variant, should be one of ['first', 'never', 'always']"
                 ),
             ));
         }

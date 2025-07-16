@@ -199,8 +199,7 @@ impl RbPrecompiled {
         Precompiled::from(&precompiled_charsmap)
             .map_err(|e| {
                 RbError::new_err(format!(
-                    "Error while attempting to build Precompiled normalizer: {}",
-                    e
+                    "Error while attempting to build Precompiled normalizer: {e}"
                 ))
             })
             .map(|v| v.into())
