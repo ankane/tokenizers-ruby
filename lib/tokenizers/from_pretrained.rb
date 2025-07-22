@@ -7,7 +7,7 @@ module Tokenizers
     # this avoids the need to vendor OpenSSL on Linux
     # and reduces the extension size by about half
     def from_pretrained(identifier, revision: "main", auth_token: nil)
-      require "cgi"
+      require "cgi/escape"
       require "digest"
       require "fileutils"
       require "json"
