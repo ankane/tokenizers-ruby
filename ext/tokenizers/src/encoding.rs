@@ -1,4 +1,4 @@
-use magnus::RArray;
+use magnus::{RArray, Ruby};
 use tk::{Encoding, Offsets};
 
 #[magnus::wrap(class = "Tokenizers::Encoding")]
@@ -50,13 +50,15 @@ impl RbEncoding {
         self.encoding.get_attention_mask().to_vec()
     }
 
-    pub fn overflowing(&self) -> RArray {
-        self.encoding
-            .get_overflowing()
-            .clone()
-            .into_iter()
-            .map(Into::<RbEncoding>::into)
-            .collect()
+    pub fn overflowing(ruby: &Ruby, rb_self: &Self) -> RArray {
+        ruby.ary_from_iter(
+            rb_self
+                .encoding
+                .get_overflowing()
+                .clone()
+                .into_iter()
+                .map(Into::<RbEncoding>::into),
+        )
     }
 
     pub fn word_to_tokens(&self, word_index: u32, sequence_index: usize) -> Option<(usize, usize)> {

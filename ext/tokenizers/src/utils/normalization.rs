@@ -1,7 +1,7 @@
 use super::regex::{regex, RbRegex};
 use crate::RbResult;
 use magnus::prelude::*;
-use magnus::{exception, Error, TryConvert, Value};
+use magnus::{Error, Ruby, TryConvert, Value};
 use tk::normalizer::SplitDelimiterBehavior;
 use tk::pattern::Pattern;
 
@@ -62,6 +62,7 @@ pub struct RbSplitDelimiterBehavior(pub SplitDelimiterBehavior);
 
 impl TryConvert for RbSplitDelimiterBehavior {
     fn try_convert(obj: Value) -> RbResult<Self> {
+        let ruby = Ruby::get_with(obj);
         let s = String::try_convert(obj)?;
 
         Ok(Self(match s.as_str() {
@@ -71,7 +72,7 @@ impl TryConvert for RbSplitDelimiterBehavior {
             "merged_with_next" => Ok(SplitDelimiterBehavior::MergedWithNext),
             "contiguous" => Ok(SplitDelimiterBehavior::Contiguous),
             _ => Err(Error::new(
-                exception::arg_error(),
+                ruby.exception_arg_error(),
                 "Wrong value for SplitDelimiterBehavior, expected one of: \
                 `removed, isolated, merged_with_previous, merged_with_next, contiguous`",
             )),

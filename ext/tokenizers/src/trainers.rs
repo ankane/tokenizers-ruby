@@ -4,9 +4,8 @@ use crate::models::RbModel;
 use crate::tokenizer::RbAddedToken;
 use magnus::prelude::*;
 use magnus::{
-    data_type_builder, exception, function, method, value::Lazy, Class, DataType,
-    DataTypeFunctions, Error, Module, Object, RArray, RClass, RHash, RModule, Ruby, Symbol,
-    TryConvert, TypedData, Value,
+    data_type_builder, function, method, value::Lazy, Class, DataType, DataTypeFunctions, Error,
+    Module, Object, RArray, RClass, RHash, RModule, Ruby, TryConvert, TypedData, Value,
 };
 use serde::{Deserialize, Serialize};
 use tk::models::TrainerWrapper;
@@ -390,10 +389,10 @@ where
 pub struct RbBpeTrainer {}
 
 impl RbBpeTrainer {
-    pub fn new(kwargs: RHash) -> RbResult<RbTrainer> {
+    pub fn new(ruby: &Ruby, kwargs: RHash) -> RbResult<RbTrainer> {
         let mut builder = tk::models::bpe::BpeTrainer::builder();
 
-        let value: Value = kwargs.delete(Symbol::new("special_tokens"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("special_tokens"))?;
         if !value.is_nil() {
             builder = builder.special_tokens(
                 RArray::try_convert(value)?
@@ -409,7 +408,7 @@ impl RbBpeTrainer {
             );
         }
 
-        let value: Value = kwargs.delete(Symbol::new("initial_alphabet"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("initial_alphabet"))?;
         if !value.is_nil() {
             let alphabet = Vec::<String>::try_convert(value)?;
             builder = builder.initial_alphabet(
@@ -420,39 +419,39 @@ impl RbBpeTrainer {
             );
         }
 
-        let value: Value = kwargs.delete(Symbol::new("vocab_size"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("vocab_size"))?;
         if !value.is_nil() {
             builder = builder.vocab_size(TryConvert::try_convert(value)?);
         }
 
-        let value: Value = kwargs.delete(Symbol::new("min_frequency"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("min_frequency"))?;
         if !value.is_nil() {
             builder = builder.min_frequency(TryConvert::try_convert(value)?);
         }
 
-        let value: Value = kwargs.delete(Symbol::new("show_progress"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("show_progress"))?;
         if !value.is_nil() {
             builder = builder.show_progress(TryConvert::try_convert(value)?);
         }
 
-        let value: Value = kwargs.delete(Symbol::new("limit_alphabet"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("limit_alphabet"))?;
         if !value.is_nil() {
             builder = builder.limit_alphabet(TryConvert::try_convert(value)?);
         }
 
-        let value: Value = kwargs.delete(Symbol::new("continuing_subword_prefix"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("continuing_subword_prefix"))?;
         if !value.is_nil() {
             builder = builder.continuing_subword_prefix(TryConvert::try_convert(value)?);
         }
 
-        let value: Value = kwargs.delete(Symbol::new("end_of_word_suffix"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("end_of_word_suffix"))?;
         if !value.is_nil() {
             builder = builder.end_of_word_suffix(TryConvert::try_convert(value)?);
         }
 
         if !kwargs.is_empty() {
             // TODO improve message
-            return Err(Error::new(exception::arg_error(), "unknown keyword"));
+            return Err(Error::new(ruby.exception_arg_error(), "unknown keyword"));
         }
 
         Ok(builder.build().into())
@@ -462,10 +461,10 @@ impl RbBpeTrainer {
 pub struct RbUnigramTrainer {}
 
 impl RbUnigramTrainer {
-    pub fn new(kwargs: RHash) -> RbResult<RbTrainer> {
+    pub fn new(ruby: &Ruby, kwargs: RHash) -> RbResult<RbTrainer> {
         let mut builder = tk::models::unigram::UnigramTrainer::builder();
 
-        let value: Value = kwargs.delete(Symbol::new("special_tokens"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("special_tokens"))?;
         if !value.is_nil() {
             builder.special_tokens(
                 RArray::try_convert(value)?
@@ -481,7 +480,7 @@ impl RbUnigramTrainer {
             );
         }
 
-        let value: Value = kwargs.delete(Symbol::new("initial_alphabet"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("initial_alphabet"))?;
         if !value.is_nil() {
             let alphabet = Vec::<String>::try_convert(value)?;
             builder.initial_alphabet(
@@ -492,49 +491,49 @@ impl RbUnigramTrainer {
             );
         }
 
-        let value: Value = kwargs.delete(Symbol::new("vocab_size"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("vocab_size"))?;
         if !value.is_nil() {
             builder.vocab_size(TryConvert::try_convert(value)?);
         }
 
-        let value: Value = kwargs.delete(Symbol::new("show_progress"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("show_progress"))?;
         if !value.is_nil() {
             builder.show_progress(TryConvert::try_convert(value)?);
         }
 
-        let value: Value = kwargs.delete(Symbol::new("n_sub_iterations"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("n_sub_iterations"))?;
         if !value.is_nil() {
             builder.n_sub_iterations(TryConvert::try_convert(value)?);
         }
 
-        let value: Value = kwargs.delete(Symbol::new("unk_token"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("unk_token"))?;
         if !value.is_nil() {
             builder.unk_token(Some(TryConvert::try_convert(value)?));
         }
 
-        let value: Value = kwargs.delete(Symbol::new("max_piece_length"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("max_piece_length"))?;
         if !value.is_nil() {
             builder.max_piece_length(TryConvert::try_convert(value)?);
         }
 
-        let value: Value = kwargs.delete(Symbol::new("seed_size"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("seed_size"))?;
         if !value.is_nil() {
             builder.seed_size(TryConvert::try_convert(value)?);
         }
 
-        let value: Value = kwargs.delete(Symbol::new("shrinking_factor"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("shrinking_factor"))?;
         if !value.is_nil() {
             builder.shrinking_factor(TryConvert::try_convert(value)?);
         }
 
         if !kwargs.is_empty() {
             // TODO improve message
-            return Err(Error::new(exception::arg_error(), "unknown keyword"));
+            return Err(Error::new(ruby.exception_arg_error(), "unknown keyword"));
         }
 
         let trainer = builder
             .build()
-            .map_err(|_| Error::new(exception::arg_error(), "Cannot build UnigramTrainer"))?;
+            .map_err(|_| Error::new(ruby.exception_arg_error(), "Cannot build UnigramTrainer"))?;
         Ok(trainer.into())
     }
 }
@@ -542,10 +541,10 @@ impl RbUnigramTrainer {
 pub struct RbWordLevelTrainer {}
 
 impl RbWordLevelTrainer {
-    pub fn new(kwargs: RHash) -> RbResult<RbTrainer> {
+    pub fn new(ruby: &Ruby, kwargs: RHash) -> RbResult<RbTrainer> {
         let mut builder = tk::models::wordlevel::WordLevelTrainer::builder();
 
-        let value: Value = kwargs.delete(Symbol::new("special_tokens"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("special_tokens"))?;
         if !value.is_nil() {
             builder.special_tokens(
                 RArray::try_convert(value)?
@@ -561,17 +560,17 @@ impl RbWordLevelTrainer {
             );
         }
 
-        let value: Value = kwargs.delete(Symbol::new("vocab_size"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("vocab_size"))?;
         if !value.is_nil() {
             builder.vocab_size(TryConvert::try_convert(value)?);
         }
 
-        let value: Value = kwargs.delete(Symbol::new("min_frequency"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("min_frequency"))?;
         if !value.is_nil() {
             builder.min_frequency(TryConvert::try_convert(value)?);
         }
 
-        let value: Value = kwargs.delete(Symbol::new("show_progress"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("show_progress"))?;
         if !value.is_nil() {
             builder.show_progress(TryConvert::try_convert(value)?);
         }
@@ -586,10 +585,10 @@ impl RbWordLevelTrainer {
 pub struct RbWordPieceTrainer {}
 
 impl RbWordPieceTrainer {
-    pub fn new(kwargs: RHash) -> RbResult<RbTrainer> {
+    pub fn new(ruby: &Ruby, kwargs: RHash) -> RbResult<RbTrainer> {
         let mut builder = tk::models::wordpiece::WordPieceTrainer::builder();
 
-        let value: Value = kwargs.delete(Symbol::new("special_tokens"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("special_tokens"))?;
         if !value.is_nil() {
             builder = builder.special_tokens(
                 RArray::try_convert(value)?
@@ -605,7 +604,7 @@ impl RbWordPieceTrainer {
             );
         }
 
-        let value: Value = kwargs.delete(Symbol::new("initial_alphabet"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("initial_alphabet"))?;
         if !value.is_nil() {
             let alphabet = Vec::<String>::try_convert(value)?;
             builder = builder.initial_alphabet(
@@ -616,39 +615,39 @@ impl RbWordPieceTrainer {
             );
         }
 
-        let value: Value = kwargs.delete(Symbol::new("vocab_size"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("vocab_size"))?;
         if !value.is_nil() {
             builder = builder.vocab_size(TryConvert::try_convert(value)?);
         }
 
-        let value: Value = kwargs.delete(Symbol::new("min_frequency"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("min_frequency"))?;
         if !value.is_nil() {
             builder = builder.min_frequency(TryConvert::try_convert(value)?);
         }
 
-        let value: Value = kwargs.delete(Symbol::new("show_progress"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("show_progress"))?;
         if !value.is_nil() {
             builder = builder.show_progress(TryConvert::try_convert(value)?);
         }
 
-        let value: Value = kwargs.delete(Symbol::new("limit_alphabet"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("limit_alphabet"))?;
         if !value.is_nil() {
             builder = builder.limit_alphabet(TryConvert::try_convert(value)?);
         }
 
-        let value: Value = kwargs.delete(Symbol::new("continuing_subword_prefix"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("continuing_subword_prefix"))?;
         if !value.is_nil() {
             builder = builder.continuing_subword_prefix(TryConvert::try_convert(value)?);
         }
 
-        let value: Value = kwargs.delete(Symbol::new("end_of_word_suffix"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("end_of_word_suffix"))?;
         if !value.is_nil() {
             builder = builder.end_of_word_suffix(TryConvert::try_convert(value)?);
         }
 
         if !kwargs.is_empty() {
             // TODO improve message
-            return Err(Error::new(exception::arg_error(), "unknown keyword"));
+            return Err(Error::new(ruby.exception_arg_error(), "unknown keyword"));
         }
 
         Ok(builder.build().into())

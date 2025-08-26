@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use std::str::FromStr;
 
 use magnus::prelude::*;
-use magnus::{exception, Error, RArray, RHash, RString, Symbol, TryConvert, Value};
+use magnus::{Error, RArray, RHash, RString, Ruby, TryConvert, Value};
 use tk::tokenizer::{
     Model, PaddingDirection, PaddingParams, PaddingStrategy, TokenizerImpl, TruncationDirection,
     TruncationParams, TruncationStrategy,
@@ -78,37 +78,37 @@ impl From<tk::AddedToken> for RbAddedToken {
 }
 
 impl RbAddedToken {
-    pub fn new(content: Option<String>, kwargs: RHash) -> RbResult<Self> {
+    pub fn new(ruby: &Ruby, content: Option<String>, kwargs: RHash) -> RbResult<Self> {
         let mut token = RbAddedToken::from(content.unwrap_or("".to_string()), None);
 
-        let value: Value = kwargs.delete(Symbol::new("single_word"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("single_word"))?;
         if !value.is_nil() {
             token.single_word = TryConvert::try_convert(value)?;
         }
 
-        let value: Value = kwargs.delete(Symbol::new("lstrip"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("lstrip"))?;
         if !value.is_nil() {
             token.lstrip = TryConvert::try_convert(value)?;
         }
 
-        let value: Value = kwargs.delete(Symbol::new("rstrip"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("rstrip"))?;
         if !value.is_nil() {
             token.rstrip = TryConvert::try_convert(value)?;
         }
 
-        let value: Value = kwargs.delete(Symbol::new("normalized"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("normalized"))?;
         if !value.is_nil() {
             token.normalized = TryConvert::try_convert(value)?;
         }
 
-        let value: Value = kwargs.delete(Symbol::new("special"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("special"))?;
         if !value.is_nil() {
             token.special = TryConvert::try_convert(value)?;
         }
 
         if !kwargs.is_empty() {
             // TODO improve message
-            return Err(Error::new(exception::arg_error(), "unknown keyword"));
+            return Err(Error::new(ruby.exception_arg_error(), "unknown keyword"));
         }
 
         Ok(token)
@@ -189,6 +189,8 @@ struct TextEncodeInput<'s>(tk::EncodeInput<'s>);
 
 impl TryConvert for TextEncodeInput<'_> {
     fn try_convert(ob: Value) -> RbResult<Self> {
+        let ruby = Ruby::get_with(ob);
+
         if let Ok(i) = TextInputSequence::try_convert(ob) {
             return Ok(Self(i.into()));
         }
@@ -204,7 +206,7 @@ impl TryConvert for TextEncodeInput<'_> {
             }
         }
         Err(Error::new(
-            exception::type_error(),
+            ruby.exception_type_error(),
             "TextEncodeInput must be a string or pair of strings",
         ))
     }
@@ -220,6 +222,8 @@ struct PreTokenizedEncodeInput<'s>(tk::EncodeInput<'s>);
 
 impl TryConvert for PreTokenizedEncodeInput<'_> {
     fn try_convert(ob: Value) -> RbResult<Self> {
+        let ruby = Ruby::get_with(ob);
+
         if let Ok(i) = PreTokenizedInputSequence::try_convert(ob) {
             return Ok(Self(i.into()));
         }
@@ -237,7 +241,7 @@ impl TryConvert for PreTokenizedEncodeInput<'_> {
             }
         }
         Err(Error::new(
-            exception::type_error(),
+            ruby.exception_type_error(),
             "PreTokenizedEncodeInput must be an array of strings or pair of arrays",
         ))
     }
@@ -351,7 +355,8 @@ impl RbTokenizer {
     }
 
     pub fn encode_batch(
-        &self,
+        ruby: &Ruby,
+        rb_self: &Self,
         input: RArray,
         is_pretokenized: bool,
         add_special_tokens: bool,
@@ -367,16 +372,16 @@ impl RbTokenizer {
                 Ok(input)
             })
             .collect::<RbResult<Vec<tk::EncodeInput>>>()?;
-        self.tokenizer
-            .borrow()
-            .encode_batch_char_offsets(input, add_special_tokens)
-            .map(|encodings| {
-                encodings
-                    .into_iter()
-                    .map(Into::<RbEncoding>::into)
-                    .collect()
-            })
-            .map_err(RbError::from)
+        Ok(ruby.ary_from_iter(
+            rb_self
+                .tokenizer
+                .borrow()
+                .encode_batch_char_offsets(input, add_special_tokens)
+                .map(|encodings| {
+                    ruby.ary_from_iter(encodings.into_iter().map(Into::<RbEncoding>::into))
+                })
+                .map_err(RbError::from),
+        ))
     }
 
     pub fn decode(&self, ids: Vec<u32>, skip_special_tokens: bool) -> RbResult<String> {
@@ -453,10 +458,10 @@ impl RbTokenizer {
     }
 
     // TODO support more kwargs
-    pub fn enable_padding(&self, kwargs: RHash) -> RbResult<()> {
+    pub fn enable_padding(ruby: &Ruby, rb_self: &Self, kwargs: RHash) -> RbResult<()> {
         let mut params = PaddingParams::default();
 
-        let value: Value = kwargs.delete(Symbol::new("direction"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("direction"))?;
         if !value.is_nil() {
             let dir_str = String::try_convert(value)?;
             params.direction = match dir_str.as_str() {
@@ -464,34 +469,34 @@ impl RbTokenizer {
                 "right" => PaddingDirection::Right,
                 _ => {
                     return Err(Error::new(
-                        exception::arg_error(),
+                        ruby.exception_arg_error(),
                         "The direction value must be 'left' or 'right'",
                     ))
                 }
             }
         }
 
-        let value: Value = kwargs.delete(Symbol::new("pad_to_multiple_of"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("pad_to_multiple_of"))?;
         if !value.is_nil() {
             params.pad_to_multiple_of = TryConvert::try_convert(value)?;
         }
 
-        let value: Value = kwargs.delete(Symbol::new("pad_id"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("pad_id"))?;
         if !value.is_nil() {
             params.pad_id = TryConvert::try_convert(value)?;
         }
 
-        let value: Value = kwargs.delete(Symbol::new("pad_type_id"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("pad_type_id"))?;
         if !value.is_nil() {
             params.pad_type_id = TryConvert::try_convert(value)?;
         }
 
-        let value: Value = kwargs.delete(Symbol::new("pad_token"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("pad_token"))?;
         if !value.is_nil() {
             params.pad_token = TryConvert::try_convert(value)?;
         }
 
-        let value: Value = kwargs.delete(Symbol::new("length"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("length"))?;
         if value.is_nil() {
             params.strategy = PaddingStrategy::BatchLongest;
         } else {
@@ -500,10 +505,10 @@ impl RbTokenizer {
 
         if !kwargs.is_empty() {
             // TODO improve message
-            return Err(Error::new(exception::arg_error(), "unknown keyword"));
+            return Err(Error::new(ruby.exception_arg_error(), "unknown keyword"));
         }
 
-        self.tokenizer.borrow_mut().with_padding(Some(params));
+        rb_self.tokenizer.borrow_mut().with_padding(Some(params));
 
         Ok(())
     }
@@ -512,12 +517,13 @@ impl RbTokenizer {
         self.tokenizer.borrow_mut().with_padding(None);
     }
 
-    pub fn padding(&self) -> RbResult<Option<RHash>> {
-        self.tokenizer
+    pub fn padding(ruby: &Ruby, rb_self: &Self) -> RbResult<Option<RHash>> {
+        rb_self
+            .tokenizer
             .borrow()
             .get_padding()
             .map_or(Ok(None), |params| {
-                let ret_hash = RHash::new();
+                let ret_hash = ruby.hash_new();
 
                 ret_hash.aset(
                     "length",
@@ -536,18 +542,23 @@ impl RbTokenizer {
             })
     }
 
-    pub fn enable_truncation(&self, max_length: usize, kwargs: RHash) -> RbResult<()> {
+    pub fn enable_truncation(
+        ruby: &Ruby,
+        rb_self: &Self,
+        max_length: usize,
+        kwargs: RHash,
+    ) -> RbResult<()> {
         let mut params = TruncationParams {
             max_length,
             ..Default::default()
         };
 
-        let value: Value = kwargs.delete(Symbol::new("stride"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("stride"))?;
         if !value.is_nil() {
             params.stride = TryConvert::try_convert(value)?;
         }
 
-        let value: Value = kwargs.delete(Symbol::new("strategy"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("strategy"))?;
         if !value.is_nil() {
             let strategy_str = String::try_convert(value)?;
             params.strategy = match strategy_str.as_str() {
@@ -555,13 +566,13 @@ impl RbTokenizer {
                 "only_first" => TruncationStrategy::OnlyFirst,
                 "only_second" => TruncationStrategy::OnlySecond,
                 _ => return Err(Error::new(
-                    exception::arg_error(),
+                    ruby.exception_arg_error(),
                     "The strategy value must be 'longest_first', 'only_first', or 'only_second'",
                 )),
             }
         }
 
-        let value: Value = kwargs.delete(Symbol::new("direction"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("direction"))?;
         if !value.is_nil() {
             let dir_str = String::try_convert(value)?;
             params.direction = match dir_str.as_str() {
@@ -569,7 +580,7 @@ impl RbTokenizer {
                 "right" => TruncationDirection::Right,
                 _ => {
                     return Err(Error::new(
-                        exception::arg_error(),
+                        ruby.exception_arg_error(),
                         "The direction value must be 'left' or 'right'",
                     ))
                 }
@@ -578,12 +589,12 @@ impl RbTokenizer {
 
         if !kwargs.is_empty() {
             // TODO improve message
-            return Err(Error::new(exception::arg_error(), "unknown keyword"));
+            return Err(Error::new(ruby.exception_arg_error(), "unknown keyword"));
         }
 
-        if let Err(error_message) = self.tokenizer.borrow_mut().with_truncation(Some(params)) {
+        if let Err(error_message) = rb_self.tokenizer.borrow_mut().with_truncation(Some(params)) {
             return Err(Error::new(
-                exception::arg_error(),
+                ruby.exception_arg_error(),
                 error_message.to_string(),
             ));
         }
@@ -598,12 +609,13 @@ impl RbTokenizer {
             .expect("Failed to set truncation to `None`! This should never happen");
     }
 
-    pub fn truncation(&self) -> RbResult<Option<RHash>> {
-        self.tokenizer
+    pub fn truncation(ruby: &Ruby, rb_self: &Self) -> RbResult<Option<RHash>> {
+        rb_self
+            .tokenizer
             .borrow()
             .get_truncation()
             .map_or(Ok(None), |params| {
-                let ret_hash = RHash::new();
+                let ret_hash = ruby.hash_new();
 
                 ret_hash.aset("max_length", params.max_length)?;
                 ret_hash.aset("stride", params.stride)?;
@@ -629,10 +641,10 @@ impl RbTokenizer {
         self.tokenizer.borrow().get_vocab_size(with_added_tokens)
     }
 
-    pub fn get_added_tokens_decoder(&self) -> RbResult<RHash> {
-        let sorted_map = RHash::new();
+    pub fn get_added_tokens_decoder(ruby: &Ruby, rb_self: &Self) -> RbResult<RHash> {
+        let sorted_map = ruby.hash_new();
 
-        for (key, value) in self.tokenizer.borrow().get_added_tokens_decoder() {
+        for (key, value) in rb_self.tokenizer.borrow().get_added_tokens_decoder() {
             sorted_map.aset::<u32, RbAddedToken>(key, value.into())?;
         }
 

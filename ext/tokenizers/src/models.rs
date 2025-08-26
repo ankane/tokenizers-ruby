@@ -6,9 +6,8 @@ use crate::trainers::RbTrainer;
 use ahash::AHashMap;
 use magnus::prelude::*;
 use magnus::{
-    data_type_builder, exception, function, method, value::Lazy, Class, DataType,
-    DataTypeFunctions, Error, Module, Object, RClass, RHash, RModule, Ruby, Symbol, TryConvert,
-    TypedData, Value,
+    data_type_builder, function, method, value::Lazy, Class, DataType, DataTypeFunctions, Error,
+    Module, Object, RClass, RHash, RModule, Ruby, TryConvert, TypedData, Value,
 };
 use serde::{Deserialize, Serialize};
 use tk::models::bpe::{BpeBuilder, Merges, BPE};
@@ -73,44 +72,46 @@ pub struct RbBPE {}
 
 impl RbBPE {
     fn with_builder(mut builder: BpeBuilder, kwargs: RHash) -> RbResult<RbModel> {
-        let value: Value = kwargs.delete(Symbol::new("cache_capacity"))?;
+        let ruby = Ruby::get().unwrap();
+
+        let value: Value = kwargs.delete(ruby.to_symbol("cache_capacity"))?;
         if !value.is_nil() {
             builder = builder.cache_capacity(TryConvert::try_convert(value)?);
         }
 
-        let value: Value = kwargs.delete(Symbol::new("dropout"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("dropout"))?;
         if !value.is_nil() {
             builder = builder.dropout(TryConvert::try_convert(value)?);
         }
 
-        let value: Value = kwargs.delete(Symbol::new("unk_token"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("unk_token"))?;
         if !value.is_nil() {
             builder = builder.unk_token(TryConvert::try_convert(value)?);
         }
 
-        let value: Value = kwargs.delete(Symbol::new("continuing_subword_prefix"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("continuing_subword_prefix"))?;
         if !value.is_nil() {
             builder = builder.continuing_subword_prefix(TryConvert::try_convert(value)?);
         }
 
-        let value: Value = kwargs.delete(Symbol::new("end_of_word_suffix"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("end_of_word_suffix"))?;
         if !value.is_nil() {
             builder = builder.end_of_word_suffix(TryConvert::try_convert(value)?);
         }
 
-        let value: Value = kwargs.delete(Symbol::new("fuse_unk"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("fuse_unk"))?;
         if !value.is_nil() {
             builder = builder.fuse_unk(TryConvert::try_convert(value)?);
         }
 
-        let value: Value = kwargs.delete(Symbol::new("byte_fallback"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("byte_fallback"))?;
         if !value.is_nil() {
             builder = builder.byte_fallback(TryConvert::try_convert(value)?);
         }
 
         if !kwargs.is_empty() {
             // TODO improve message
-            return Err(Error::new(exception::arg_error(), "unknown keyword"));
+            return Err(Error::new(ruby.exception_arg_error(), "unknown keyword"));
         }
 
         builder.build().map(|v| v.into()).map_err(RbError::from)
@@ -257,6 +258,7 @@ pub struct RbUnigram {}
 
 impl RbUnigram {
     fn new(
+        ruby: &Ruby,
         vocab: Option<Vec<(String, f64)>>,
         unk_id: Option<usize>,
         byte_fallback: Option<bool>,
@@ -269,7 +271,7 @@ impl RbUnigram {
             }
             (None, None, _) => Ok(Unigram::default().into()),
             _ => Err(Error::new(
-                exception::arg_error(),
+                ruby.exception_arg_error(),
                 "`vocab` and `unk_id` must be both specified",
             )),
         }
@@ -310,24 +312,26 @@ pub struct RbWordPiece {}
 
 impl RbWordPiece {
     fn with_builder(mut builder: WordPieceBuilder, kwargs: RHash) -> RbResult<RbModel> {
-        let value: Value = kwargs.delete(Symbol::new("unk_token"))?;
+        let ruby = Ruby::get().unwrap();
+
+        let value: Value = kwargs.delete(ruby.to_symbol("unk_token"))?;
         if !value.is_nil() {
             builder = builder.unk_token(TryConvert::try_convert(value)?);
         }
 
-        let value: Value = kwargs.delete(Symbol::new("max_input_chars_per_word"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("max_input_chars_per_word"))?;
         if !value.is_nil() {
             builder = builder.max_input_chars_per_word(TryConvert::try_convert(value)?);
         }
 
-        let value: Value = kwargs.delete(Symbol::new("continuing_subword_prefix"))?;
+        let value: Value = kwargs.delete(ruby.to_symbol("continuing_subword_prefix"))?;
         if !value.is_nil() {
             builder = builder.continuing_subword_prefix(TryConvert::try_convert(value)?);
         }
 
         if !kwargs.is_empty() {
             // TODO improve message
-            return Err(Error::new(exception::arg_error(), "unknown keyword"));
+            return Err(Error::new(ruby.exception_arg_error(), "unknown keyword"));
         }
 
         builder.build().map(|v| v.into()).map_err(RbError::from)

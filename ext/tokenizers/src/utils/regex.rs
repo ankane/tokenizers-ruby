@@ -1,5 +1,5 @@
 use crate::{RbResult, TOKENIZERS};
-use magnus::{exception, prelude::*, value::Lazy, Error, RClass, Ruby};
+use magnus::{prelude::*, value::Lazy, Error, RClass, Ruby};
 use onig::Regex;
 
 #[magnus::wrap(class = "Tokenizers::Regex")]
@@ -10,9 +10,11 @@ pub struct RbRegex {
 
 impl RbRegex {
     pub fn new(s: String) -> RbResult<Self> {
+        let ruby = Ruby::get().unwrap();
         Ok(Self {
-            inner: Regex::new(&s)
-                .map_err(|e| Error::new(exception::runtime_error(), e.description().to_owned()))?,
+            inner: Regex::new(&s).map_err(|e| {
+                Error::new(ruby.exception_runtime_error(), e.description().to_owned())
+            })?,
             pattern: s,
         })
     }

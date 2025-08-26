@@ -1,8 +1,8 @@
 use std::sync::{Arc, RwLock};
 
 use magnus::{
-    data_type_builder, exception, function, method, value::Lazy, Class, DataType,
-    DataTypeFunctions, Error, Module, Object, RArray, RClass, RModule, Ruby, TryConvert, TypedData,
+    data_type_builder, function, method, value::Lazy, Class, DataType, DataTypeFunctions, Error,
+    Module, Object, RArray, RClass, RModule, Ruby, TryConvert, TypedData,
 };
 
 use serde::ser::SerializeStruct;
@@ -278,13 +278,14 @@ impl RbSequence {
 }
 
 pub(crate) fn from_string(string: String) -> RbResult<PrependScheme> {
+    let ruby = Ruby::get().unwrap();
     let scheme = match string.as_str() {
         "first" => PrependScheme::First,
         "never" => PrependScheme::Never,
         "always" => PrependScheme::Always,
         _ => {
             return Err(Error::new(
-                exception::arg_error(),
+                ruby.exception_arg_error(),
                 format!(
                     "{string} is an unknown variant, should be one of ['first', 'never', 'always']"
                 ),
