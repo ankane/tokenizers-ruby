@@ -9,8 +9,7 @@ pub struct RbRegex {
 }
 
 impl RbRegex {
-    pub fn new(s: String) -> RbResult<Self> {
-        let ruby = Ruby::get().unwrap();
+    pub fn new(ruby: &Ruby, s: String) -> RbResult<Self> {
         Ok(Self {
             inner: Regex::new(&s).map_err(|e| {
                 Error::new(ruby.exception_runtime_error(), e.description().to_owned())
