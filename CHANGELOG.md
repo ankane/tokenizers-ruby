@@ -1,4 +1,4 @@
-## 0.6.0 (unreleased)
+## 0.6.0 (2025-08-29)
 
 - Updated Tokenizers to 0.22.0
 - Dropped support for Ruby < 3.2
