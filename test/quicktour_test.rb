@@ -3,6 +3,7 @@ require_relative "test_helper"
 class QuicktourTest < Minitest::Test
   def setup
     skip unless data_path
+    super
   end
 
   # https://huggingface.co/docs/tokenizers/quicktour
