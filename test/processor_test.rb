@@ -1,6 +1,6 @@
 require_relative "test_helper"
 
-class ProcessorlTest < Minitest::Test
+class ProcessorTest < Minitest::Test
   def test_bert_processing
     processor = Tokenizers::Processors::BertProcessing.new(["[SEP]", 1], ["[CLS]", 0])
     assert_instance_of Tokenizers::Processors::BertProcessing, processor
