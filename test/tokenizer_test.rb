@@ -151,6 +151,8 @@ class TokenizerTest < Minitest::Test
   end
 
   def test_vocab
+    skip "vocab method performs many allocations" if stress?
+
     tokenizer = Tokenizers.from_pretrained("bert-base-cased")
 
     vocab_without_added_tokens = tokenizer.vocab(with_added_tokens: false)
@@ -198,6 +200,8 @@ class TokenizerTest < Minitest::Test
   end
 
   def test_serialization
+    skip "vocab method performs many allocations" if stress?
+
     tokenizer = Tokenizers.from_pretrained("bert-base-cased")
     assert_nil tokenizer.vocab["mellifluous"]
 
