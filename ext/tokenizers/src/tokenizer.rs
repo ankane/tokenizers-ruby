@@ -372,16 +372,14 @@ impl RbTokenizer {
                 Ok(input)
             })
             .collect::<RbResult<Vec<tk::EncodeInput>>>()?;
-        Ok(ruby.ary_from_iter(
-            rb_self
-                .tokenizer
-                .borrow()
-                .encode_batch_char_offsets(input, add_special_tokens)
-                .map(|encodings| {
-                    ruby.ary_from_iter(encodings.into_iter().map(Into::<RbEncoding>::into))
-                })
-                .map_err(RbError::from),
-        ))
+        rb_self
+            .tokenizer
+            .borrow()
+            .encode_batch_char_offsets(input, add_special_tokens)
+            .map(|encodings| {
+                ruby.ary_from_iter(encodings.into_iter().map(Into::<RbEncoding>::into))
+            })
+            .map_err(RbError::from)
     }
 
     pub fn decode(&self, ids: Vec<u32>, skip_special_tokens: bool) -> RbResult<String> {
