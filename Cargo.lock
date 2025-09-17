@@ -784,7 +784,7 @@ dependencies = [
 
 [[package]]
 name = "tokenizers"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "ahash",
  "magnus",

@@ -1,4 +1,4 @@
-## 0.6.1 (unreleased)
+## 0.6.1 (2025-09-17)
 
 - Fixed return type of `encode_batch` method
 
