@@ -1,3 +1,7 @@
+## 0.6.2 (unreleased)
+
+- Updated Tokenizers to 0.22.1
+
 ## 0.6.1 (2025-09-17)
 
 - Fixed return type of `encode_batch` method
