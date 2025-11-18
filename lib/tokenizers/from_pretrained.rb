@@ -94,22 +94,29 @@ module Tokenizers
     end
 
     def cache_dir
-      if ENV["TOKENIZERS_CACHE"]
-        ENV["TOKENIZERS_CACHE"]
-      else
-        # use same directory as Rust version
-        # https://docs.rs/dirs/latest/dirs/fn.cache_dir.html
-        dir =
-          if Gem.win_platform?
-            # cannot use backslash for glob
-            ENV.fetch("LOCALAPPDATA").gsub("\\", "/")
-          elsif mac?
-            File.join(ENV.fetch("HOME"), "Library", "Caches")
-          else
-            ENV["XDG_CACHE_HOME"] || File.join(ENV.fetch("HOME"), ".cache")
-          end
+      cache_dir =
+        if ENV["TOKENIZERS_CACHE"]
+          ENV["TOKENIZERS_CACHE"]
+        else
+          # use same directory as Rust version
+          # https://docs.rs/dirs/latest/dirs/fn.cache_dir.html
+          dir =
+            if Gem.win_platform?
+              ENV.fetch("LOCALAPPDATA")
+            elsif mac?
+              File.join(ENV.fetch("HOME"), "Library", "Caches")
+            else
+              ENV["XDG_CACHE_HOME"] || File.join(ENV.fetch("HOME"), ".cache")
+            end
 
-        File.join(dir, "huggingface", "tokenizers")
+          File.join(dir, "huggingface", "tokenizers")
+        end
+
+      if Gem.win_platform?
+        # cannot use backslash for glob on Windows
+        cache_dir.gsub("\\", "/")
+      else
+        cache_dir
       end
     end
 
