@@ -219,7 +219,8 @@ class TokenizerTest < Minitest::Test
 
     as_pretty_str = tokenizer.to_s(pretty: true)
     assert_equal 29163, as_pretty_str.count("\n")
-    pretty_path = "/tmp/pretty-tokenizer.json"
+
+    pretty_path = "#{Dir.tmpdir}/pretty-tokenizer.json"
     tokenizer.save(pretty_path, pretty: true)
 
     # Compare file content
