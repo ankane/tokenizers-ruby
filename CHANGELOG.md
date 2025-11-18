@@ -1,6 +1,7 @@
 ## 0.6.2 (unreleased)
 
 - Updated Tokenizers to 0.22.1
+- Fixed caching on Windows
 
 ## 0.6.1 (2025-09-17)
 

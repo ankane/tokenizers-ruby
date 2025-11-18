@@ -101,7 +101,8 @@ module Tokenizers
         # https://docs.rs/dirs/latest/dirs/fn.cache_dir.html
         dir =
           if Gem.win_platform?
-            ENV.fetch("LOCALAPPDATA")
+            # cannot use backslash for glob
+            ENV.fetch("LOCALAPPDATA").gsub("\\", "/")
           elsif mac?
             File.join(ENV.fetch("HOME"), "Library", "Caches")
           else
