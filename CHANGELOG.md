@@ -1,4 +1,4 @@
-## 0.6.2 (unreleased)
+## 0.6.2 (2025-11-24)
 
 - Updated Tokenizers to 0.22.1
 - Fixed caching on Windows
