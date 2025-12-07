@@ -49,7 +49,7 @@ static PROCESSORS: Lazy<RModule> =
 static TRAINERS: Lazy<RModule> =
     Lazy::new(|ruby| ruby.get_inner(&TOKENIZERS).const_get("Trainers").unwrap());
 
-#[magnus::init]
+#[magnus::init(name = "tokenizers")]
 fn init(ruby: &Ruby) -> RbResult<()> {
     let module = ruby.define_module("Tokenizers")?;
 
