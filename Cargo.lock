@@ -778,17 +778,6 @@ dependencies = [
 
 [[package]]
 name = "tokenizers"
-version = "0.6.2"
-dependencies = [
- "ahash",
- "magnus",
- "onig",
- "serde",
- "tokenizers 0.22.2",
-]
-
-[[package]]
-name = "tokenizers"
 version = "0.22.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b238e22d44a15349529690fb07bd645cf58149a1b1e44d6cb5bd1641ff1a6223"
@@ -819,6 +808,17 @@ dependencies = [
  "unicode-normalization-alignments",
  "unicode-segmentation",
  "unicode_categories",
+]
+
+[[package]]
+name = "tokenizers-ruby"
+version = "0.6.2"
+dependencies = [
+ "ahash",
+ "magnus",
+ "onig",
+ "serde",
+ "tokenizers",
 ]
 
 [[package]]

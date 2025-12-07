@@ -1,5 +1,5 @@
 [package]
-name = "tokenizers"
+name = "tokenizers-ruby"
 version = "0.6.2"
 license = "Apache-2.0"
 authors = ["Andrew Kane <andrew@ankane.org>"]
