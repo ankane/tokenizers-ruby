@@ -54,6 +54,16 @@ class TokenizerTest < Minitest::Test
     assert_equal "Model \"bad\" on the Hub doesn't have a tokenizer", error.message
   end
 
+  def test_from_pretrained_with_org_identifier
+    # Identifiers with org/model format should work (the slash should not be escaped)
+    tokenizer = Tokenizers.from_pretrained("sentence-transformers/all-MiniLM-L6-v2")
+    assert_kind_of Tokenizers::Tokenizer, tokenizer
+
+    encoded = tokenizer.encode("Hello world")
+    assert_kind_of Array, encoded.ids
+    refute_empty encoded.ids
+  end
+
   def test_add_special_tokens
     tokenizer = Tokenizers.from_pretrained("bert-base-cased")
 
