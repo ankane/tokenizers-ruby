@@ -27,7 +27,9 @@ module Tokenizers
         headers["Authorization"] = "Bearer #{auth_token}"
       end
 
-      url = "https://huggingface.co/%s/resolve/%s/tokenizer.json" % [identifier, revision].map { |v| CGI.escape(v) }
+      # Escape path segments individually to preserve '/' in identifiers like "org/model"
+      escaped_identifier = identifier.split("/").map { |v| CGI.escape(v) }.join("/")
+      url = "https://huggingface.co/#{escaped_identifier}/resolve/#{CGI.escape(revision)}/tokenizer.json"
 
       path =
         begin
