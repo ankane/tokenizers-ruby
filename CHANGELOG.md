@@ -1,6 +1,7 @@
 ## 0.6.3 (unreleased)
 
 - Updated Tokenizers to 0.22.2
+- Fixed `from_pretrained` method with namespaces
 
 ## 0.6.2 (2025-11-24)
 

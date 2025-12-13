@@ -47,6 +47,10 @@ class TokenizerTest < Minitest::Test
     assert_equal "Mythological creatures like the mighty gryphon inspire awe!", tokenizer.decode(encoded.ids)
   end
 
+  def test_from_pretrained_namespace
+    assert_kind_of Tokenizers::Tokenizer, Tokenizers.from_pretrained("google-bert/bert-base-cased")
+  end
+
   def test_from_pretrained_bad_identifier
     error = assert_raises(Tokenizers::Error) do
       Tokenizers.from_pretrained("bad")
