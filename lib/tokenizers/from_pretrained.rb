@@ -55,15 +55,23 @@ module Tokenizers
         resource_path = File.join(cache_dir, "#{fsum}.#{esum}")
         if File.exist?(resource_path)
           uri = URI(url)
-          req = Net::HTTP::Head.new(uri)
-          headers.each do |k, v|
-            req[k] = v
-          end
-          res = Net::HTTP.start(uri.hostname, uri.port, options.merge(use_ssl: true)) do |http|
-            http.request(req)
-          end
-          if res["etag"] == etag
-            return resource_path
+          # limit redirects
+          3.times do
+            req = Net::HTTP::Head.new(uri)
+            headers.each do |k, v|
+              req[k] = v
+            end
+            res = Net::HTTP.start(uri.hostname, uri.port, options.merge(use_ssl: true)) do |http|
+              http.request(req)
+            end
+            if res.is_a?(Net::HTTPRedirection)
+              # merge for relative urls
+              uri = uri.merge(res["location"])
+            elsif res["etag"] == etag
+              return resource_path
+            else
+              break
+            end
           end
         end
       end
