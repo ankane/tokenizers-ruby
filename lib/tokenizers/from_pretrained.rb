@@ -54,28 +54,9 @@ module Tokenizers
         esum = Digest::SHA256.hexdigest(etag)
         resource_path = File.join(cache_dir, "#{fsum}.#{esum}")
         if File.exist?(resource_path)
-          uri = URI(url)
-          # limit redirects
-          3.times do
-            req = Net::HTTP::Head.new(uri)
-            headers.each do |k, v|
-              req[k] = v
-            end
-            res = Net::HTTP.start(uri.hostname, uri.port, options.merge(use_ssl: true)) do |http|
-              http.request(req)
-            end
-            if res.is_a?(Net::HTTPRedirection)
-              # follow relative redirects only
-              if res["location"].start_with?("/")
-                uri = uri.merge(res["location"])
-              else
-                break
-              end
-            elsif res["etag"] == etag
-              return resource_path
-            else
-              break
-            end
+          res = head_request(url, headers, options)
+          if res["etag"] == etag
+            return resource_path
           end
         end
       end
@@ -104,6 +85,27 @@ module Tokenizers
       File.write(meta_path, JSON.generate(meta))
 
       resource_path
+    end
+
+    def head_request(url, headers, options)
+      uri = URI(url)
+
+      # limit redirects
+      3.times do
+        req = Net::HTTP::Head.new(uri)
+        headers.each do |k, v|
+          req[k] = v
+        end
+        res = Net::HTTP.start(uri.hostname, uri.port, options.merge(use_ssl: true)) do |http|
+          http.request(req)
+        end
+        # follow relative redirects only
+        if res.is_a?(Net::HTTPRedirection) && res["location"].start_with?("/")
+          uri = uri.merge(res["location"])
+        else
+          return res
+        end
+      end
     end
 
     def cache_dir
