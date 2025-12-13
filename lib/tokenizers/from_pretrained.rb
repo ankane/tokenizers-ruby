@@ -65,8 +65,12 @@ module Tokenizers
               http.request(req)
             end
             if res.is_a?(Net::HTTPRedirection)
-              # merge for relative urls
-              uri = uri.merge(res["location"])
+              # follow relative redirects only
+              if res["location"].start_with?("/")
+                uri = uri.merge(res["location"])
+              else
+                break
+              end
             elsif res["etag"] == etag
               return resource_path
             else
