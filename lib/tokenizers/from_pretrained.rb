@@ -87,25 +87,23 @@ module Tokenizers
       resource_path
     end
 
-    def head_request(url, headers, options)
+    def head_request(url, headers, options, redirects = 0)
       uri = URI(url)
-
-      # limit redirects
-      3.times do
-        req = Net::HTTP::Head.new(uri)
-        headers.each do |k, v|
-          req[k] = v
-        end
-        res = Net::HTTP.start(uri.hostname, uri.port, options.merge(use_ssl: true)) do |http|
-          http.request(req)
-        end
+      req = Net::HTTP::Head.new(uri)
+      headers.each do |k, v|
+        req[k] = v
+      end
+      res = Net::HTTP.start(uri.hostname, uri.port, options.merge(use_ssl: true)) do |http|
+        http.request(req)
+      end
+      if res.is_a?(Net::HTTPRedirection) && redirects < 3
+        location = URI(res["location"])
         # follow relative redirects only
-        if res.is_a?(Net::HTTPRedirection) && URI(res["location"]).relative?
-          uri = uri.merge(res["location"])
-        else
-          return res
+        if location.relative?
+          return head_request(uri.merge(location), headers, options, redirects + 1)
         end
       end
+      res
     end
 
     def cache_dir
