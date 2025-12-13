@@ -100,7 +100,7 @@ module Tokenizers
           http.request(req)
         end
         # follow relative redirects only
-        if res.is_a?(Net::HTTPRedirection) && res["location"].start_with?("/")
+        if res.is_a?(Net::HTTPRedirection) && URI(res["location"]).relative?
           uri = uri.merge(res["location"])
         else
           return res
