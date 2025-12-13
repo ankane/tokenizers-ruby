@@ -97,7 +97,7 @@ module Tokenizers
         http.request(req)
       end
       if res.is_a?(Net::HTTPRedirection) && redirects < 3
-        location = URI(res["location"])
+        location = URI.parse(res["location"])
         # follow relative redirects only
         if location.relative?
           return head_request(uri.merge(location), headers, options, redirects + 1)
