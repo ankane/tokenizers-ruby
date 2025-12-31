@@ -30,8 +30,9 @@ Rake::ExtensionTask.new("tokenizers", gemspec) do |ext|
 end
 
 task :remove_ext do
-  path = "lib/tokenizers/tokenizers.bundle"
-  File.unlink(path) if File.exist?(path)
+  Dir["lib/tokenizers/tokenizers.{bundle,so}"].each do |path|
+    File.unlink(path)
+  end
 end
 
 Rake::Task["build"].enhance [:remove_ext]
