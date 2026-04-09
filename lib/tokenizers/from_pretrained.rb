@@ -107,7 +107,7 @@ module Tokenizers
     end
 
     def normalize_etag(etag)
-      etag.delete_prefix("W/").delete_prefix('"').delete_suffix('"') if etag
+      etag.delete_prefix("W/") if etag
     end
 
     def cache_dir
