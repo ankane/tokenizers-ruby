@@ -55,7 +55,7 @@ module Tokenizers
         resource_path = File.join(cache_dir, "#{fsum}.#{esum}")
         if File.exist?(resource_path)
           res = head_request(url, headers, options)
-          if res["etag"] == etag
+          if normalize_etag(res["etag"]) == normalize_etag(etag)
             return resource_path
           end
         end
@@ -104,6 +104,10 @@ module Tokenizers
         end
       end
       res
+    end
+
+    def normalize_etag(etag)
+      etag.delete_prefix("W/").delete_prefix('"').delete_suffix('"') if etag
     end
 
     def cache_dir

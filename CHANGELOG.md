@@ -1,3 +1,7 @@
+## 0.6.4 (unreleased)
+
+- Fixed caching
+
 ## 0.6.3 (2026-01-05)
 
 - Updated Tokenizers to 0.22.2
