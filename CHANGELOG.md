@@ -1,4 +1,4 @@
-## 0.6.4 (unreleased)
+## 0.6.4 (2026-04-09)
 
 - Fixed caching
 
