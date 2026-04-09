@@ -224,16 +224,18 @@ class TokenizerTest < Minitest::Test
     as_pretty_str = tokenizer.to_s(pretty: true)
     assert_equal 29163, as_pretty_str.count("\n")
 
-    pretty_path = "#{Dir.tmpdir}/pretty-tokenizer.json"
-    tokenizer.save(pretty_path, pretty: true)
+    Dir.mktmpdir do |dir|
+      pretty_path = "#{dir}/pretty-tokenizer.json"
+      tokenizer.save(pretty_path, pretty: true)
 
-    # Compare file content
-    pretty_from_file = File.read(pretty_path)
-    assert_equal as_pretty_str, pretty_from_file
+      # Compare file content
+      pretty_from_file = File.read(pretty_path)
+      assert_equal as_pretty_str, pretty_from_file
 
-    new_tokenizer = Tokenizers.from_file(pretty_path)
-    assert_equal preserialization_size_with_added_tokens, new_tokenizer.vocab_size
-    assert_equal 28996, new_tokenizer.vocab["mellifluous"]
+      new_tokenizer = Tokenizers.from_file(pretty_path)
+      assert_equal preserialization_size_with_added_tokens, new_tokenizer.vocab_size
+      assert_equal 28996, new_tokenizer.vocab["mellifluous"]
+    end
   end
 
   def test_num_special_tokens_to_add
