@@ -9,6 +9,7 @@ mod models;
 mod normalizers;
 mod pre_tokenizers;
 mod processors;
+mod ruby;
 mod tokenizer;
 mod trainers;
 mod utils;

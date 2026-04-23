@@ -817,6 +817,7 @@ dependencies = [
  "ahash",
  "magnus",
  "onig",
+ "rb-sys",
  "serde",
  "tokenizers",
 ]

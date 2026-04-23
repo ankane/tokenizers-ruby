@@ -1,3 +1,7 @@
+## 0.6.5 (unreleased)
+
+- Added support for releasing GVL
+
 ## 0.6.4 (2026-04-09)
 
 - Fixed caching
