@@ -201,8 +201,8 @@ impl TryConvert for TextEncodeInput<'_> {
         // TODO check if this branch is needed
         if let Ok(arr) = RArray::try_convert(ob) {
             if arr.len() == 2 {
-                let first = arr.entry::<TextInputSequence>(0).unwrap();
-                let second = arr.entry::<TextInputSequence>(1).unwrap();
+                let first = arr.entry::<TextInputSequence>(0)?;
+                let second = arr.entry::<TextInputSequence>(1)?;
                 return Ok(Self((first, second).into()));
             }
         }
@@ -236,8 +236,8 @@ impl TryConvert for PreTokenizedEncodeInput<'_> {
         // TODO check if this branch is needed
         if let Ok(arr) = RArray::try_convert(ob) {
             if arr.len() == 2 {
-                let first = arr.entry::<PreTokenizedInputSequence>(0).unwrap();
-                let second = arr.entry::<PreTokenizedInputSequence>(1).unwrap();
+                let first = arr.entry::<PreTokenizedInputSequence>(0)?;
+                let second = arr.entry::<PreTokenizedInputSequence>(1)?;
                 return Ok(Self((first, second).into()));
             }
         }
