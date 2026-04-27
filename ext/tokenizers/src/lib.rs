@@ -14,11 +14,10 @@ mod tokenizer;
 mod trainers;
 mod utils;
 
-use encoding::RbEncoding;
 use error::RbError;
 use utils::RbRegex;
 
-use magnus::{function, method, prelude::*, value::Lazy, Error, RModule, Ruby};
+use magnus::{function, prelude::*, value::Lazy, Error, RModule, Ruby};
 
 type RbResult<T> = Result<T, Error>;
 
@@ -53,31 +52,6 @@ static TRAINERS: Lazy<RModule> =
 fn init(ruby: &Ruby) -> RbResult<()> {
     let module = ruby.define_module("Tokenizers")?;
 
-    let class = module.define_class("Encoding", ruby.class_object())?;
-    class.define_method("n_sequences", method!(RbEncoding::get_n_sequences, 0))?;
-    class.define_method("ids", method!(RbEncoding::get_ids, 0))?;
-    class.define_method("tokens", method!(RbEncoding::get_tokens, 0))?;
-    class.define_method("word_ids", method!(RbEncoding::get_word_ids, 0))?;
-    class.define_method("sequence_ids", method!(RbEncoding::get_sequence_ids, 0))?;
-    class.define_method("type_ids", method!(RbEncoding::get_type_ids, 0))?;
-    class.define_method("offsets", method!(RbEncoding::get_offsets, 0))?;
-    class.define_method(
-        "special_tokens_mask",
-        method!(RbEncoding::get_special_tokens_mask, 0),
-    )?;
-    class.define_method("attention_mask", method!(RbEncoding::get_attention_mask, 0))?;
-    class.define_method("overflowing", method!(RbEncoding::get_overflowing, 0))?;
-    class.define_method("_word_to_tokens", method!(RbEncoding::word_to_tokens, 2))?;
-    class.define_method("_word_to_chars", method!(RbEncoding::word_to_chars, 2))?;
-    class.define_method(
-        "token_to_sequence",
-        method!(RbEncoding::token_to_sequence, 1),
-    )?;
-    class.define_method("token_to_chars", method!(RbEncoding::token_to_chars, 1))?;
-    class.define_method("token_to_word", method!(RbEncoding::token_to_word, 1))?;
-    class.define_method("_char_to_token", method!(RbEncoding::char_to_token, 2))?;
-    class.define_method("_char_to_word", method!(RbEncoding::char_to_word, 2))?;
-
     let class = module.define_class("Regex", ruby.class_object())?;
     class.define_singleton_method("new", function!(RbRegex::new, 1))?;
 
@@ -89,6 +63,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     let trainers = module.define_module("Trainers")?;
 
     tokenizer::init_tokenizer(ruby, &module)?;
+    encoding::init_encoding(ruby, &module)?;
     models::init_models(ruby, &models)?;
     pre_tokenizers::init_pre_tokenizers(ruby, &pre_tokenizers)?;
     decoders::init_decoders(ruby, &decoders)?;

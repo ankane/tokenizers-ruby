@@ -1,5 +1,7 @@
-use magnus::{RArray, Ruby};
+use magnus::{method, Module, RArray, RModule, Ruby};
 use tk::{Encoding, Offsets};
+
+use super::RbResult;
 
 #[magnus::wrap(class = "Tokenizers::Encoding")]
 #[repr(transparent)]
@@ -90,4 +92,33 @@ impl RbEncoding {
     pub fn char_to_word(&self, char_pos: usize, sequence_index: usize) -> Option<u32> {
         self.encoding.char_to_word(char_pos, sequence_index)
     }
+}
+
+pub fn init_encoding(ruby: &Ruby, module: &RModule) -> RbResult<()> {
+    let class = module.define_class("Encoding", ruby.class_object())?;
+    class.define_method("n_sequences", method!(RbEncoding::get_n_sequences, 0))?;
+    class.define_method("ids", method!(RbEncoding::get_ids, 0))?;
+    class.define_method("tokens", method!(RbEncoding::get_tokens, 0))?;
+    class.define_method("word_ids", method!(RbEncoding::get_word_ids, 0))?;
+    class.define_method("sequence_ids", method!(RbEncoding::get_sequence_ids, 0))?;
+    class.define_method("type_ids", method!(RbEncoding::get_type_ids, 0))?;
+    class.define_method("offsets", method!(RbEncoding::get_offsets, 0))?;
+    class.define_method(
+        "special_tokens_mask",
+        method!(RbEncoding::get_special_tokens_mask, 0),
+    )?;
+    class.define_method("attention_mask", method!(RbEncoding::get_attention_mask, 0))?;
+    class.define_method("overflowing", method!(RbEncoding::get_overflowing, 0))?;
+    class.define_method("_word_to_tokens", method!(RbEncoding::word_to_tokens, 2))?;
+    class.define_method("_word_to_chars", method!(RbEncoding::word_to_chars, 2))?;
+    class.define_method(
+        "token_to_sequence",
+        method!(RbEncoding::token_to_sequence, 1),
+    )?;
+    class.define_method("token_to_chars", method!(RbEncoding::token_to_chars, 1))?;
+    class.define_method("token_to_word", method!(RbEncoding::token_to_word, 1))?;
+    class.define_method("_char_to_token", method!(RbEncoding::char_to_token, 2))?;
+    class.define_method("_char_to_word", method!(RbEncoding::char_to_word, 2))?;
+
+    Ok(())
 }
