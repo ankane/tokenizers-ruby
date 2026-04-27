@@ -74,7 +74,7 @@ impl From<tk::AddedToken> for RbAddedToken {
             lstrip: Some(token.lstrip),
             rstrip: Some(token.rstrip),
             normalized: Some(token.normalized),
-            special: !token.normalized,
+            special: token.special,
         }
     }
 }
