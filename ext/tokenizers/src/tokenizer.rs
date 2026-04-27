@@ -298,19 +298,13 @@ impl RbTokenizer {
     }
 
     pub fn from_str(json: RString) -> RbResult<Self> {
-        Tokenizer::from_str(unsafe { json.as_str()? })
-            .map(|v| RbTokenizer {
-                tokenizer: Arc::new(RwLock::new(v)),
-            })
-            .map_err(RbError::from)
+        let tokenizer = Tokenizer::from_str(unsafe { json.as_str()? }).map_err(RbError::from);
+        Ok(Self::new(tokenizer?))
     }
 
     pub fn from_file(path: PathBuf) -> RbResult<Self> {
-        Tokenizer::from_file(path)
-            .map(|v| RbTokenizer {
-                tokenizer: Arc::new(RwLock::new(v)),
-            })
-            .map_err(RbError::from)
+        let tokenizer = Tokenizer::from_file(path).map_err(RbError::from);
+        Ok(Self::new(tokenizer?))
     }
 
     pub fn to_str(&self, pretty: bool) -> RbResult<String> {
