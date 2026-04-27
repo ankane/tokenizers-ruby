@@ -88,7 +88,7 @@ impl RbPreTokenizer {
         RbPreTokenizer { pretok }
     }
 
-    fn byte_level_add_prefix_space(&self) -> bool {
+    fn byte_level_get_add_prefix_space(&self) -> bool {
         getter!(self, ByteLevel, add_prefix_space)
     }
 
@@ -96,7 +96,7 @@ impl RbPreTokenizer {
         setter!(self, ByteLevel, add_prefix_space, add_prefix_space);
     }
 
-    fn byte_level_use_regex(&self) -> bool {
+    fn byte_level_get_use_regex(&self) -> bool {
         getter!(self, ByteLevel, use_regex)
     }
 
@@ -104,7 +104,7 @@ impl RbPreTokenizer {
         setter!(self, ByteLevel, use_regex, use_regex);
     }
 
-    fn char_delimiter_split_delimiter(&self) -> String {
+    fn char_delimiter_split_get_delimiter(&self) -> String {
         getter!(self, Delimiter, delimiter.to_string())
     }
 
@@ -112,7 +112,7 @@ impl RbPreTokenizer {
         setter!(self, Delimiter, delimiter, delimiter);
     }
 
-    fn digits_individual_digits(&self) -> bool {
+    fn digits_get_individual_digits(&self) -> bool {
         getter!(self, Digits, individual_digits)
     }
 
@@ -120,7 +120,7 @@ impl RbPreTokenizer {
         setter!(self, Digits, individual_digits, individual_digits);
     }
 
-    fn metaspace_replacement(&self) -> String {
+    fn metaspace_get_replacement(&self) -> String {
         getter!(self, Metaspace, get_replacement().to_string())
     }
 
@@ -128,7 +128,7 @@ impl RbPreTokenizer {
         setter!(self, Metaspace, @set_replacement, replacement);
     }
 
-    fn metaspace_split(&self) -> bool {
+    fn metaspace_get_split(&self) -> bool {
         getter!(self, Metaspace, get_split())
     }
 
@@ -136,7 +136,7 @@ impl RbPreTokenizer {
         setter!(self, Metaspace, @set_split, split);
     }
 
-    fn metaspace_prepend_scheme(&self) -> String {
+    fn metaspace_get_prepend_scheme(&self) -> String {
         // Assuming Metaspace has a method to get the prepend_scheme as a string
         let scheme: PrependScheme = getter!(self, Metaspace, get_prepend_scheme());
         match scheme {
@@ -528,7 +528,7 @@ pub fn init_pre_tokenizers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     class.define_singleton_method("alphabet", function!(RbByteLevel::alphabet, 0))?;
     class.define_method(
         "add_prefix_space",
-        method!(RbPreTokenizer::byte_level_add_prefix_space, 0),
+        method!(RbPreTokenizer::byte_level_get_add_prefix_space, 0),
     )?;
     class.define_method(
         "add_prefix_space=",
@@ -536,7 +536,7 @@ pub fn init_pre_tokenizers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     )?;
     class.define_method(
         "use_regex",
-        method!(RbPreTokenizer::byte_level_use_regex, 0),
+        method!(RbPreTokenizer::byte_level_get_use_regex, 0),
     )?;
     class.define_method(
         "use_regex=",
@@ -547,7 +547,7 @@ pub fn init_pre_tokenizers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     class.define_singleton_method("new", function!(RbCharDelimiterSplit::new, 1))?;
     class.define_method(
         "delimiter",
-        method!(RbPreTokenizer::char_delimiter_split_delimiter, 0),
+        method!(RbPreTokenizer::char_delimiter_split_get_delimiter, 0),
     )?;
     class.define_method(
         "delimiter=",
@@ -558,7 +558,7 @@ pub fn init_pre_tokenizers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     class.define_singleton_method("_new", function!(RbDigits::new, 1))?;
     class.define_method(
         "individual_digits",
-        method!(RbPreTokenizer::digits_individual_digits, 0),
+        method!(RbPreTokenizer::digits_get_individual_digits, 0),
     )?;
     class.define_method(
         "individual_digits=",
@@ -569,7 +569,7 @@ pub fn init_pre_tokenizers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     class.define_singleton_method("_new", function!(RbMetaspace::new, 3))?;
     class.define_method(
         "prepend_scheme",
-        method!(RbPreTokenizer::metaspace_prepend_scheme, 0),
+        method!(RbPreTokenizer::metaspace_get_prepend_scheme, 0),
     )?;
     class.define_method(
         "prepend_scheme=",
@@ -577,13 +577,13 @@ pub fn init_pre_tokenizers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     )?;
     class.define_method(
         "replacement",
-        method!(RbPreTokenizer::metaspace_replacement, 0),
+        method!(RbPreTokenizer::metaspace_get_replacement, 0),
     )?;
     class.define_method(
         "replacement=",
         method!(RbPreTokenizer::metaspace_set_replacement, 1),
     )?;
-    class.define_method("split", method!(RbPreTokenizer::metaspace_split, 0))?;
+    class.define_method("split", method!(RbPreTokenizer::metaspace_get_split, 0))?;
     class.define_method("split=", method!(RbPreTokenizer::metaspace_set_split, 1))?;
 
     let class = module.define_class("Punctuation", pre_tokenizer)?;
