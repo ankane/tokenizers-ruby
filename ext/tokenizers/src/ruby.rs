@@ -1,7 +1,8 @@
+use std::borrow::Cow;
 use std::ffi::c_void;
 use std::ptr::null_mut;
 
-use magnus::Ruby;
+use magnus::{Error, Ruby};
 use rb_sys::rb_thread_call_without_gvl;
 
 pub trait GvlExt {
@@ -49,3 +50,21 @@ where
     data.result = Some(func());
     null_mut()
 }
+
+macro_rules! create_ruby_exception {
+    ($type:ident, $cls:ident) => {
+        pub struct $type {}
+
+        impl $type {
+            pub fn new_err<T>(message: T) -> Error
+            where
+                T: Into<Cow<'static, str>>,
+            {
+                let cls = Ruby::get().unwrap().$cls();
+                Error::new(cls, message)
+            }
+        }
+    };
+}
+
+create_ruby_exception!(RbException, exception_type_error);

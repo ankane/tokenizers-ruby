@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::str::FromStr;
-use std::sync::RwLock;
+use std::sync::{Arc, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 use magnus::prelude::*;
 use magnus::{Error, RArray, RHash, RString, Ruby, TryConvert, Value};
@@ -11,6 +11,7 @@ use tk::tokenizer::{
 };
 use tk::AddedToken;
 
+use crate::ruby::RbException;
 use crate::tk::PostProcessor;
 
 use super::decoders::RbDecoder;
@@ -258,14 +259,38 @@ type Tokenizer = TokenizerImpl<RbModel, RbNormalizer, RbPreTokenizer, RbPostProc
 
 #[magnus::wrap(class = "Tokenizers::Tokenizer")]
 pub struct RbTokenizer {
-    tokenizer: RwLock<Tokenizer>,
+    tokenizer: Arc<RwLock<Tokenizer>>,
+}
+
+impl Clone for RbTokenizer {
+    fn clone(&self) -> Self {
+        RbTokenizer {
+            tokenizer: Arc::clone(&self.tokenizer),
+        }
+    }
 }
 
 impl RbTokenizer {
     pub fn new(tokenizer: Tokenizer) -> Self {
         Self {
-            tokenizer: RwLock::new(tokenizer),
+            tokenizer: Arc::new(RwLock::new(tokenizer)),
         }
+    }
+
+    /// Acquire the inner tokenizer for reading; surfaces lock poisoning as a
+    /// `PyException` instead of panicking.
+    pub(crate) fn read_inner(&self) -> RbResult<RwLockReadGuard<'_, Tokenizer>> {
+        self.tokenizer
+            .read()
+            .map_err(|_| RbException::new_err("Tokenizer RwLock is poisoned"))
+    }
+
+    /// Acquire the inner tokenizer for writing; surfaces lock poisoning as a
+    /// `PyException` instead of panicking.
+    pub(crate) fn write_inner(&self) -> RbResult<RwLockWriteGuard<'_, Tokenizer>> {
+        self.tokenizer
+            .write()
+            .map_err(|_| RbException::new_err("Tokenizer RwLock is poisoned"))
     }
 
     pub fn from_model(model: &RbModel) -> Self {
@@ -275,7 +300,7 @@ impl RbTokenizer {
     pub fn from_str(json: RString) -> RbResult<Self> {
         Tokenizer::from_str(unsafe { json.as_str()? })
             .map(|v| RbTokenizer {
-                tokenizer: RwLock::new(v),
+                tokenizer: Arc::new(RwLock::new(v)),
             })
             .map_err(RbError::from)
     }
@@ -283,24 +308,18 @@ impl RbTokenizer {
     pub fn from_file(path: PathBuf) -> RbResult<Self> {
         Tokenizer::from_file(path)
             .map(|v| RbTokenizer {
-                tokenizer: RwLock::new(v),
+                tokenizer: Arc::new(RwLock::new(v)),
             })
             .map_err(RbError::from)
     }
 
     pub fn to_str(&self, pretty: bool) -> RbResult<String> {
-        self.tokenizer
-            .read()
-            .unwrap()
-            .to_string(pretty)
-            .map_err(RbError::from)
+        self.read_inner()?.to_string(pretty).map_err(RbError::from)
     }
 
     pub fn add_special_tokens(&self, tokens: Vec<String>) -> RbResult<usize> {
         let tokens: Vec<AddedToken> = tokens.iter().map(|t| AddedToken::from(t, true)).collect();
-        self.tokenizer
-            .write()
-            .unwrap()
+        self.write_inner()?
             .add_special_tokens(tokens)
             .map_err(RbError::from)
     }
@@ -310,27 +329,21 @@ impl RbTokenizer {
             || self.tokenizer.read().unwrap().get_model().get_trainer(),
             |t| t.clone(),
         );
-        self.tokenizer
-            .write()
-            .unwrap()
+        self.write_inner()?
             .train_from_files(&mut trainer, files)
             .map(|_| {})
             .map_err(RbError::from)
     }
 
     pub fn save(&self, path: String, pretty: bool) -> RbResult<()> {
-        self.tokenizer
-            .read()
-            .unwrap()
+        self.read_inner()?
             .save(&path, pretty)
             .map_err(RbError::from)
     }
 
     pub fn add_tokens(&self, tokens: Vec<String>) -> RbResult<usize> {
         let tokens: Vec<AddedToken> = tokens.iter().map(|t| AddedToken::from(t, true)).collect();
-        self.tokenizer
-            .write()
-            .unwrap()
+        self.write_inner()?
             .add_tokens(tokens)
             .map_err(RbError::from)
     }
@@ -359,9 +372,7 @@ impl RbTokenizer {
             None => tk::EncodeInput::Single(sequence),
         };
 
-        self.tokenizer
-            .read()
-            .unwrap()
+        self.read_inner()?
             .encode_char_offsets(input, add_special_tokens)
             .map(|v| RbEncoding { encoding: v })
             .map_err(RbError::from)
@@ -424,9 +435,7 @@ impl RbTokenizer {
     }
 
     pub fn decode(&self, ids: Vec<u32>, skip_special_tokens: bool) -> RbResult<String> {
-        self.tokenizer
-            .read()
-            .unwrap()
+        self.read_inner()?
             .decode(&ids, skip_special_tokens)
             .map_err(RbError::from)
     }
@@ -448,66 +457,59 @@ impl RbTokenizer {
         .map_err(RbError::from)
     }
 
-    pub fn get_model(&self) -> RbModel {
-        self.tokenizer.read().unwrap().get_model().clone()
+    pub fn get_model(&self) -> RbResult<RbModel> {
+        Ok(self.read_inner()?.get_model().clone())
     }
 
-    pub fn set_model(&self, model: &RbModel) {
-        self.tokenizer.write().unwrap().with_model(model.clone());
+    pub fn set_model(&self, model: &RbModel) -> RbResult<()> {
+        self.write_inner()?.with_model(model.clone());
+        Ok(())
     }
 
-    pub fn get_decoder(&self) -> Option<RbDecoder> {
-        self.tokenizer.read().unwrap().get_decoder().cloned()
+    pub fn get_decoder(&self) -> RbResult<Option<RbDecoder>> {
+        Ok(self.read_inner()?.get_decoder().cloned())
     }
 
-    pub fn set_decoder(&self, decoder: Option<&RbDecoder>) {
-        self.tokenizer
-            .write()
-            .unwrap()
-            .with_decoder(decoder.cloned());
+    pub fn set_decoder(&self, decoder: Option<&RbDecoder>) -> RbResult<()> {
+        self.write_inner()?.with_decoder(decoder.cloned());
+        Ok(())
     }
 
-    pub fn get_pre_tokenizer(&self) -> Option<RbPreTokenizer> {
-        self.tokenizer.read().unwrap().get_pre_tokenizer().cloned()
+    pub fn get_pre_tokenizer(&self) -> RbResult<Option<RbPreTokenizer>> {
+        Ok(self.read_inner()?.get_pre_tokenizer().cloned())
     }
 
-    pub fn set_pre_tokenizer(&self, pretok: Option<&RbPreTokenizer>) {
-        self.tokenizer
-            .write()
-            .unwrap()
-            .with_pre_tokenizer(pretok.cloned());
+    pub fn set_pre_tokenizer(&self, pretok: Option<&RbPreTokenizer>) -> RbResult<()> {
+        self.write_inner()?.with_pre_tokenizer(pretok.cloned());
+        Ok(())
     }
 
-    pub fn get_post_processor(&self) -> Option<RbPostProcessor> {
-        self.tokenizer.read().unwrap().get_post_processor().cloned()
+    pub fn get_post_processor(&self) -> RbResult<Option<RbPostProcessor>> {
+        Ok(self.read_inner()?.get_post_processor().cloned())
     }
 
-    pub fn set_post_processor(&self, processor: Option<&RbPostProcessor>) {
-        self.tokenizer
-            .write()
-            .unwrap()
-            .with_post_processor(processor.cloned());
+    pub fn set_post_processor(&self, processor: Option<&RbPostProcessor>) -> RbResult<()> {
+        self.write_inner()?.with_post_processor(processor.cloned());
+        Ok(())
     }
 
-    pub fn get_normalizer(&self) -> Option<RbNormalizer> {
-        self.tokenizer.read().unwrap().get_normalizer().cloned()
+    pub fn get_normalizer(&self) -> RbResult<Option<RbNormalizer>> {
+        Ok(self.read_inner()?.get_normalizer().cloned())
     }
 
     pub fn set_normalizer(&self, normalizer: Option<&RbNormalizer>) -> RbResult<()> {
-        self.tokenizer
-            .write()
-            .unwrap()
+        self.write_inner()?
             .with_normalizer(normalizer.cloned())
             .map(|_| ())
             .map_err(RbError::from)
     }
 
-    pub fn token_to_id(&self, token: String) -> Option<u32> {
-        self.tokenizer.read().unwrap().token_to_id(&token)
+    pub fn token_to_id(&self, token: String) -> RbResult<Option<u32>> {
+        Ok(self.read_inner()?.token_to_id(&token))
     }
 
-    pub fn id_to_token(&self, id: u32) -> Option<String> {
-        self.tokenizer.read().unwrap().id_to_token(id)
+    pub fn id_to_token(&self, id: u32) -> RbResult<Option<String>> {
+        Ok(self.read_inner()?.id_to_token(id))
     }
 
     // TODO support more kwargs
@@ -561,24 +563,19 @@ impl RbTokenizer {
             return Err(Error::new(ruby.exception_arg_error(), "unknown keyword"));
         }
 
-        rb_self
-            .tokenizer
-            .write()
-            .unwrap()
-            .with_padding(Some(params));
+        rb_self.write_inner()?.with_padding(Some(params));
 
         Ok(())
     }
 
-    pub fn no_padding(&self) {
-        self.tokenizer.write().unwrap().with_padding(None);
+    pub fn no_padding(&self) -> RbResult<()> {
+        self.write_inner()?.with_padding(None);
+        Ok(())
     }
 
     pub fn padding(ruby: &Ruby, rb_self: &Self) -> RbResult<Option<RHash>> {
         rb_self
-            .tokenizer
-            .read()
-            .unwrap()
+            .read_inner()?
             .get_padding()
             .map_or(Ok(None), |params| {
                 let ret_hash = ruby.hash_new();
@@ -650,12 +647,7 @@ impl RbTokenizer {
             return Err(Error::new(ruby.exception_arg_error(), "unknown keyword"));
         }
 
-        if let Err(error_message) = rb_self
-            .tokenizer
-            .write()
-            .unwrap()
-            .with_truncation(Some(params))
-        {
+        if let Err(error_message) = rb_self.write_inner()?.with_truncation(Some(params)) {
             return Err(Error::new(
                 ruby.exception_arg_error(),
                 error_message.to_string(),
@@ -665,19 +657,16 @@ impl RbTokenizer {
         Ok(())
     }
 
-    pub fn no_truncation(&self) {
-        self.tokenizer
-            .write()
-            .unwrap()
+    pub fn no_truncation(&self) -> RbResult<()> {
+        self.write_inner()?
             .with_truncation(None)
             .expect("Failed to set truncation to `None`! This should never happen");
+        Ok(())
     }
 
     pub fn truncation(ruby: &Ruby, rb_self: &Self) -> RbResult<Option<RHash>> {
         rb_self
-            .tokenizer
-            .read()
-            .unwrap()
+            .read_inner()?
             .get_truncation()
             .map_or(Ok(None), |params| {
                 let ret_hash = ruby.hash_new();
@@ -691,29 +680,25 @@ impl RbTokenizer {
             })
     }
 
-    pub fn num_special_tokens_to_add(&self, is_pair: bool) -> usize {
-        self.tokenizer
-            .read()
-            .unwrap()
+    pub fn num_special_tokens_to_add(&self, is_pair: bool) -> RbResult<usize> {
+        Ok(self
+            .read_inner()?
             .get_post_processor()
-            .map_or(0, |p| p.added_tokens(is_pair))
+            .map_or(0, |p| p.added_tokens(is_pair)))
     }
 
-    pub fn vocab(&self, with_added_tokens: bool) -> HashMap<String, u32> {
-        self.tokenizer.read().unwrap().get_vocab(with_added_tokens)
+    pub fn vocab(&self, with_added_tokens: bool) -> RbResult<HashMap<String, u32>> {
+        Ok(self.read_inner()?.get_vocab(with_added_tokens))
     }
 
-    pub fn vocab_size(&self, with_added_tokens: bool) -> usize {
-        self.tokenizer
-            .read()
-            .unwrap()
-            .get_vocab_size(with_added_tokens)
+    pub fn vocab_size(&self, with_added_tokens: bool) -> RbResult<usize> {
+        Ok(self.read_inner()?.get_vocab_size(with_added_tokens))
     }
 
     pub fn get_added_tokens_decoder(ruby: &Ruby, rb_self: &Self) -> RbResult<RHash> {
         let sorted_map = ruby.hash_new();
 
-        for (key, value) in rb_self.tokenizer.read().unwrap().get_added_tokens_decoder() {
+        for (key, value) in rb_self.read_inner()?.get_added_tokens_decoder() {
             sorted_map.aset::<u32, RbAddedToken>(key, value.into())?;
         }
 
