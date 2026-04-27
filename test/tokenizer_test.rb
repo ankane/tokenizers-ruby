@@ -13,20 +13,6 @@ class TokenizerTest < Minitest::Test
 
     # decode
     assert_equal "I can feel the magic, can you?", tokenizer.decode(encoded.ids)
-
-    # encode batch
-    encoded = tokenizer.encode_batch(["I can feel the magic, can you?"])
-    assert_equal 1, encoded.size
-    assert_equal expected_ids, encoded[0].ids
-
-    # decode batch
-    assert_equal ["I can feel the magic, can you?"], tokenizer.decode_batch(encoded.map(&:ids))
-
-    # encode batch fast
-    encoded = tokenizer.encode_batch_fast(["I can feel the magic, can you?"])
-    assert_equal 1, encoded.size
-    assert_equal expected_ids, encoded[0].ids
-    assert_equal [[0, 0]] * encoded[0].ids.size, encoded[0].offsets
   end
 
   def test_from_pretrained_gpt2
@@ -133,6 +119,24 @@ class TokenizerTest < Minitest::Test
     encoded_with_pretokenization = tokenizer.encode(pretokenized_sequence, pretokenized_pair, is_pretokenized: true)
 
     assert_equal encoded_wout_pretokenization.tokens, encoded_with_pretokenization.tokens
+  end
+
+  def test_encode_batch
+    tokenizer = Tokenizers.from_pretrained("bert-base-cased")
+    encoded = tokenizer.encode_batch(["I can feel the magic, can you?"])
+    assert_equal 1, encoded.size
+    expected_ids = [101, 146, 1169, 1631, 1103, 3974, 117, 1169, 1128, 136, 102]
+    assert_equal expected_ids, encoded[0].ids
+    assert_equal ["I can feel the magic, can you?"], tokenizer.decode_batch(encoded.map(&:ids))
+  end
+
+  def test_encode_batch_fast
+    tokenizer = Tokenizers.from_pretrained("bert-base-cased")
+    encoded = tokenizer.encode_batch_fast(["I can feel the magic, can you?"])
+    assert_equal 1, encoded.size
+    expected_ids = [101, 146, 1169, 1631, 1103, 3974, 117, 1169, 1128, 136, 102]
+    assert_equal expected_ids, encoded[0].ids
+    assert_equal [[0, 0]] * encoded[0].ids.size, encoded[0].offsets
   end
 
   def test_decode_with_special_tokens
