@@ -22,6 +22,6 @@ impl RbRegex {
 static REGEX: Lazy<RClass> =
     Lazy::new(|ruby| ruby.get_inner(&TOKENIZERS).const_get("Regex").unwrap());
 
-pub fn regex() -> RClass {
-    Ruby::get().unwrap().get_inner(&REGEX)
+pub fn regex(ruby: &Ruby) -> RClass {
+    ruby.get_inner(&REGEX)
 }

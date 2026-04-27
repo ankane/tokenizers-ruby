@@ -13,7 +13,8 @@ pub enum RbPattern<'p> {
 
 impl TryConvert for RbPattern<'_> {
     fn try_convert(obj: Value) -> RbResult<Self> {
-        if obj.is_kind_of(regex()) {
+        let ruby = &Ruby::get_with(obj);
+        if obj.is_kind_of(regex(ruby)) {
             Ok(RbPattern::Regex(TryConvert::try_convert(obj)?))
         } else {
             Ok(RbPattern::Str(TryConvert::try_convert(obj)?))
