@@ -16,7 +16,6 @@ mod utils;
 
 use encoding::RbEncoding;
 use error::RbError;
-use tokenizer::{RbAddedToken, RbTokenizer};
 use utils::RbRegex;
 
 use magnus::{function, method, prelude::*, value::Lazy, Error, RModule, Ruby};
@@ -54,72 +53,6 @@ static TRAINERS: Lazy<RModule> =
 fn init(ruby: &Ruby) -> RbResult<()> {
     let module = ruby.define_module("Tokenizers")?;
 
-    let class = module.define_class("Tokenizer", ruby.class_object())?;
-    class.define_singleton_method("new", function!(RbTokenizer::from_model, 1))?;
-    class.define_singleton_method("from_str", function!(RbTokenizer::from_str, 1))?;
-    class.define_singleton_method("from_file", function!(RbTokenizer::from_file, 1))?;
-    class.define_method(
-        "add_special_tokens",
-        method!(RbTokenizer::add_special_tokens, 1),
-    )?;
-    class.define_method("train", method!(RbTokenizer::train, 2))?;
-    class.define_method("_save", method!(RbTokenizer::save, 2))?;
-    class.define_method("add_tokens", method!(RbTokenizer::add_tokens, 1))?;
-    class.define_method("_encode", method!(RbTokenizer::encode, 4))?;
-    class.define_method("_encode_batch", method!(RbTokenizer::encode_batch, 3))?;
-    class.define_method(
-        "_encode_batch_fast",
-        method!(RbTokenizer::encode_batch_fast, 3),
-    )?;
-    class.define_method("_decode", method!(RbTokenizer::decode, 2))?;
-    class.define_method("_decode_batch", method!(RbTokenizer::decode_batch, 2))?;
-    class.define_method(
-        "encode_special_tokens",
-        method!(RbTokenizer::get_encode_special_tokens, 0),
-    )?;
-    class.define_method(
-        "encode_special_tokens=",
-        method!(RbTokenizer::set_encode_special_tokens, 1),
-    )?;
-    class.define_method("model", method!(RbTokenizer::get_model, 0))?;
-    class.define_method("model=", method!(RbTokenizer::set_model, 1))?;
-    class.define_method("decoder", method!(RbTokenizer::get_decoder, 0))?;
-    class.define_method("decoder=", method!(RbTokenizer::set_decoder, 1))?;
-    class.define_method("pre_tokenizer", method!(RbTokenizer::get_pre_tokenizer, 0))?;
-    class.define_method("pre_tokenizer=", method!(RbTokenizer::set_pre_tokenizer, 1))?;
-    class.define_method(
-        "post_processor",
-        method!(RbTokenizer::get_post_processor, 0),
-    )?;
-    class.define_method(
-        "post_processor=",
-        method!(RbTokenizer::set_post_processor, 1),
-    )?;
-    class.define_method("normalizer", method!(RbTokenizer::get_normalizer, 0))?;
-    class.define_method("normalizer=", method!(RbTokenizer::set_normalizer, 1))?;
-    class.define_method("token_to_id", method!(RbTokenizer::token_to_id, 1))?;
-    class.define_method("id_to_token", method!(RbTokenizer::id_to_token, 1))?;
-    class.define_method("_enable_padding", method!(RbTokenizer::enable_padding, 1))?;
-    class.define_method("padding", method!(RbTokenizer::get_padding, 0))?;
-    class.define_method("no_padding", method!(RbTokenizer::no_padding, 0))?;
-    class.define_method(
-        "_enable_truncation",
-        method!(RbTokenizer::enable_truncation, 2),
-    )?;
-    class.define_method("truncation", method!(RbTokenizer::get_truncation, 0))?;
-    class.define_method("no_truncation", method!(RbTokenizer::no_truncation, 0))?;
-    class.define_method(
-        "num_special_tokens_to_add",
-        method!(RbTokenizer::num_special_tokens_to_add, 1),
-    )?;
-    class.define_method("_vocab", method!(RbTokenizer::get_vocab, 1))?;
-    class.define_method("_vocab_size", method!(RbTokenizer::get_vocab_size, 1))?;
-    class.define_method(
-        "added_tokens_decoder",
-        method!(RbTokenizer::get_added_tokens_decoder, 0),
-    )?;
-    class.define_method("_to_s", method!(RbTokenizer::to_str, 1))?;
-
     let class = module.define_class("Encoding", ruby.class_object())?;
     class.define_method("n_sequences", method!(RbEncoding::get_n_sequences, 0))?;
     class.define_method("ids", method!(RbEncoding::get_ids, 0))?;
@@ -148,15 +81,6 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     let class = module.define_class("Regex", ruby.class_object())?;
     class.define_singleton_method("new", function!(RbRegex::new, 1))?;
 
-    let class = module.define_class("AddedToken", ruby.class_object())?;
-    class.define_singleton_method("_new", function!(RbAddedToken::new, 2))?;
-    class.define_method("content", method!(RbAddedToken::get_content, 0))?;
-    class.define_method("rstrip", method!(RbAddedToken::get_rstrip, 0))?;
-    class.define_method("lstrip", method!(RbAddedToken::get_lstrip, 0))?;
-    class.define_method("single_word", method!(RbAddedToken::get_single_word, 0))?;
-    class.define_method("normalized", method!(RbAddedToken::get_normalized, 0))?;
-    class.define_method("special", method!(RbAddedToken::get_special, 0))?;
-
     let models = module.define_module("Models")?;
     let pre_tokenizers = module.define_module("PreTokenizers")?;
     let decoders = module.define_module("Decoders")?;
@@ -164,6 +88,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     let normalizers = module.define_module("Normalizers")?;
     let trainers = module.define_module("Trainers")?;
 
+    tokenizer::init_tokenizer(ruby, &module)?;
     models::init_models(ruby, &models)?;
     pre_tokenizers::init_pre_tokenizers(ruby, &pre_tokenizers)?;
     decoders::init_decoders(ruby, &decoders)?;
