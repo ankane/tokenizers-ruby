@@ -101,27 +101,27 @@ impl RbDecoder {
         setter!(self, CTC, word_delimiter_token, word_delimiter_token);
     }
 
-    fn strip_get_content(&self) -> char {
+    pub fn strip_get_content(&self) -> char {
         getter!(self, Strip, content)
     }
 
-    fn strip_set_content(&self, content: char) {
+    pub fn strip_set_content(&self, content: char) {
         setter!(self, Strip, content, content);
     }
 
-    fn strip_get_start(&self) -> usize {
+    pub fn strip_get_start(&self) -> usize {
         getter!(self, Strip, start)
     }
 
-    fn strip_set_start(&self, start: usize) {
+    pub fn strip_set_start(&self, start: usize) {
         setter!(self, Strip, start, start);
     }
 
-    fn strip_get_stop(&self) -> usize {
+    pub fn strip_get_stop(&self) -> usize {
         getter!(self, Strip, stop)
     }
 
-    fn strip_set_stop(&self, stop: usize) {
+    pub fn strip_set_stop(&self, stop: usize) {
         setter!(self, Strip, stop, stop);
     }
 
