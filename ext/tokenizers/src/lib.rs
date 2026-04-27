@@ -121,19 +121,19 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("_to_s", method!(RbTokenizer::to_str, 1))?;
 
     let class = module.define_class("Encoding", ruby.class_object())?;
-    class.define_method("n_sequences", method!(RbEncoding::n_sequences, 0))?;
-    class.define_method("ids", method!(RbEncoding::ids, 0))?;
-    class.define_method("tokens", method!(RbEncoding::tokens, 0))?;
-    class.define_method("word_ids", method!(RbEncoding::word_ids, 0))?;
-    class.define_method("sequence_ids", method!(RbEncoding::sequence_ids, 0))?;
-    class.define_method("type_ids", method!(RbEncoding::type_ids, 0))?;
-    class.define_method("offsets", method!(RbEncoding::offsets, 0))?;
+    class.define_method("n_sequences", method!(RbEncoding::get_n_sequences, 0))?;
+    class.define_method("ids", method!(RbEncoding::get_ids, 0))?;
+    class.define_method("tokens", method!(RbEncoding::get_tokens, 0))?;
+    class.define_method("word_ids", method!(RbEncoding::get_word_ids, 0))?;
+    class.define_method("sequence_ids", method!(RbEncoding::get_sequence_ids, 0))?;
+    class.define_method("type_ids", method!(RbEncoding::get_type_ids, 0))?;
+    class.define_method("offsets", method!(RbEncoding::get_offsets, 0))?;
     class.define_method(
         "special_tokens_mask",
-        method!(RbEncoding::special_tokens_mask, 0),
+        method!(RbEncoding::get_special_tokens_mask, 0),
     )?;
-    class.define_method("attention_mask", method!(RbEncoding::attention_mask, 0))?;
-    class.define_method("overflowing", method!(RbEncoding::overflowing, 0))?;
+    class.define_method("attention_mask", method!(RbEncoding::get_attention_mask, 0))?;
+    class.define_method("overflowing", method!(RbEncoding::get_overflowing, 0))?;
     class.define_method("_word_to_tokens", method!(RbEncoding::word_to_tokens, 2))?;
     class.define_method("_word_to_chars", method!(RbEncoding::word_to_chars, 2))?;
     class.define_method(
