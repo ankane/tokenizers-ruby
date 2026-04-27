@@ -69,7 +69,7 @@ macro_rules! setter {
 }
 
 impl RbNormalizer {
-    fn bert_clean_text(&self) -> bool {
+    fn bert_get_clean_text(&self) -> bool {
         getter!(self, BertNormalizer, clean_text)
     }
 
@@ -77,7 +77,7 @@ impl RbNormalizer {
         setter!(self, BertNormalizer, clean_text, clean_text);
     }
 
-    fn bert_handle_chinese_chars(&self) -> bool {
+    fn bert_get_handle_chinese_chars(&self) -> bool {
         getter!(self, BertNormalizer, handle_chinese_chars)
     }
 
@@ -90,7 +90,7 @@ impl RbNormalizer {
         );
     }
 
-    fn bert_strip_accents(&self) -> Option<bool> {
+    fn bert_get_strip_accents(&self) -> Option<bool> {
         getter!(self, BertNormalizer, strip_accents)
     }
 
@@ -98,7 +98,7 @@ impl RbNormalizer {
         setter!(self, BertNormalizer, strip_accents, strip_accents);
     }
 
-    fn bert_lowercase(&self) -> bool {
+    fn bert_get_lowercase(&self) -> bool {
         getter!(self, BertNormalizer, lowercase)
     }
 
@@ -106,7 +106,7 @@ impl RbNormalizer {
         setter!(self, BertNormalizer, lowercase, lowercase);
     }
 
-    fn prepend_prepend(&self) -> String {
+    fn prepend_get_prepend(&self) -> String {
         getter!(self, Prepend, prepend)
     }
 
@@ -114,7 +114,7 @@ impl RbNormalizer {
         setter!(self, Prepend, prepend, prepend);
     }
 
-    fn strip_left(&self) -> bool {
+    fn strip_get_left(&self) -> bool {
         getter!(self, StripNormalizer, strip_left)
     }
 
@@ -122,7 +122,7 @@ impl RbNormalizer {
         setter!(self, StripNormalizer, strip_left, left);
     }
 
-    fn strip_right(&self) -> bool {
+    fn strip_get_right(&self) -> bool {
         getter!(self, StripNormalizer, strip_right)
     }
 
@@ -476,11 +476,11 @@ pub fn init_normalizers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
 
     let class = module.define_class("BertNormalizer", normalizer)?;
     class.define_singleton_method("_new", function!(RbBertNormalizer::new, 4))?;
-    class.define_method("clean_text", method!(RbNormalizer::bert_clean_text, 0))?;
+    class.define_method("clean_text", method!(RbNormalizer::bert_get_clean_text, 0))?;
     class.define_method("clean_text=", method!(RbNormalizer::bert_set_clean_text, 1))?;
     class.define_method(
         "handle_chinese_chars",
-        method!(RbNormalizer::bert_handle_chinese_chars, 0),
+        method!(RbNormalizer::bert_get_handle_chinese_chars, 0),
     )?;
     class.define_method(
         "handle_chinese_chars=",
@@ -488,13 +488,13 @@ pub fn init_normalizers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     )?;
     class.define_method(
         "strip_accents",
-        method!(RbNormalizer::bert_strip_accents, 0),
+        method!(RbNormalizer::bert_get_strip_accents, 0),
     )?;
     class.define_method(
         "strip_accents=",
         method!(RbNormalizer::bert_set_strip_accents, 1),
     )?;
-    class.define_method("lowercase", method!(RbNormalizer::bert_lowercase, 0))?;
+    class.define_method("lowercase", method!(RbNormalizer::bert_get_lowercase, 0))?;
     class.define_method("lowercase=", method!(RbNormalizer::bert_set_lowercase, 1))?;
 
     let class = module.define_class("Lowercase", normalizer)?;
@@ -523,14 +523,14 @@ pub fn init_normalizers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
 
     let class = module.define_class("Prepend", normalizer)?;
     class.define_singleton_method("_new", function!(RbPrepend::new, 1))?;
-    class.define_method("prepend", method!(RbNormalizer::prepend_prepend, 0))?;
+    class.define_method("prepend", method!(RbNormalizer::prepend_get_prepend, 0))?;
     class.define_method("prepend=", method!(RbNormalizer::prepend_set_prepend, 1))?;
 
     let class = module.define_class("Strip", normalizer)?;
     class.define_singleton_method("_new", function!(RbStrip::new, 2))?;
-    class.define_method("left", method!(RbNormalizer::strip_left, 0))?;
+    class.define_method("left", method!(RbNormalizer::strip_get_left, 0))?;
     class.define_method("left=", method!(RbNormalizer::strip_set_left, 1))?;
-    class.define_method("right", method!(RbNormalizer::strip_right, 0))?;
+    class.define_method("right", method!(RbNormalizer::strip_get_right, 0))?;
     class.define_method("right=", method!(RbNormalizer::strip_set_right, 1))?;
 
     let class = module.define_class("StripAccents", normalizer)?;
