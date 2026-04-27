@@ -325,10 +325,10 @@ impl RbTokenizer {
     }
 
     pub fn train(&self, files: Vec<String>, trainer: Option<&RbTrainer>) -> RbResult<()> {
-        let mut trainer = trainer.map_or_else(
-            || self.tokenizer.read().unwrap().get_model().get_trainer(),
-            |t| t.clone(),
-        );
+        let mut trainer = match trainer {
+            Some(t) => t.clone(),
+            None => self.read_inner()?.get_model().get_trainer(),
+        };
         self.write_inner()?
             .train_from_files(&mut trainer, files)
             .map(|_| {})
