@@ -1,10 +1,11 @@
 use std::sync::Arc;
+use std::sync::RwLock;
 
 use magnus::{
     data_type_builder, function, value::Lazy, Class, DataType, DataTypeFunctions, Module, Object,
-    RClass, RModule, Ruby, TryConvert, TypedData, Value,
+    RArray, RClass, RModule, Ruby, TryConvert, TypedData, Value,
 };
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use tk::processors::bert::BertProcessing;
 use tk::processors::byte_level::ByteLevel;
 use tk::processors::roberta::RobertaProcessing;
@@ -15,14 +16,25 @@ use tk::{Encoding, PostProcessor};
 use super::{RbResult, PROCESSORS};
 
 #[derive(DataTypeFunctions, Clone, Deserialize, Serialize)]
+#[serde(transparent)]
 pub struct RbPostProcessor {
-    #[serde(flatten)]
-    pub processor: Arc<PostProcessorWrapper>,
+    pub processor: RbPostProcessorTypeWrapper,
 }
 
 impl RbPostProcessor {
-    pub fn new(processor: Arc<PostProcessorWrapper>) -> Self {
+    pub fn new(processor: RbPostProcessorTypeWrapper) -> Self {
         RbPostProcessor { processor }
+    }
+}
+
+impl<I> From<I> for RbPostProcessor
+where
+    I: Into<PostProcessorWrapper>,
+{
+    fn from(processor: I) -> Self {
+        RbPostProcessor {
+            processor: processor.into().into(),
+        }
     }
 }
 
@@ -38,6 +50,73 @@ impl PostProcessor for RbPostProcessor {
     ) -> tk::Result<Vec<Encoding>> {
         self.processor
             .process_encodings(encodings, add_special_tokens)
+    }
+}
+
+#[derive(Clone)]
+pub(crate) enum RbPostProcessorTypeWrapper {
+    Sequence(Vec<Arc<RwLock<PostProcessorWrapper>>>),
+    Single(Arc<RwLock<PostProcessorWrapper>>),
+}
+
+impl PostProcessor for RbPostProcessorTypeWrapper {
+    fn added_tokens(&self, is_pair: bool) -> usize {
+        match self {
+            RbPostProcessorTypeWrapper::Single(inner) => inner
+                .read()
+                .expect("RwLock synchronisation primitive is poisoned, cannot get subtype of RbPostProcessor")
+                .added_tokens(is_pair),
+            RbPostProcessorTypeWrapper::Sequence(_inner) => todo!(),
+        }
+    }
+
+    fn process_encodings(
+        &self,
+        encodings: Vec<Encoding>,
+        add_special_tokens: bool,
+    ) -> tk::Result<Vec<Encoding>> {
+        match self {
+            RbPostProcessorTypeWrapper::Single(inner) => inner
+                .read()
+                .expect("RwLock synchronisation primitive is poisoned, cannot get subtype of RbPreTokenizer")
+                .process_encodings(encodings, add_special_tokens),
+            RbPostProcessorTypeWrapper::Sequence(_inner) => todo!(),
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for RbPostProcessorTypeWrapper {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let wrapper = PostProcessorWrapper::deserialize(deserializer)?;
+        Ok(wrapper.into())
+    }
+}
+
+impl Serialize for RbPostProcessorTypeWrapper {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            RbPostProcessorTypeWrapper::Sequence(_seq) => todo!(),
+            RbPostProcessorTypeWrapper::Single(inner) => inner.serialize(serializer),
+        }
+    }
+}
+
+impl<I> From<I> for RbPostProcessorTypeWrapper
+where
+    I: Into<PostProcessorWrapper>,
+{
+    fn from(processor: I) -> Self {
+        let processor = processor.into();
+        match processor {
+            PostProcessorWrapper::Sequence(_seq) => todo!(),
+            _ => RbPostProcessorTypeWrapper::Single(Arc::new(RwLock::new(processor.clone()))),
+        }
     }
 }
 
@@ -91,7 +170,7 @@ pub struct RbBertProcessing {}
 
 impl RbBertProcessing {
     pub fn new(sep: (String, u32), cls: (String, u32)) -> RbPostProcessor {
-        RbPostProcessor::new(Arc::new(BertProcessing::new(sep, cls).into()))
+        BertProcessing::new(sep, cls).into()
     }
 }
 
@@ -104,7 +183,7 @@ impl RbByteLevel {
         if let Some(to) = trim_offsets {
             byte_level = byte_level.trim_offsets(to);
         }
-        RbPostProcessor::new(Arc::new(byte_level.into()))
+        byte_level.into()
     }
 }
 
@@ -120,7 +199,7 @@ impl RbRobertaProcessing {
         let proc = RobertaProcessing::new(sep, cls)
             .trim_offsets(trim_offsets)
             .add_prefix_space(add_prefix_space);
-        RbPostProcessor::new(Arc::new(proc.into()))
+        proc.into()
     }
 }
 
@@ -145,7 +224,27 @@ impl RbTemplateProcessing {
         }
         let processor = builder.build().unwrap(); //.map_err(RbError::from)?;
 
-        Ok(RbPostProcessor::new(Arc::new(processor.into())))
+        Ok(processor.into())
+    }
+}
+
+pub struct RbSequence {}
+
+impl RbSequence {
+    fn new(processors_rb: RArray) -> RbResult<RbPostProcessor> {
+        let mut processors = Vec::with_capacity(processors_rb.len());
+        for n in processors_rb {
+            let processor = <&RbPostProcessor>::try_convert(n)?;
+            match &processor.processor {
+                RbPostProcessorTypeWrapper::Sequence(inner) => {
+                    processors.extend(inner.iter().cloned())
+                }
+                RbPostProcessorTypeWrapper::Single(inner) => processors.push(inner.clone()),
+            }
+        }
+        Ok(RbPostProcessor::new(RbPostProcessorTypeWrapper::Sequence(
+            processors,
+        )))
     }
 }
 
@@ -198,12 +297,20 @@ unsafe impl TypedData for RbPostProcessor {
             class.undef_default_alloc_func();
             class
         });
-        match *value.processor {
-            PostProcessorWrapper::Bert(_) => ruby.get_inner(&BERT_PROCESSING),
-            PostProcessorWrapper::ByteLevel(_) => ruby.get_inner(&BYTE_LEVEL),
-            PostProcessorWrapper::Roberta(_) => ruby.get_inner(&ROBERTA_PROCESSING),
-            PostProcessorWrapper::Template(_) => ruby.get_inner(&TEMPLATE_PROCESSING),
-            _ => todo!(),
+        static SEQUENCE: Lazy<RClass> = Lazy::new(|ruby| {
+            let class: RClass = ruby.get_inner(&PROCESSORS).const_get("Sequence").unwrap();
+            class.undef_default_alloc_func();
+            class
+        });
+        match &value.processor {
+            RbPostProcessorTypeWrapper::Single(inner) => match &*inner.read().unwrap() {
+                PostProcessorWrapper::Bert(_) => ruby.get_inner(&BERT_PROCESSING),
+                PostProcessorWrapper::ByteLevel(_) => ruby.get_inner(&BYTE_LEVEL),
+                PostProcessorWrapper::Roberta(_) => ruby.get_inner(&ROBERTA_PROCESSING),
+                PostProcessorWrapper::Template(_) => ruby.get_inner(&TEMPLATE_PROCESSING),
+                _ => todo!(),
+            },
+            RbPostProcessorTypeWrapper::Sequence(_) => ruby.get_inner(&SEQUENCE),
         }
     }
 }
@@ -222,6 +329,9 @@ pub fn init_processors(ruby: &Ruby, module: &RModule) -> RbResult<()> {
 
     let class = module.define_class("TemplateProcessing", post_processor)?;
     class.define_singleton_method("_new", function!(RbTemplateProcessing::new, 3))?;
+
+    let class = module.define_class("Sequence", post_processor)?;
+    class.define_singleton_method("_new", function!(RbSequence::new, 1))?;
 
     Ok(())
 }
