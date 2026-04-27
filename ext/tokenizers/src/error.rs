@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use magnus::{prelude::*, value::Lazy, Error, ExceptionClass, Ruby};
 
 use super::TOKENIZERS;
@@ -10,7 +12,10 @@ impl RbError {
         Error::new(error(), e.to_string())
     }
 
-    pub fn new_err(s: String) -> Error {
+    pub fn new_err<T>(s: T) -> Error
+    where
+        T: Into<Cow<'static, str>>,
+    {
         Error::new(error(), s)
     }
 }

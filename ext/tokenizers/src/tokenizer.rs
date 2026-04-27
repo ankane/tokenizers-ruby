@@ -11,7 +11,6 @@ use tk::tokenizer::{
 };
 use tk::AddedToken;
 
-use crate::ruby::RbException;
 use crate::tk::PostProcessor;
 
 use super::decoders::RbDecoder;
@@ -282,7 +281,7 @@ impl RbTokenizer {
     pub(crate) fn read_inner(&self) -> RbResult<RwLockReadGuard<'_, Tokenizer>> {
         self.tokenizer
             .read()
-            .map_err(|_| RbException::new_err("Tokenizer RwLock is poisoned"))
+            .map_err(|_| RbError::new_err("Tokenizer RwLock is poisoned"))
     }
 
     /// Acquire the inner tokenizer for writing; surfaces lock poisoning as a
@@ -290,7 +289,7 @@ impl RbTokenizer {
     pub(crate) fn write_inner(&self) -> RbResult<RwLockWriteGuard<'_, Tokenizer>> {
         self.tokenizer
             .write()
-            .map_err(|_| RbException::new_err("Tokenizer RwLock is poisoned"))
+            .map_err(|_| RbError::new_err("Tokenizer RwLock is poisoned"))
     }
 
     pub fn from_model(model: &RbModel) -> Self {
