@@ -25,8 +25,8 @@ use super::utils::*;
 use super::{RbError, RbResult, PRE_TOKENIZERS};
 
 #[derive(DataTypeFunctions, Clone, Serialize, Deserialize)]
+#[serde(transparent)]
 pub struct RbPreTokenizer {
-    #[serde(flatten)]
     pub(crate) pretok: RbPreTokenizerTypeWrapper,
 }
 

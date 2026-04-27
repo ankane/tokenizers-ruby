@@ -16,8 +16,8 @@ use super::utils::*;
 use super::{RbError, RbResult, NORMALIZERS};
 
 #[derive(DataTypeFunctions, Clone, Serialize, Deserialize)]
+#[serde(transparent)]
 pub struct RbNormalizer {
-    #[serde(flatten)]
     pub(crate) normalizer: RbNormalizerTypeWrapper,
 }
 

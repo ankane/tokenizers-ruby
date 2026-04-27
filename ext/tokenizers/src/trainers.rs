@@ -14,8 +14,8 @@ use tk::Trainer;
 use super::{RbResult, TRAINERS};
 
 #[derive(DataTypeFunctions, Clone, Deserialize, Serialize)]
+#[serde(transparent)]
 pub struct RbTrainer {
-    #[serde(flatten)]
     pub trainer: Arc<RwLock<TrainerWrapper>>,
 }
 

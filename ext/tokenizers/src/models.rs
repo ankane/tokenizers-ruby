@@ -20,8 +20,8 @@ use tk::{Model, Token};
 use super::{RbError, RbResult, MODELS};
 
 #[derive(DataTypeFunctions, Clone, Serialize, Deserialize)]
+#[serde(transparent)]
 pub struct RbModel {
-    #[serde(flatten)]
     pub model: Arc<RwLock<ModelWrapper>>,
 }
 

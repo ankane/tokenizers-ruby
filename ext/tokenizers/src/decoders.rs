@@ -23,8 +23,8 @@ use super::utils::*;
 use super::{RbError, RbResult, DECODERS};
 
 #[derive(DataTypeFunctions, Clone, Deserialize, Serialize)]
+#[serde(transparent)]
 pub struct RbDecoder {
-    #[serde(flatten)]
     pub(crate) decoder: RbDecoderWrapper,
 }
 
