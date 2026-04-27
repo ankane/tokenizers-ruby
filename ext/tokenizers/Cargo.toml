@@ -19,6 +19,6 @@ rb-sys = "0.9"
 serde = { version = "1", features = ["rc", "derive"] }
 
 [dependencies.tokenizers]
-version = "=0.22.2" # also update in from_pretrained.rb
+version = "=0.23.1" # also update in from_pretrained.rb
 default-features = false
 features = ["progressbar", "onig", "esaxx_fast"]

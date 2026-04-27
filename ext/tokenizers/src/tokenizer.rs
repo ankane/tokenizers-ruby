@@ -296,9 +296,13 @@ impl RbTokenizer {
             .map_err(RbError::from)
     }
 
-    pub fn add_special_tokens(&self, tokens: Vec<String>) -> usize {
+    pub fn add_special_tokens(&self, tokens: Vec<String>) -> RbResult<usize> {
         let tokens: Vec<AddedToken> = tokens.iter().map(|t| AddedToken::from(t, true)).collect();
-        self.tokenizer.write().unwrap().add_special_tokens(&tokens)
+        self.tokenizer
+            .write()
+            .unwrap()
+            .add_special_tokens(tokens)
+            .map_err(RbError::from)
     }
 
     pub fn train(&self, files: Vec<String>, trainer: Option<&RbTrainer>) -> RbResult<()> {
@@ -322,9 +326,13 @@ impl RbTokenizer {
             .map_err(RbError::from)
     }
 
-    pub fn add_tokens(&self, tokens: Vec<String>) -> usize {
+    pub fn add_tokens(&self, tokens: Vec<String>) -> RbResult<usize> {
         let tokens: Vec<AddedToken> = tokens.iter().map(|t| AddedToken::from(t, true)).collect();
-        self.tokenizer.write().unwrap().add_tokens(&tokens)
+        self.tokenizer
+            .write()
+            .unwrap()
+            .add_tokens(tokens)
+            .map_err(RbError::from)
     }
 
     pub fn encode(
@@ -458,11 +466,13 @@ impl RbTokenizer {
         self.tokenizer.read().unwrap().get_normalizer().cloned()
     }
 
-    pub fn set_normalizer(&self, normalizer: Option<&RbNormalizer>) {
+    pub fn set_normalizer(&self, normalizer: Option<&RbNormalizer>) -> RbResult<()> {
         self.tokenizer
             .write()
             .unwrap()
-            .with_normalizer(normalizer.cloned());
+            .with_normalizer(normalizer.cloned())
+            .map(|_| ())
+            .map_err(RbError::from)
     }
 
     pub fn token_to_id(&self, token: String) -> Option<u32> {
