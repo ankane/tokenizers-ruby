@@ -5,6 +5,7 @@ use magnus::{
     data_type_builder, function, value::Lazy, Class, DataType, DataTypeFunctions, Module, Object,
     RArray, RClass, RModule, Ruby, TryConvert, TypedData, Value,
 };
+use serde::ser::SerializeStruct;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use tk::processors::bert::BertProcessing;
 use tk::processors::byte_level::ByteLevel;
@@ -66,13 +67,17 @@ impl PostProcessor for RbPostProcessorTypeWrapper {
                 .read()
                 .expect("RwLock synchronisation primitive is poisoned, cannot get subtype of RbPostProcessor")
                 .added_tokens(is_pair),
-            RbPostProcessorTypeWrapper::Sequence(_inner) => todo!(),
+            RbPostProcessorTypeWrapper::Sequence(inner) => inner.iter().map(|p| {
+                p.read()
+                    .expect("RwLock synchronisation primitive is poisoned, cannot get subtype of RbPostProcessor")
+                    .added_tokens(is_pair)
+            }).sum::<usize>(),
         }
     }
 
     fn process_encodings(
         &self,
-        encodings: Vec<Encoding>,
+        mut encodings: Vec<Encoding>,
         add_special_tokens: bool,
     ) -> tk::Result<Vec<Encoding>> {
         match self {
@@ -80,7 +85,15 @@ impl PostProcessor for RbPostProcessorTypeWrapper {
                 .read()
                 .expect("RwLock synchronisation primitive is poisoned, cannot get subtype of RbPreTokenizer")
                 .process_encodings(encodings, add_special_tokens),
-            RbPostProcessorTypeWrapper::Sequence(_inner) => todo!(),
+            RbPostProcessorTypeWrapper::Sequence(inner) => {
+                for processor in inner.iter() {
+                    encodings = processor
+                        .read()
+                        .expect("RwLock synchronisation primitive is poisoned, cannot get subtype of RbPreTokenizer")
+                        .process_encodings(encodings, add_special_tokens)?;
+                }
+                Ok(encodings)
+            },
         }
     }
 }
@@ -101,7 +114,12 @@ impl Serialize for RbPostProcessorTypeWrapper {
         S: Serializer,
     {
         match self {
-            RbPostProcessorTypeWrapper::Sequence(_seq) => todo!(),
+            RbPostProcessorTypeWrapper::Sequence(seq) => {
+                let mut ser = serializer.serialize_struct("Sequence", 2)?;
+                ser.serialize_field("type", "Sequence")?;
+                ser.serialize_field("processors", seq)?;
+                ser.end()
+            }
             RbPostProcessorTypeWrapper::Single(inner) => inner.serialize(serializer),
         }
     }
@@ -114,7 +132,9 @@ where
     fn from(processor: I) -> Self {
         let processor = processor.into();
         match processor {
-            PostProcessorWrapper::Sequence(_seq) => todo!(),
+            PostProcessorWrapper::Sequence(seq) => RbPostProcessorTypeWrapper::Sequence(
+                seq.into_iter().map(|p| Arc::new(RwLock::new(p))).collect(),
+            ),
             _ => RbPostProcessorTypeWrapper::Single(Arc::new(RwLock::new(processor.clone()))),
         }
     }
