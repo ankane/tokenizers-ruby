@@ -69,7 +69,7 @@ macro_rules! setter {
     }};
 }
 impl RbDecoder {
-    pub fn bpe_suffix(&self) -> String {
+    pub fn bpe_get_suffix(&self) -> String {
         getter!(self, BPE, suffix.clone())
     }
 
@@ -77,7 +77,7 @@ impl RbDecoder {
         setter!(self, BPE, suffix, suffix);
     }
 
-    pub fn ctc_cleanup(&self) -> bool {
+    pub fn ctc_get_cleanup(&self) -> bool {
         getter!(self, CTC, cleanup)
     }
 
@@ -85,7 +85,7 @@ impl RbDecoder {
         setter!(self, CTC, cleanup, cleanup);
     }
 
-    pub fn ctc_pad_token(&self) -> String {
+    pub fn ctc_get_pad_token(&self) -> String {
         getter!(self, CTC, pad_token.clone())
     }
 
@@ -93,7 +93,7 @@ impl RbDecoder {
         setter!(self, CTC, pad_token, pad_token);
     }
 
-    pub fn ctc_word_delimiter_token(&self) -> String {
+    pub fn ctc_get_word_delimiter_token(&self) -> String {
         getter!(self, CTC, word_delimiter_token.clone())
     }
 
@@ -101,7 +101,7 @@ impl RbDecoder {
         setter!(self, CTC, word_delimiter_token, word_delimiter_token);
     }
 
-    fn strip_content(&self) -> char {
+    fn strip_get_content(&self) -> char {
         getter!(self, Strip, content)
     }
 
@@ -109,7 +109,7 @@ impl RbDecoder {
         setter!(self, Strip, content, content);
     }
 
-    fn strip_start(&self) -> usize {
+    fn strip_get_start(&self) -> usize {
         getter!(self, Strip, start)
     }
 
@@ -117,7 +117,7 @@ impl RbDecoder {
         setter!(self, Strip, start, start);
     }
 
-    fn strip_stop(&self) -> usize {
+    fn strip_get_stop(&self) -> usize {
         getter!(self, Strip, stop)
     }
 
@@ -125,7 +125,7 @@ impl RbDecoder {
         setter!(self, Strip, stop, stop);
     }
 
-    pub fn metaspace_replacement(&self) -> char {
+    pub fn metaspace_get_replacement(&self) -> char {
         getter!(self, Metaspace, get_replacement().clone())
     }
 
@@ -133,7 +133,7 @@ impl RbDecoder {
         setter!(self, Metaspace, @set_replacement, replacement);
     }
 
-    pub fn metaspace_split(&self) -> bool {
+    pub fn metaspace_get_split(&self) -> bool {
         getter!(self, Metaspace, get_split())
     }
 
@@ -141,7 +141,7 @@ impl RbDecoder {
         setter!(self, Metaspace, @set_split, split);
     }
 
-    pub fn metaspace_prepend_scheme(&self) -> String {
+    pub fn metaspace_get_prepend_scheme(&self) -> String {
         // Assuming Metaspace has a method to get the prepend_scheme as a string
         let scheme: PrependScheme = getter!(self, Metaspace, get_prepend_scheme());
         match scheme {
@@ -158,7 +158,7 @@ impl RbDecoder {
         Ok(())
     }
 
-    pub fn word_piece_cleanup(&self) -> bool {
+    pub fn word_piece_get_cleanup(&self) -> bool {
         getter!(self, WordPiece, cleanup)
     }
 
@@ -166,7 +166,7 @@ impl RbDecoder {
         setter!(self, WordPiece, cleanup, cleanup);
     }
 
-    pub fn word_piece_prefix(&self) -> String {
+    pub fn word_piece_get_prefix(&self) -> String {
         getter!(self, WordPiece, prefix.clone())
     }
 
@@ -371,7 +371,7 @@ pub fn init_decoders(ruby: &Ruby, module: &RModule) -> RbResult<()> {
 
     let class = module.define_class("BPEDecoder", decoder)?;
     class.define_singleton_method("_new", function!(RbBPEDecoder::new, 1))?;
-    class.define_method("suffix", method!(RbDecoder::bpe_suffix, 0))?;
+    class.define_method("suffix", method!(RbDecoder::bpe_get_suffix, 0))?;
     class.define_method("suffix=", method!(RbDecoder::bpe_set_suffix, 1))?;
 
     let class = module.define_class("ByteFallback", decoder)?;
@@ -382,13 +382,13 @@ pub fn init_decoders(ruby: &Ruby, module: &RModule) -> RbResult<()> {
 
     let class = module.define_class("CTC", decoder)?;
     class.define_singleton_method("_new", function!(RbCTC::new, 3))?;
-    class.define_method("cleanup", method!(RbDecoder::ctc_cleanup, 0))?;
+    class.define_method("cleanup", method!(RbDecoder::ctc_get_cleanup, 0))?;
     class.define_method("cleanup=", method!(RbDecoder::ctc_set_cleanup, 1))?;
-    class.define_method("pad_token", method!(RbDecoder::ctc_pad_token, 0))?;
+    class.define_method("pad_token", method!(RbDecoder::ctc_get_pad_token, 0))?;
     class.define_method("pad_token=", method!(RbDecoder::ctc_set_pad_token, 1))?;
     class.define_method(
         "word_delimiter_token",
-        method!(RbDecoder::ctc_word_delimiter_token, 0),
+        method!(RbDecoder::ctc_get_word_delimiter_token, 0),
     )?;
     class.define_method(
         "word_delimiter_token=",
@@ -402,18 +402,21 @@ pub fn init_decoders(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     class.define_singleton_method("_new", function!(RbMetaspaceDecoder::new, 3))?;
     class.define_method(
         "prepend_scheme",
-        method!(RbDecoder::metaspace_prepend_scheme, 0),
+        method!(RbDecoder::metaspace_get_prepend_scheme, 0),
     )?;
     class.define_method(
         "prepend_scheme=",
         method!(RbDecoder::metaspace_set_prepend_scheme, 1),
     )?;
-    class.define_method("replacement", method!(RbDecoder::metaspace_replacement, 0))?;
+    class.define_method(
+        "replacement",
+        method!(RbDecoder::metaspace_get_replacement, 0),
+    )?;
     class.define_method(
         "replacement=",
         method!(RbDecoder::metaspace_set_replacement, 1),
     )?;
-    class.define_method("split", method!(RbDecoder::metaspace_split, 0))?;
+    class.define_method("split", method!(RbDecoder::metaspace_get_split, 0))?;
     class.define_method("split=", method!(RbDecoder::metaspace_set_split, 1))?;
 
     let class = module.define_class("Replace", decoder)?;
@@ -421,18 +424,18 @@ pub fn init_decoders(ruby: &Ruby, module: &RModule) -> RbResult<()> {
 
     let class = module.define_class("Strip", decoder)?;
     class.define_singleton_method("_new", function!(RbStripDecoder::new, 3))?;
-    class.define_method("content", method!(RbDecoder::strip_content, 0))?;
+    class.define_method("content", method!(RbDecoder::strip_get_content, 0))?;
     class.define_method("content=", method!(RbDecoder::strip_set_content, 1))?;
-    class.define_method("start", method!(RbDecoder::strip_start, 0))?;
+    class.define_method("start", method!(RbDecoder::strip_get_start, 0))?;
     class.define_method("start=", method!(RbDecoder::strip_set_start, 1))?;
-    class.define_method("stop", method!(RbDecoder::strip_stop, 0))?;
+    class.define_method("stop", method!(RbDecoder::strip_get_stop, 0))?;
     class.define_method("stop=", method!(RbDecoder::strip_set_stop, 1))?;
 
     let class = module.define_class("WordPiece", decoder)?;
     class.define_singleton_method("_new", function!(RbWordPieceDecoder::new, 2))?;
-    class.define_method("cleanup", method!(RbDecoder::word_piece_cleanup, 0))?;
+    class.define_method("cleanup", method!(RbDecoder::word_piece_get_cleanup, 0))?;
     class.define_method("cleanup=", method!(RbDecoder::word_piece_set_cleanup, 1))?;
-    class.define_method("prefix", method!(RbDecoder::word_piece_prefix, 0))?;
+    class.define_method("prefix", method!(RbDecoder::word_piece_get_prefix, 0))?;
     class.define_method("prefix=", method!(RbDecoder::word_piece_set_prefix, 1))?;
 
     Ok(())
