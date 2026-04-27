@@ -50,20 +50,6 @@ class TokenizerTest < Minitest::Test
     assert_equal "Model \"bad\" on the Hub doesn't have a tokenizer", error.message
   end
 
-  def test_add_special_tokens
-    tokenizer = Tokenizers.from_pretrained("bert-base-cased")
-
-    # encode
-    encoded = tokenizer.encode("I can feel the magic, can you?", add_special_tokens: false)
-    expected_ids = [146, 1169, 1631, 1103, 3974, 117, 1169, 1128, 136]
-    expected_tokens = ["I", "can", "feel", "the", "magic", ",", "can", "you", "?"]
-    assert_equal expected_ids, encoded.ids
-    assert_equal expected_tokens, encoded.tokens
-
-    # decode
-    assert_equal "I can feel the magic, can you?", tokenizer.decode(encoded.ids)
-  end
-
   def test_char_bpe_tokenizer
     vocab = "test/support/roberta-base-vocab.json"
     merges = "test/support/roberta-base-merges.txt"
@@ -80,34 +66,39 @@ class TokenizerTest < Minitest::Test
     assert_equal "cafeethmagicayo", tokenizer.decode(encoded.ids)
   end
 
-  def test_id_token_conversion
+  def test_encode_add_special_tokens
     tokenizer = Tokenizers.from_pretrained("bert-base-cased")
 
-    assert_equal 1169, tokenizer.token_to_id("can")
-    assert_equal "magic", tokenizer.id_to_token(3974)
+    # encode
+    encoded = tokenizer.encode("I can feel the magic, can you?", add_special_tokens: false)
+    expected_ids = [146, 1169, 1631, 1103, 3974, 117, 1169, 1128, 136]
+    expected_tokens = ["I", "can", "feel", "the", "magic", ",", "can", "you", "?"]
+    assert_equal expected_ids, encoded.ids
+    assert_equal expected_tokens, encoded.tokens
+
+    # decode
+    assert_equal "I can feel the magic, can you?", tokenizer.decode(encoded.ids)
   end
 
-  def test_multibyte_offsets
+  def test_encode_multibyte_offsets
     tokenizer = Tokenizers.from_pretrained("gpt2")
     encoded = tokenizer.encode("I wanted to convert 10000 ¥ to $.")
     expected_tokens = ["I", "Ġwanted", "Ġto", "Ġconvert", "Ġ10000", "ĠÂ¥", "Ġto", "Ġ$", "."]
     expected_offsets = [[0, 1], [1, 8], [8, 11], [11, 19], [19, 25], [25, 27], [27, 30], [30, 32], [32, 33]]
-
     assert_equal expected_tokens, encoded.tokens
     assert_equal expected_offsets, encoded.offsets
   end
 
-  def test_pair_encoding
+  def test_encode_pair_encoding
     tokenizer = Tokenizers.from_pretrained("bert-base-cased")
     question = "Am I allowed to pass two text arguments?"
     answer = "Yes I am!"
     encoded = tokenizer.encode(question, answer)
-
     expected_tokens = ["[CLS]", "Am", "I", "allowed", "to", "pass", "two", "text", "arguments", "?", "[SEP]", "Yes", "I", "am", "!", "[SEP]"]
     assert_equal expected_tokens, encoded.tokens
   end
 
-  def test_pretokenized_encoding
+  def test_encode_pretokenized_encoding
     tokenizer = Tokenizers.from_pretrained("bert-base-cased")
     sequence = "A mellifluous sequence"
     pair = "And its malodorous pair"
@@ -141,9 +132,7 @@ class TokenizerTest < Minitest::Test
 
   def test_decode_with_special_tokens
     tokenizer = Tokenizers.from_pretrained("bert-base-cased")
-
     token_ids = [101, 146, 1169, 1631, 1103, 3974, 117, 1169, 1128, 136, 102]
-
     assert_equal "[CLS] I can feel the magic, can you? [SEP]", tokenizer.decode(token_ids, skip_special_tokens: false)
   end
 
@@ -157,8 +146,13 @@ class TokenizerTest < Minitest::Test
     token_ids_2 = [101, 7277, 146, 2148, 1106, 2789, 1160, 3087, 9989, 136, 102]
 
     assert_equal [string_1, string_2], tokenizer.decode_batch([token_ids_1, token_ids_2])
-
     assert_equal ["[CLS] #{string_1} [SEP]", "[CLS] #{string_2} [SEP]"], tokenizer.decode_batch([token_ids_1, token_ids_2], skip_special_tokens: false)
+  end
+
+  def test_id_token_conversion
+    tokenizer = Tokenizers.from_pretrained("bert-base-cased")
+    assert_equal 1169, tokenizer.token_to_id("can")
+    assert_equal "magic", tokenizer.id_to_token(3974)
   end
 
   def test_vocab_size
