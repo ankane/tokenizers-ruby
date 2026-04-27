@@ -73,6 +73,14 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     )?;
     class.define_method("_decode", method!(RbTokenizer::decode, 2))?;
     class.define_method("_decode_batch", method!(RbTokenizer::decode_batch, 2))?;
+    class.define_method(
+        "encode_special_tokens",
+        method!(RbTokenizer::get_encode_special_tokens, 0),
+    )?;
+    class.define_method(
+        "encode_special_tokens=",
+        method!(RbTokenizer::set_encode_special_tokens, 1),
+    )?;
     class.define_method("model", method!(RbTokenizer::get_model, 0))?;
     class.define_method("model=", method!(RbTokenizer::set_model, 1))?;
     class.define_method("decoder", method!(RbTokenizer::get_decoder, 0))?;
@@ -92,20 +100,20 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("token_to_id", method!(RbTokenizer::token_to_id, 1))?;
     class.define_method("id_to_token", method!(RbTokenizer::id_to_token, 1))?;
     class.define_method("_enable_padding", method!(RbTokenizer::enable_padding, 1))?;
-    class.define_method("padding", method!(RbTokenizer::padding, 0))?;
+    class.define_method("padding", method!(RbTokenizer::get_padding, 0))?;
     class.define_method("no_padding", method!(RbTokenizer::no_padding, 0))?;
     class.define_method(
         "_enable_truncation",
         method!(RbTokenizer::enable_truncation, 2),
     )?;
-    class.define_method("truncation", method!(RbTokenizer::truncation, 0))?;
+    class.define_method("truncation", method!(RbTokenizer::get_truncation, 0))?;
     class.define_method("no_truncation", method!(RbTokenizer::no_truncation, 0))?;
     class.define_method(
         "num_special_tokens_to_add",
         method!(RbTokenizer::num_special_tokens_to_add, 1),
     )?;
-    class.define_method("_vocab", method!(RbTokenizer::vocab, 1))?;
-    class.define_method("_vocab_size", method!(RbTokenizer::vocab_size, 1))?;
+    class.define_method("_vocab", method!(RbTokenizer::get_vocab, 1))?;
+    class.define_method("_vocab_size", method!(RbTokenizer::get_vocab_size, 1))?;
     class.define_method(
         "added_tokens_decoder",
         method!(RbTokenizer::get_added_tokens_decoder, 0),
