@@ -67,7 +67,7 @@ macro_rules! setter {
 }
 
 impl RbTrainer {
-    fn bpe_trainer_vocab_size(&self) -> usize {
+    fn bpe_trainer_get_vocab_size(&self) -> usize {
         getter!(self, BpeTrainer, vocab_size)
     }
 
@@ -75,7 +75,7 @@ impl RbTrainer {
         setter!(self, BpeTrainer, vocab_size, vocab_size);
     }
 
-    fn bpe_trainer_min_frequency(&self) -> u64 {
+    fn bpe_trainer_get_min_frequency(&self) -> u64 {
         getter!(self, BpeTrainer, min_frequency)
     }
 
@@ -83,7 +83,7 @@ impl RbTrainer {
         setter!(self, BpeTrainer, min_frequency, freq);
     }
 
-    fn bpe_trainer_show_progress(&self) -> bool {
+    fn bpe_trainer_get_show_progress(&self) -> bool {
         getter!(self, BpeTrainer, show_progress)
     }
 
@@ -91,7 +91,7 @@ impl RbTrainer {
         setter!(self, BpeTrainer, show_progress, show_progress);
     }
 
-    fn bpe_trainer_special_tokens(&self) -> Vec<String> {
+    fn bpe_trainer_get_special_tokens(&self) -> Vec<String> {
         getter!(
             self,
             BpeTrainer,
@@ -121,7 +121,7 @@ impl RbTrainer {
         Ok(())
     }
 
-    fn bpe_trainer_limit_alphabet(&self) -> Option<usize> {
+    fn bpe_trainer_get_limit_alphabet(&self) -> Option<usize> {
         getter!(self, BpeTrainer, limit_alphabet)
     }
 
@@ -129,7 +129,7 @@ impl RbTrainer {
         setter!(self, BpeTrainer, limit_alphabet, limit);
     }
 
-    fn bpe_trainer_initial_alphabet(&self) -> Vec<String> {
+    fn bpe_trainer_get_initial_alphabet(&self) -> Vec<String> {
         getter!(
             self,
             BpeTrainer,
@@ -146,7 +146,7 @@ impl RbTrainer {
         );
     }
 
-    fn bpe_trainer_continuing_subword_prefix(&self) -> Option<String> {
+    fn bpe_trainer_get_continuing_subword_prefix(&self) -> Option<String> {
         getter!(self, BpeTrainer, continuing_subword_prefix.clone())
     }
 
@@ -154,7 +154,7 @@ impl RbTrainer {
         setter!(self, BpeTrainer, continuing_subword_prefix, prefix);
     }
 
-    fn bpe_trainer_end_of_word_suffix(&self) -> Option<String> {
+    fn bpe_trainer_get_end_of_word_suffix(&self) -> Option<String> {
         getter!(self, BpeTrainer, end_of_word_suffix.clone())
     }
 
@@ -162,7 +162,7 @@ impl RbTrainer {
         setter!(self, BpeTrainer, end_of_word_suffix, suffix);
     }
 
-    fn unigram_trainer_vocab_size(&self) -> u32 {
+    fn unigram_trainer_get_vocab_size(&self) -> u32 {
         getter!(self, UnigramTrainer, vocab_size)
     }
 
@@ -170,7 +170,7 @@ impl RbTrainer {
         setter!(self, UnigramTrainer, vocab_size, vocab_size);
     }
 
-    fn unigram_trainer_show_progress(&self) -> bool {
+    fn unigram_trainer_get_show_progress(&self) -> bool {
         getter!(self, UnigramTrainer, show_progress)
     }
 
@@ -178,7 +178,7 @@ impl RbTrainer {
         setter!(self, UnigramTrainer, show_progress, show_progress);
     }
 
-    fn unigram_trainer_special_tokens(&self) -> Vec<String> {
+    fn unigram_trainer_get_special_tokens(&self) -> Vec<String> {
         getter!(
             self,
             UnigramTrainer,
@@ -208,7 +208,7 @@ impl RbTrainer {
         Ok(())
     }
 
-    fn unigram_trainer_initial_alphabet(&self) -> Vec<String> {
+    fn unigram_trainer_get_initial_alphabet(&self) -> Vec<String> {
         getter!(
             self,
             UnigramTrainer,
@@ -225,7 +225,7 @@ impl RbTrainer {
         );
     }
 
-    fn word_level_trainer_vocab_size(&self) -> usize {
+    fn word_level_trainer_get_vocab_size(&self) -> usize {
         getter!(self, WordLevelTrainer, vocab_size)
     }
 
@@ -233,7 +233,7 @@ impl RbTrainer {
         setter!(self, WordLevelTrainer, vocab_size, vocab_size);
     }
 
-    fn word_level_trainer_min_frequency(&self) -> u64 {
+    fn word_level_trainer_get_min_frequency(&self) -> u64 {
         getter!(self, WordLevelTrainer, min_frequency)
     }
 
@@ -241,7 +241,7 @@ impl RbTrainer {
         setter!(self, WordLevelTrainer, min_frequency, freq);
     }
 
-    fn word_level_trainer_show_progress(&self) -> bool {
+    fn word_level_trainer_get_show_progress(&self) -> bool {
         getter!(self, WordLevelTrainer, show_progress)
     }
 
@@ -249,7 +249,7 @@ impl RbTrainer {
         setter!(self, WordLevelTrainer, show_progress, show_progress);
     }
 
-    fn word_level_trainer_special_tokens(&self) -> Vec<String> {
+    fn word_level_trainer_get_special_tokens(&self) -> Vec<String> {
         getter!(
             self,
             WordLevelTrainer,
@@ -279,7 +279,7 @@ impl RbTrainer {
         Ok(())
     }
 
-    fn word_piece_trainer_vocab_size(&self) -> usize {
+    fn word_piece_trainer_get_vocab_size(&self) -> usize {
         getter!(self, WordPieceTrainer, vocab_size())
     }
 
@@ -287,7 +287,7 @@ impl RbTrainer {
         setter!(self, WordPieceTrainer, @set_vocab_size, vocab_size);
     }
 
-    fn word_piece_trainer_min_frequency(&self) -> u64 {
+    fn word_piece_trainer_get_min_frequency(&self) -> u64 {
         getter!(self, WordPieceTrainer, min_frequency())
     }
 
@@ -295,7 +295,7 @@ impl RbTrainer {
         setter!(self, WordPieceTrainer, @set_min_frequency, freq);
     }
 
-    fn word_piece_trainer_show_progress(&self) -> bool {
+    fn word_piece_trainer_get_show_progress(&self) -> bool {
         getter!(self, WordPieceTrainer, show_progress())
     }
 
@@ -303,7 +303,7 @@ impl RbTrainer {
         setter!(self, WordPieceTrainer, @set_show_progress, show_progress);
     }
 
-    fn word_piece_trainer_special_tokens(&self) -> Vec<String> {
+    fn word_piece_trainer_get_special_tokens(&self) -> Vec<String> {
         getter!(
             self,
             WordPieceTrainer,
@@ -333,7 +333,7 @@ impl RbTrainer {
         Ok(())
     }
 
-    fn word_piece_trainer_limit_alphabet(&self) -> Option<usize> {
+    fn word_piece_trainer_get_limit_alphabet(&self) -> Option<usize> {
         getter!(self, WordPieceTrainer, limit_alphabet())
     }
 
@@ -341,7 +341,7 @@ impl RbTrainer {
         setter!(self, WordPieceTrainer, @set_limit_alphabet, limit);
     }
 
-    fn word_piece_trainer_initial_alphabet(&self) -> Vec<String> {
+    fn word_piece_trainer_get_initial_alphabet(&self) -> Vec<String> {
         getter!(
             self,
             WordPieceTrainer,
@@ -358,7 +358,7 @@ impl RbTrainer {
         );
     }
 
-    fn word_piece_trainer_continuing_subword_prefix(&self) -> Option<String> {
+    fn word_piece_trainer_get_continuing_subword_prefix(&self) -> Option<String> {
         getter!(self, WordPieceTrainer, continuing_subword_prefix().clone())
     }
 
@@ -366,7 +366,7 @@ impl RbTrainer {
         setter!(self, WordPieceTrainer, @set_continuing_subword_prefix, prefix);
     }
 
-    fn word_piece_trainer_end_of_word_suffix(&self) -> Option<String> {
+    fn word_piece_trainer_get_end_of_word_suffix(&self) -> Option<String> {
         getter!(self, WordPieceTrainer, end_of_word_suffix().clone())
     }
 
@@ -714,14 +714,17 @@ pub fn init_trainers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
 
     let class = module.define_class("BpeTrainer", trainer)?;
     class.define_singleton_method("_new", function!(RbBpeTrainer::new, 1))?;
-    class.define_method("vocab_size", method!(RbTrainer::bpe_trainer_vocab_size, 0))?;
+    class.define_method(
+        "vocab_size",
+        method!(RbTrainer::bpe_trainer_get_vocab_size, 0),
+    )?;
     class.define_method(
         "vocab_size=",
         method!(RbTrainer::bpe_trainer_set_vocab_size, 1),
     )?;
     class.define_method(
         "min_frequency",
-        method!(RbTrainer::bpe_trainer_min_frequency, 0),
+        method!(RbTrainer::bpe_trainer_get_min_frequency, 0),
     )?;
     class.define_method(
         "min_frequency=",
@@ -729,7 +732,7 @@ pub fn init_trainers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     )?;
     class.define_method(
         "show_progress",
-        method!(RbTrainer::bpe_trainer_show_progress, 0),
+        method!(RbTrainer::bpe_trainer_get_show_progress, 0),
     )?;
     class.define_method(
         "show_progress=",
@@ -737,7 +740,7 @@ pub fn init_trainers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     )?;
     class.define_method(
         "special_tokens",
-        method!(RbTrainer::bpe_trainer_special_tokens, 0),
+        method!(RbTrainer::bpe_trainer_get_special_tokens, 0),
     )?;
     class.define_method(
         "special_tokens=",
@@ -745,7 +748,7 @@ pub fn init_trainers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     )?;
     class.define_method(
         "limit_alphabet",
-        method!(RbTrainer::bpe_trainer_limit_alphabet, 0),
+        method!(RbTrainer::bpe_trainer_get_limit_alphabet, 0),
     )?;
     class.define_method(
         "limit_alphabet=",
@@ -753,7 +756,7 @@ pub fn init_trainers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     )?;
     class.define_method(
         "initial_alphabet",
-        method!(RbTrainer::bpe_trainer_initial_alphabet, 0),
+        method!(RbTrainer::bpe_trainer_get_initial_alphabet, 0),
     )?;
     class.define_method(
         "initial_alphabet=",
@@ -761,7 +764,7 @@ pub fn init_trainers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     )?;
     class.define_method(
         "continuing_subword_prefix",
-        method!(RbTrainer::bpe_trainer_continuing_subword_prefix, 0),
+        method!(RbTrainer::bpe_trainer_get_continuing_subword_prefix, 0),
     )?;
     class.define_method(
         "continuing_subword_prefix=",
@@ -769,7 +772,7 @@ pub fn init_trainers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     )?;
     class.define_method(
         "end_of_word_suffix",
-        method!(RbTrainer::bpe_trainer_end_of_word_suffix, 0),
+        method!(RbTrainer::bpe_trainer_get_end_of_word_suffix, 0),
     )?;
     class.define_method(
         "end_of_word_suffix=",
@@ -780,7 +783,7 @@ pub fn init_trainers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     class.define_singleton_method("_new", function!(RbUnigramTrainer::new, 1))?;
     class.define_method(
         "vocab_size",
-        method!(RbTrainer::unigram_trainer_vocab_size, 0),
+        method!(RbTrainer::unigram_trainer_get_vocab_size, 0),
     )?;
     class.define_method(
         "vocab_size=",
@@ -788,7 +791,7 @@ pub fn init_trainers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     )?;
     class.define_method(
         "show_progress",
-        method!(RbTrainer::unigram_trainer_show_progress, 0),
+        method!(RbTrainer::unigram_trainer_get_show_progress, 0),
     )?;
     class.define_method(
         "show_progress=",
@@ -796,7 +799,7 @@ pub fn init_trainers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     )?;
     class.define_method(
         "special_tokens",
-        method!(RbTrainer::unigram_trainer_special_tokens, 0),
+        method!(RbTrainer::unigram_trainer_get_special_tokens, 0),
     )?;
     class.define_method(
         "special_tokens=",
@@ -804,7 +807,7 @@ pub fn init_trainers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     )?;
     class.define_method(
         "initial_alphabet",
-        method!(RbTrainer::unigram_trainer_initial_alphabet, 0),
+        method!(RbTrainer::unigram_trainer_get_initial_alphabet, 0),
     )?;
     class.define_method(
         "initial_alphabet=",
@@ -815,7 +818,7 @@ pub fn init_trainers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     class.define_singleton_method("_new", function!(RbWordLevelTrainer::new, 1))?;
     class.define_method(
         "vocab_size",
-        method!(RbTrainer::word_level_trainer_vocab_size, 0),
+        method!(RbTrainer::word_level_trainer_get_vocab_size, 0),
     )?;
     class.define_method(
         "vocab_size=",
@@ -823,7 +826,7 @@ pub fn init_trainers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     )?;
     class.define_method(
         "min_frequency",
-        method!(RbTrainer::word_level_trainer_min_frequency, 0),
+        method!(RbTrainer::word_level_trainer_get_min_frequency, 0),
     )?;
     class.define_method(
         "min_frequency=",
@@ -831,7 +834,7 @@ pub fn init_trainers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     )?;
     class.define_method(
         "show_progress",
-        method!(RbTrainer::word_level_trainer_show_progress, 0),
+        method!(RbTrainer::word_level_trainer_get_show_progress, 0),
     )?;
     class.define_method(
         "show_progress=",
@@ -839,7 +842,7 @@ pub fn init_trainers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     )?;
     class.define_method(
         "special_tokens",
-        method!(RbTrainer::word_level_trainer_special_tokens, 0),
+        method!(RbTrainer::word_level_trainer_get_special_tokens, 0),
     )?;
     class.define_method(
         "special_tokens=",
@@ -850,7 +853,7 @@ pub fn init_trainers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     class.define_singleton_method("_new", function!(RbWordPieceTrainer::new, 1))?;
     class.define_method(
         "vocab_size",
-        method!(RbTrainer::word_piece_trainer_vocab_size, 0),
+        method!(RbTrainer::word_piece_trainer_get_vocab_size, 0),
     )?;
     class.define_method(
         "vocab_size=",
@@ -858,7 +861,7 @@ pub fn init_trainers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     )?;
     class.define_method(
         "min_frequency",
-        method!(RbTrainer::word_piece_trainer_min_frequency, 0),
+        method!(RbTrainer::word_piece_trainer_get_min_frequency, 0),
     )?;
     class.define_method(
         "min_frequency=",
@@ -866,7 +869,7 @@ pub fn init_trainers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     )?;
     class.define_method(
         "show_progress",
-        method!(RbTrainer::word_piece_trainer_show_progress, 0),
+        method!(RbTrainer::word_piece_trainer_get_show_progress, 0),
     )?;
     class.define_method(
         "show_progress=",
@@ -874,7 +877,7 @@ pub fn init_trainers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     )?;
     class.define_method(
         "special_tokens",
-        method!(RbTrainer::word_piece_trainer_special_tokens, 0),
+        method!(RbTrainer::word_piece_trainer_get_special_tokens, 0),
     )?;
     class.define_method(
         "special_tokens=",
@@ -882,7 +885,7 @@ pub fn init_trainers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     )?;
     class.define_method(
         "limit_alphabet",
-        method!(RbTrainer::word_piece_trainer_limit_alphabet, 0),
+        method!(RbTrainer::word_piece_trainer_get_limit_alphabet, 0),
     )?;
     class.define_method(
         "limit_alphabet=",
@@ -890,7 +893,7 @@ pub fn init_trainers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     )?;
     class.define_method(
         "initial_alphabet",
-        method!(RbTrainer::word_piece_trainer_initial_alphabet, 0),
+        method!(RbTrainer::word_piece_trainer_get_initial_alphabet, 0),
     )?;
     class.define_method(
         "initial_alphabet=",
@@ -898,7 +901,10 @@ pub fn init_trainers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     )?;
     class.define_method(
         "continuing_subword_prefix",
-        method!(RbTrainer::word_piece_trainer_continuing_subword_prefix, 0),
+        method!(
+            RbTrainer::word_piece_trainer_get_continuing_subword_prefix,
+            0
+        ),
     )?;
     class.define_method(
         "continuing_subword_prefix=",
@@ -909,7 +915,7 @@ pub fn init_trainers(ruby: &Ruby, module: &RModule) -> RbResult<()> {
     )?;
     class.define_method(
         "end_of_word_suffix",
-        method!(RbTrainer::word_piece_trainer_end_of_word_suffix, 0),
+        method!(RbTrainer::word_piece_trainer_get_end_of_word_suffix, 0),
     )?;
     class.define_method(
         "end_of_word_suffix=",
