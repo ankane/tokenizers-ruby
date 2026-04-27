@@ -1,7 +1,7 @@
 require_relative "test_helper"
 
 class AddedTokenTest < Minitest::Test
-  def test_content
+  def test_methods
     token = Tokenizers::AddedToken.new("test")
     assert_equal "test", token.content
     assert_equal false, token.rstrip

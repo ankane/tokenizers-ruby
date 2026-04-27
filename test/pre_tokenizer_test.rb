@@ -33,13 +33,13 @@ class PreTokenizerTest < Minitest::Test
   end
 
   def test_char_delimiter_split
-    pre_tokenizer = Tokenizers::PreTokenizers::CharDelimiterSplit.new('a')
+    pre_tokenizer = Tokenizers::PreTokenizers::CharDelimiterSplit.new("a")
     assert_instance_of Tokenizers::PreTokenizers::CharDelimiterSplit, pre_tokenizer
     assert_kind_of Tokenizers::PreTokenizers::PreTokenizer, pre_tokenizer
 
-    assert_equal 'a', pre_tokenizer.delimiter
-    pre_tokenizer.delimiter = 'b'
-    assert_equal 'b', pre_tokenizer.delimiter
+    assert_equal "a", pre_tokenizer.delimiter
+    pre_tokenizer.delimiter = "b"
+    assert_equal "b", pre_tokenizer.delimiter
   end
 
   def test_digits
@@ -59,11 +59,11 @@ class PreTokenizerTest < Minitest::Test
     assert_instance_of Tokenizers::PreTokenizers::Metaspace, pre_tokenizer
     assert_kind_of Tokenizers::PreTokenizers::PreTokenizer, pre_tokenizer
 
-    pre_tokenizer = Tokenizers::PreTokenizers::Metaspace.new(replacement: 'c', prepend_scheme: "never", split: false)
+    pre_tokenizer = Tokenizers::PreTokenizers::Metaspace.new(replacement: "c", prepend_scheme: "never", split: false)
 
-    assert_equal 'c', pre_tokenizer.replacement
-    pre_tokenizer.replacement = 'd'
-    assert_equal 'd', pre_tokenizer.replacement
+    assert_equal "c", pre_tokenizer.replacement
+    pre_tokenizer.replacement = "d"
+    assert_equal "d", pre_tokenizer.replacement
 
     assert_equal "never", pre_tokenizer.prepend_scheme
     pre_tokenizer.prepend_scheme = "always"

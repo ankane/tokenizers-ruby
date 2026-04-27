@@ -30,11 +30,12 @@ class DecoderTest < Minitest::Test
     assert_instance_of Tokenizers::Decoders::CTC, decoder
     assert_kind_of Tokenizers::Decoders::Decoder, decoder
 
-    decoder = Tokenizers::Decoders::CTC.new(
-      pad_token: "<mypad>",
-      word_delimiter_token: "+",
-      cleanup: false
-    )
+    decoder =
+      Tokenizers::Decoders::CTC.new(
+        pad_token: "<mypad>",
+        word_delimiter_token: "+",
+        cleanup: false
+      )
 
     assert_equal "<mypad>", decoder.pad_token
     decoder.pad_token = "<pad>"
@@ -76,7 +77,7 @@ class DecoderTest < Minitest::Test
   end
 
   def test_replace
-    decoder = Tokenizers::Decoders::Replace.new('abc', 'xyz')
+    decoder = Tokenizers::Decoders::Replace.new("abc", "xyz")
     assert_instance_of Tokenizers::Decoders::Replace, decoder
     assert_kind_of Tokenizers::Decoders::Replace, decoder
   end
@@ -90,11 +91,12 @@ class DecoderTest < Minitest::Test
     assert_equal 0, decoder.start
     assert_equal 0, decoder.stop
 
-    decoder = Tokenizers::Decoders::Strip.new(
-      content: "-",
-      start: 4,
-      stop: 12
-    )
+    decoder =
+      Tokenizers::Decoders::Strip.new(
+        content: "-",
+        start: 4,
+        stop: 12
+      )
 
     assert_equal "-", decoder.content
     decoder.content = "_"

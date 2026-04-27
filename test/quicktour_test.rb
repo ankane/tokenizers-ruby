@@ -34,14 +34,15 @@ class QuicktourTest < Minitest::Test
 
     assert_equal 2, tokenizer.token_to_id("[SEP]")
 
-    tokenizer.post_processor = Tokenizers::Processors::TemplateProcessing.new(
-      single: "[CLS] $A [SEP]",
-      pair: "[CLS] $A [SEP] $B:1 [SEP]:1",
-      special_tokens: [
-        ["[CLS]", tokenizer.token_to_id("[CLS]")],
-        ["[SEP]", tokenizer.token_to_id("[SEP]")]
-      ]
-    )
+    tokenizer.post_processor =
+      Tokenizers::Processors::TemplateProcessing.new(
+        single: "[CLS] $A [SEP]",
+        pair: "[CLS] $A [SEP] $B:1 [SEP]:1",
+        special_tokens: [
+          ["[CLS]", tokenizer.token_to_id("[CLS]")],
+          ["[SEP]", tokenizer.token_to_id("[SEP]")]
+        ]
+      )
 
     output = tokenizer.encode("Hello, y'all! How are you 😁 ?")
     assert_equal ["[CLS]", "Hello", ",", "y", "'", "all", "!", "How", "are", "you", "[UNK]", "?", "[SEP]"], output.tokens

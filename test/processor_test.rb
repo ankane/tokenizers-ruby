@@ -20,10 +20,12 @@ class ProcessorTest < Minitest::Test
     assert_instance_of Tokenizers::Processors::RobertaProcessing, processor
     assert_kind_of Tokenizers::Processors::PostProcessor, processor
 
-    Tokenizers::Processors::RobertaProcessing.new(["[SEP]", 1],
-                                                  ["[CLS]", 0],
-                                                  trim_offsets: false,
-                                                  add_prefix_space: false)
+    Tokenizers::Processors::RobertaProcessing.new(
+      ["[SEP]", 1],
+      ["[CLS]", 0],
+      trim_offsets: false,
+      add_prefix_space: false
+    )
   end
 
   def test_template_processing

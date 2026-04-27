@@ -11,12 +11,13 @@ class NormalizerTest < Minitest::Test
     assert_instance_of Tokenizers::Normalizers::BertNormalizer, normalizer
     assert_kind_of Tokenizers::Normalizers::Normalizer, normalizer
 
-    normalizer = Tokenizers::Normalizers::BertNormalizer.new(
-      clean_text: false,
-      handle_chinese_chars: false,
-      strip_accents: false,
-      lowercase: false
-    )
+    normalizer =
+      Tokenizers::Normalizers::BertNormalizer.new(
+        clean_text: false,
+        handle_chinese_chars: false,
+        strip_accents: false,
+        lowercase: false
+      )
 
     assert_equal false, normalizer.clean_text
     normalizer.clean_text = true
@@ -72,7 +73,7 @@ class NormalizerTest < Minitest::Test
   end
 
   def test_replace
-    normalizer = Tokenizers::Normalizers::Replace.new('abc', 'xyz')
+    normalizer = Tokenizers::Normalizers::Replace.new("abc", "xyz")
     assert_instance_of Tokenizers::Normalizers::Replace, normalizer
     assert_kind_of Tokenizers::Normalizers::Replace, normalizer
   end
@@ -81,10 +82,10 @@ class NormalizerTest < Minitest::Test
     normalizer = Tokenizers::Normalizers::Prepend.new
     assert_instance_of Tokenizers::Normalizers::Prepend, normalizer
     assert_kind_of Tokenizers::Normalizers::Prepend, normalizer
-    assert_equal '▁', normalizer.prepend
+    assert_equal "▁", normalizer.prepend
 
-    normalizer = Tokenizers::Normalizers::Prepend.new(prepend: '-')
-    assert_equal '-', normalizer.prepend
+    normalizer = Tokenizers::Normalizers::Prepend.new(prepend: "-")
+    assert_equal "-", normalizer.prepend
   end
 
   def test_strip

@@ -63,12 +63,13 @@ class ModelTest < Minitest::Test
     assert_kind_of Tokenizers::Models::Model, model
 
     vocab = {"am" => 0}
-    model = Tokenizers::Models::WordPiece.new(
-      vocab: vocab,
-      unk_token: "[UNK]",
-      max_input_chars_per_word: 5,
-      continuing_subword_prefix: "abc"
-    )
+    model =
+      Tokenizers::Models::WordPiece.new(
+        vocab: vocab,
+        unk_token: "[UNK]",
+        max_input_chars_per_word: 5,
+        continuing_subword_prefix: "abc"
+      )
 
     assert_equal "[UNK]", model.unk_token
     model.unk_token = "[PAD]"
