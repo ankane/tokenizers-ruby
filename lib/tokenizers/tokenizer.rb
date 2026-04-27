@@ -18,6 +18,10 @@ module Tokenizers
       _encode_batch(input, is_pretokenized, add_special_tokens)
     end
 
+    def encode_batch_fast(input, is_pretokenized: false, add_special_tokens: true)
+      _encode_batch_fast(input, is_pretokenized, add_special_tokens)
+    end
+
     def decode(ids, skip_special_tokens: true)
       _decode(ids, skip_special_tokens)
     end

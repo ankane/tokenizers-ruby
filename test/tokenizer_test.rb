@@ -21,6 +21,12 @@ class TokenizerTest < Minitest::Test
 
     # decode batch
     assert_equal ["I can feel the magic, can you?"], tokenizer.decode_batch(encoded.map(&:ids))
+
+    # encode batch fast
+    encoded = tokenizer.encode_batch_fast(["I can feel the magic, can you?"])
+    assert_equal 1, encoded.size
+    assert_equal expected_ids, encoded[0].ids
+    assert_equal [[0, 0]] * encoded[0].ids.size, encoded[0].offsets
   end
 
   def test_from_pretrained_gpt2

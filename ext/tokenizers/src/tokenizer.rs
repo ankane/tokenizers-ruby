@@ -396,6 +396,33 @@ impl RbTokenizer {
         .map_err(RbError::from)
     }
 
+    pub fn encode_batch_fast(
+        ruby: &Ruby,
+        rb_self: &Self,
+        input: RArray,
+        is_pretokenized: bool,
+        add_special_tokens: bool,
+    ) -> RbResult<RArray> {
+        let mut items = Vec::<tk::EncodeInput>::with_capacity(input.len());
+        for item in input {
+            let item: tk::EncodeInput = if is_pretokenized {
+                PreTokenizedEncodeInput::try_convert(item)?.into()
+            } else {
+                TextEncodeInput::try_convert(item)?.into()
+            };
+            items.push(item);
+        }
+        ruby.detach(|| {
+            rb_self
+                .tokenizer
+                .read()
+                .unwrap()
+                .encode_batch_fast(items, add_special_tokens)
+        })
+        .map(|encodings| ruby.ary_from_iter(encodings.into_iter().map(Into::<RbEncoding>::into)))
+        .map_err(RbError::from)
+    }
+
     pub fn decode(&self, ids: Vec<u32>, skip_special_tokens: bool) -> RbResult<String> {
         self.tokenizer
             .read()

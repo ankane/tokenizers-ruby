@@ -2,6 +2,7 @@
 
 - Updated Tokenizers to 0.23.1
 - Added support for releasing GVL
+- Added `encode_batch_fast` method to `Tokenizer`
 - Dropped support for Ruby < 3.3
 
 ## 0.6.4 (2026-04-09)
