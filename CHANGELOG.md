@@ -1,3 +1,7 @@
+## 0.7.1 (unreleased)
+
+- Updated Tokenizers to 0.23.2
+
 ## 0.7.0 (2026-04-27)
 
 - Updated Tokenizers to 0.23.1
