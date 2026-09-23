@@ -3,8 +3,8 @@ use std::sync::{Arc, RwLock};
 use crate::pre_tokenizers::from_string;
 use magnus::value::Lazy;
 use magnus::{
-    data_type_builder, function, method, Class, DataType, DataTypeFunctions, Module, Object,
-    RClass, RModule, Ruby, TypedData,
+    function, method, typed_data::DataTypeBuilder, Class, DataType, DataTypeFunctions, Module,
+    Object, RClass, RModule, Ruby, TypedData,
 };
 use serde::{Deserialize, Serialize};
 use tk::decoders::bpe::BPEDecoder;
@@ -298,7 +298,7 @@ unsafe impl TypedData for RbDecoder {
 
     fn data_type() -> &'static DataType {
         static DATA_TYPE: DataType =
-            data_type_builder!(RbDecoder, "Tokenizers::Decoders::Decoder").build();
+            DataTypeBuilder::<RbDecoder>::new(c"Tokenizers::Decoders::Decoder").build();
         &DATA_TYPE
     }
 

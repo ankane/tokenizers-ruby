@@ -2,8 +2,8 @@ use std::sync::Arc;
 use std::sync::RwLock;
 
 use magnus::{
-    data_type_builder, function, value::Lazy, Class, DataType, DataTypeFunctions, Module, Object,
-    RArray, RClass, RModule, Ruby, TryConvert, TypedData, Value,
+    function, typed_data::DataTypeBuilder, value::Lazy, Class, DataType, DataTypeFunctions, Module,
+    Object, RArray, RClass, RModule, Ruby, TryConvert, TypedData, Value,
 };
 use serde::ser::SerializeStruct;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
@@ -283,7 +283,8 @@ unsafe impl TypedData for RbPostProcessor {
 
     fn data_type() -> &'static DataType {
         static DATA_TYPE: DataType =
-            data_type_builder!(RbPostProcessor, "Tokenizers::Processors::PostProcessor").build();
+            DataTypeBuilder::<RbPostProcessor>::new(c"Tokenizers::Processors::PostProcessor")
+                .build();
         &DATA_TYPE
     }
 

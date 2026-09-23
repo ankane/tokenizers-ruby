@@ -1,8 +1,8 @@
 use std::sync::{Arc, RwLock};
 
 use magnus::{
-    data_type_builder, function, method, value::Lazy, Class, DataType, DataTypeFunctions, Module,
-    Object, RArray, RClass, RModule, Ruby, TryConvert, TypedData,
+    function, method, typed_data::DataTypeBuilder, value::Lazy, Class, DataType, DataTypeFunctions,
+    Module, Object, RArray, RClass, RModule, Ruby, TryConvert, TypedData,
 };
 use serde::ser::SerializeStruct;
 use serde::{Deserialize, Serialize, Serializer};
@@ -365,7 +365,7 @@ unsafe impl TypedData for RbNormalizer {
 
     fn data_type() -> &'static DataType {
         static DATA_TYPE: DataType =
-            data_type_builder!(RbNormalizer, "Tokenizers::Normalizers::Normalizer").build();
+            DataTypeBuilder::<RbNormalizer>::new(c"Tokenizers::Normalizers::Normalizer").build();
         &DATA_TYPE
     }
 

@@ -4,8 +4,8 @@ use crate::models::RbModel;
 use crate::tokenizer::RbAddedToken;
 use magnus::prelude::*;
 use magnus::{
-    data_type_builder, function, method, value::Lazy, Class, DataType, DataTypeFunctions, Error,
-    Module, Object, RArray, RClass, RHash, RModule, Ruby, TryConvert, TypedData, Value,
+    function, method, typed_data::DataTypeBuilder, value::Lazy, Class, DataType, DataTypeFunctions,
+    Error, Module, Object, RArray, RClass, RHash, RModule, Ruby, TryConvert, TypedData, Value,
 };
 use serde::{Deserialize, Serialize};
 use tk::models::TrainerWrapper;
@@ -666,7 +666,7 @@ unsafe impl TypedData for RbTrainer {
 
     fn data_type() -> &'static DataType {
         static DATA_TYPE: DataType =
-            data_type_builder!(RbTrainer, "Tokenizers::Trainers::Trainer").build();
+            DataTypeBuilder::<RbTrainer>::new(c"Tokenizers::Trainers::Trainer").build();
         &DATA_TYPE
     }
 

@@ -6,8 +6,8 @@ use crate::trainers::RbTrainer;
 use ahash::AHashMap;
 use magnus::prelude::*;
 use magnus::{
-    data_type_builder, function, method, value::Lazy, Class, DataType, DataTypeFunctions, Error,
-    Module, Object, RClass, RHash, RModule, Ruby, TryConvert, TypedData, Value,
+    function, method, typed_data::DataTypeBuilder, value::Lazy, Class, DataType, DataTypeFunctions,
+    Error, Module, Object, RClass, RHash, RModule, Ruby, TryConvert, TypedData, Value,
 };
 use serde::{Deserialize, Serialize};
 use tk::models::bpe::{BpeBuilder, Merges, BPE};
@@ -365,7 +365,7 @@ unsafe impl TypedData for RbModel {
 
     fn data_type() -> &'static DataType {
         static DATA_TYPE: DataType =
-            data_type_builder!(RbModel, "Tokenizers::Models::Model").build();
+            DataTypeBuilder::<RbModel>::new(c"Tokenizers::Models::Model").build();
         &DATA_TYPE
     }
 

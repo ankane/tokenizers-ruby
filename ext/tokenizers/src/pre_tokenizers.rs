@@ -1,8 +1,8 @@
 use std::sync::{Arc, RwLock};
 
 use magnus::{
-    data_type_builder, function, method, value::Lazy, Class, DataType, DataTypeFunctions, Error,
-    Module, Object, RArray, RClass, RModule, Ruby, TryConvert, TypedData,
+    function, method, typed_data::DataTypeBuilder, value::Lazy, Class, DataType, DataTypeFunctions,
+    Error, Module, Object, RArray, RClass, RModule, Ruby, TryConvert, TypedData,
 };
 
 use serde::ser::SerializeStruct;
@@ -402,7 +402,8 @@ unsafe impl TypedData for RbPreTokenizer {
 
     fn data_type() -> &'static DataType {
         static DATA_TYPE: DataType =
-            data_type_builder!(RbPreTokenizer, "Tokenizers::PreTokenizers::PreTokenizer").build();
+            DataTypeBuilder::<RbPreTokenizer>::new(c"Tokenizers::PreTokenizers::PreTokenizer")
+                .build();
         &DATA_TYPE
     }
 
